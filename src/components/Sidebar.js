@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -24,6 +24,20 @@ const sidebarVariants = {
 const Sidebar = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    const handleMediaQueryChange = (e) => {
+      setIsOpen(e.matches);
+    };
+
+    handleMediaQueryChange(mediaQuery); // Set the initial state
+    mediaQuery.addListener(handleMediaQueryChange);
+
+    return () => {
+      mediaQuery.removeListener(handleMediaQueryChange);
+    };
+  }, []);
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -31,7 +45,7 @@ const Sidebar = ({ children }) => {
         initial={false}
         animate={isOpen ? 'open' : 'closed'}
         variants={sidebarVariants}
-        className="absolute md:relative top-0 left-0 w-64 h-full bg-gray-800 text-white shadow-lg z-10"
+        className="absolute md:relative top-0 left-0 w-64 h-full bg-gray-800 text-white shadow-lg z-10 md:block"
       >
         <nav className="p-6">
           <h2 className="text-2xl font-bold mb-4">Menu</h2>
@@ -70,7 +84,6 @@ const Sidebar = ({ children }) => {
           >
             {isOpen ? 'Close' : 'Menu'}
           </button>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
         </header>
 
         {/* Content Area */}
