@@ -85,7 +85,7 @@ const Sidebar = ({ children }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="flex items-center justify-between bg-white shadow p-4">
+        <header className="flex items-center justify-between p-4">
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="p-2 bg-blue-600 text-white rounded md:hidden"
