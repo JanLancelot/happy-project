@@ -115,7 +115,7 @@ export default function Sidebar({ children }) {
       ? [
           {
             name: "Manage Requirements",
-            href: "#",
+            href: "/add-requirement",
             icon: CogIcon,
             current: true,
           },
