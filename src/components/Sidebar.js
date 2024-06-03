@@ -57,6 +57,7 @@ export default function Sidebar({ children }) {
           const userData = userDoc.data();
           setUserRole(userData.role);
         }
+        console.log("Role: ", userRole);
       }
     });
   }, []);
