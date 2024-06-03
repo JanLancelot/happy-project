@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import {
   collection,
-  doc,
   addDoc,
   getDocs,
   updateDoc,
+  doc,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import Select from "react-select";
 
 import Sidebar from "../components/Sidebar";
 
@@ -20,8 +21,9 @@ function CreateClass() {
     { subject: "", teacher: "", teacherUid: "" },
   ]);
   const [teachers, setTeachers] = useState([]);
-  const [selectedStudents, setSelectedStudents] = useState([]);
-  const [allStudents, setAllStudents] = useState([]);
+  const [selectedStudentOptions, setSelectedStudentOptions] = useState([]);
+  const [allStudentOptions, setAllStudentOptions] = useState([]);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,10 +39,10 @@ function CreateClass() {
     const fetchStudents = async () => {
       const studentsSnapshot = await getDocs(collection(db, "students"));
       const studentsData = studentsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
+        value: doc.id,
+        label: doc.data().fullName,
       }));
-      setAllStudents(studentsData);
+      setAllStudentOptions(studentsData);
     };
 
     fetchTeachers();
@@ -51,7 +53,6 @@ function CreateClass() {
     e.preventDefault();
 
     try {
-      // Create the class document
       const classDocRef = await addDoc(collection(db, "classes"), {
         educationLevel,
         gradeLevel,
@@ -60,22 +61,22 @@ function CreateClass() {
         subjects,
       });
 
-      // Update selected students with section and clearance
-      const updatePromises = selectedStudents.map(async (studentId) => {
+      const selectedStudentIds = selectedStudentOptions.map(
+        (option) => option.value
+      );
+
+      const updatePromises = selectedStudentIds.map(async (studentId) => {
         const studentDocRef = doc(db, "students", studentId);
 
-        // Set the student's section
         await updateDoc(studentDocRef, {
           section: sectionName,
         });
 
-        // Create clearance object with subjects
         const clearance = subjects.reduce((acc, subject) => {
-          acc[subject.subject] = false; // Initially set all subjects to uncleared
+          acc[subject.subject] = false;
           return acc;
         }, {});
 
-        // Update student's clearance
         await updateDoc(studentDocRef, {
           clearance,
         });
@@ -125,14 +126,6 @@ function CreateClass() {
     newSubjects[index].teacher = selectedTeacher.name;
     newSubjects[index].teacherUid = selectedTeacher.uid;
     setSubjects(newSubjects);
-  };
-
-  const handleStudentChange = (studentId) => {
-    if (selectedStudents.includes(studentId)) {
-      setSelectedStudents(selectedStudents.filter((id) => id !== studentId));
-    } else {
-      setSelectedStudents([...selectedStudents, studentId]);
-    }
   };
 
   return (
@@ -255,22 +248,17 @@ function CreateClass() {
             </button>
           </div>
 
+          {/* Student selection */}
           <div>
-            <label className="block text-gray-700">Students</label>
-            {allStudents.map((student) => (
-              <div key={student.id} className="flex items-center mb-2">
-                <input
-                  type="checkbox"
-                  id={student.id}
-                  checked={selectedStudents.includes(student.id)}
-                  onChange={() => handleStudentChange(student.id)}
-                  className="mr-2"
-                />
-                <label htmlFor={student.id} className="text-gray-700">
-                  {student.fullName}
-                </label>
-              </div>
-            ))}
+            <label className="block text-gray-700 mb-2">Students</label>
+            <Select
+              isMulti
+              value={selectedStudentOptions}
+              onChange={setSelectedStudentOptions}
+              options={allStudentOptions}
+              className="basic-multi-select"
+              classNamePrefix="select"
+            />
           </div>
 
           <button
