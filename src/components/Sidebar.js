@@ -143,13 +143,12 @@ export default function Sidebar({ children }) {
                       </button>
                     </div>
                   </Transition.Child>
-                  {/* Sidebar component, swap this element with another sidebar if you like */}
                   <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-2">
                     <div className="flex h-16 shrink-0 items-center">
                       <img
-                        className="h-8 w-auto"
-                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                        alt="Your Company"
+                        className="h-10 w-auto"
+                        src="https://dyci.edu.ph/img/DYCI.png"
+                        alt="DYCI Logo"
                       />
                     </div>
                     <nav className="flex flex-1 flex-col">
@@ -229,9 +228,9 @@ export default function Sidebar({ children }) {
           <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
             <div className="flex h-16 shrink-0 items-center">
               <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                alt="Your Company"
+                className="h-10 w-auto"
+                src="https://dyci.edu.ph/img/DYCI.png"
+                alt="DYCI Logo"
               />
             </div>
             <nav className="flex flex-1 flex-col">
@@ -303,11 +302,11 @@ export default function Sidebar({ children }) {
                   >
                     <img
                       className="h-8 w-8 rounded-full bg-gray-50"
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      src="https://scontent.fcrk3-2.fna.fbcdn.net/v/t39.30808-6/434160685_3684034858582066_7920754165546455039_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeGhBHbIAGejJ9X4kVIO8GJ_E7K8DJZKydYTsrwMlkrJ1okJf462xxpn1XdWPFBCtGI_UNMDSsljXOBo0iVVH51B&_nc_ohc=gTd2lOAtIMQQ7kNvgHc96QU&_nc_ht=scontent.fcrk3-2.fna&oh=00_AYABD6tOJ6q3oEMHpbOR1ypGoVLs9klEQEGaXXiM4ubxFQ&oe=6662D828"
                       alt=""
                     />
                     <span className="sr-only">Your profile</span>
-                    <span aria-hidden="true">Tom Cook</span>
+                    <span aria-hidden="true">Jocelyn Tejada</span>
                   </a>
                 </li>
               </ul>
