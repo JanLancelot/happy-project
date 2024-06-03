@@ -1,88 +1,78 @@
-import React, { useState, useEffect } from 'react';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { collection, addDoc, getDocs } from "firebase/firestore";
+import { db } from "../firebaseConfig";
+import { useNavigate } from "react-router-dom";
 
-import Sidebar from '../components/Sidebar';
+import Sidebar from "../components/Sidebar";
 
 function CreateClass() {
-  const [educationLevel, setEducationLevel] = useState('');
-  const [gradeLevel, setGradeLevel] = useState('');
-  const [sectionName, setSectionName] = useState('');
-  const [adviser, setAdviser] = useState('');
+  const [educationLevel, setEducationLevel] = useState("");
+  const [gradeLevel, setGradeLevel] = useState("");
+  const [sectionName, setSectionName] = useState("");
+  const [adviser, setAdviser] = useState("");
+  const [subjects, setSubjects] = useState([{ subject: "", teacher: "" }]);
   const [teachers, setTeachers] = useState([]);
-  const [subjects, setSubjects] = useState([]);
-  const [assignedTeachers, setAssignedTeachers] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTeachers = async () => {
-      const teachersSnapshot = await getDocs(collection(db, 'teachers'));
-      const teachersData = teachersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const teachersSnapshot = await getDocs(collection(db, "teachers"));
+      const teachersData = teachersSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setTeachers(teachersData);
     };
 
     fetchTeachers();
   }, []);
 
-  useEffect(() => {
-    if (gradeLevel) {
-      const fetchSubjects = async () => {
-        const subjectsQuery = query(collection(db, 'subjects'), where('gradeLevel', '==', gradeLevel));
-        const subjectsSnapshot = await getDocs(subjectsQuery);
-        const subjectsData = subjectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setSubjects(subjectsData);
-      };
-
-      fetchSubjects();
-    }
-  }, [gradeLevel]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      await addDoc(collection(db, 'classes'), {
+      await addDoc(collection(db, "classes"), {
         educationLevel,
         gradeLevel,
         sectionName,
         adviser,
-        subjects: subjects.map(subject => ({
-          ...subject,
-          teacher: assignedTeachers[subject.id] || ''
-        }))
+        subjects,
       });
 
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Error adding document: ', error);
+      console.error("Error adding document: ", error);
     }
-  };
-
-  const handleTeacherChange = (subjectId, teacher) => {
-    setAssignedTeachers({
-      ...assignedTeachers,
-      [subjectId]: teacher
-    });
-  };
-
-  const handleRemoveSubject = (subjectId) => {
-    setSubjects(subjects.filter(subject => subject.id !== subjectId));
   };
 
   const getGradeLevels = () => {
     switch (educationLevel) {
-      case 'elementary':
-        return ['1', '2', '3', '4', '5', '6'];
-      case 'junior high school':
-        return ['7', '8', '9', '10'];
-      case 'senior high school':
-        return ['11', '12'];
-      case 'college':
-        return ['Freshman', 'Sophomore', 'Junior', 'Senior'];
+      case "elementary":
+        return ["1", "2", "3", "4", "5", "6"];
+      case "junior high school":
+        return ["7", "8", "9", "10"];
+      case "senior high school":
+        return ["11", "12"];
+      case "college":
+        return ["Freshman", "Sophomore", "Junior", "Senior"];
       default:
         return [];
     }
+  };
+
+  const handleSubjectChange = (index, field, value) => {
+    const newSubjects = [...subjects];
+    newSubjects[index][field] = value;
+    setSubjects(newSubjects);
+  };
+
+  const addSubject = () => {
+    setSubjects([...subjects, { subject: "", teacher: "" }]);
+  };
+
+  const removeSubject = (index) => {
+    const newSubjects = subjects.filter((_, i) => i !== index);
+    setSubjects(newSubjects);
   };
 
   return (
@@ -97,7 +87,6 @@ function CreateClass() {
               onChange={(e) => {
                 setEducationLevel(e.target.value);
                 setGradeLevel("");
-                setSubjects([]);
               }}
               required
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
@@ -158,38 +147,56 @@ function CreateClass() {
               ))}
             </select>
           </div>
-          {subjects.length > 0 && (
-            <div>
-              <h3 className="text-xl font-semibold mt-4">Subjects</h3>
-              {subjects.map(subject => (
-                <div key={subject.id} className="flex items-center space-x-4">
-                  <span className="flex-1">{subject.name}</span>
-                  <select
-                    value={assignedTeachers[subject.id] || ''}
-                    onChange={(e) => handleTeacherChange(subject.id, e.target.value)}
-                    required
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-                  >
-                    <option value="" disabled>
-                      Select a teacher
+
+          <div>
+            <label className="block text-gray-700">Subjects</label>
+            {subjects.map((subject, index) => (
+              <div key={index} className="flex space-x-2 mb-2">
+                <input
+                  type="text"
+                  placeholder="Subject Name"
+                  value={subject.subject}
+                  onChange={(e) =>
+                    handleSubjectChange(index, "subject", e.target.value)
+                  }
+                  required
+                  className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                />
+                <select
+                  value={subject.teacher}
+                  onChange={(e) =>
+                    handleSubjectChange(index, "teacher", e.target.value)
+                  }
+                  required
+                  className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                >
+                  <option value="" disabled>
+                    Select a teacher
+                  </option>
+                  {teachers.map((teacher) => (
+                    <option key={teacher.id} value={teacher.name}>
+                      {teacher.name}
                     </option>
-                    {teachers.map((teacher) => (
-                      <option key={teacher.id} value={teacher.name}>
-                        {teacher.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveSubject(subject.id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => removeSubject(index)}
+                  className="bg-red-500 text-white p-2 rounded hover:bg-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addSubject}
+              className="bg-green-500 text-white p-2 rounded hover:bg-green-700"
+            >
+              Add Subject
+            </button>
+          </div>
+
           <button
             type="submit"
             className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
