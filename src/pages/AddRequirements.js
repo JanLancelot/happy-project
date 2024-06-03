@@ -63,24 +63,28 @@ function AddRequirement() {
 
     try {
       const teacherDocRef = doc(db, "teachers", user.uid);
-
       const teacherDoc = await getDoc(teacherDocRef);
-      const teacherData = teacherDoc.data();
-      const subjectIndex = teacherData.subjects.findIndex(
-        (s) => s.subject === selectedSubject
-      );
 
-      if (subjectIndex !== -1) {
-        await updateDoc(teacherDocRef, {
-          [`subjects.${subjectIndex}.requirements`]: arrayUnion(
-            ...newRequirements.map((req) => req.name)
-          ),
-        });
+      if (teacherDoc.exists()) {
+        const teacherData = teacherDoc.data();
+        const subjectIndex = teacherData.subjects.findIndex(
+          (s) => s.subject === selectedSubject
+        );
 
-        console.log("Requirements added successfully!");
-        setNewRequirements([{ name: "" }]);
+        if (subjectIndex !== -1) {
+          await updateDoc(teacherDocRef, {
+            [`subjects.${subjectIndex}.requirements`]: arrayUnion(
+              ...newRequirements.map((req) => req.name)
+            ),
+          });
+
+          console.log("Requirements added successfully!");
+          setNewRequirements([{ name: "" }]);
+        } else {
+          console.error("Subject not found in teacher's document!");
+        }
       } else {
-        console.error("Subject not found in teacher's document!");
+        console.error("Teacher document does not exist!");
       }
     } catch (error) {
       console.error("Error adding requirements: ", error);
