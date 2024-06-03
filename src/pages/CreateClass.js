@@ -47,7 +47,6 @@ function CreateClass() {
       const q = query(
         collection(db, "students"),
         where("section", "==", null),
-        where("gradeLevel", "==", gradeLevel)
       );
 
       const studentsSnapshot = await getDocs(q);
@@ -60,7 +59,7 @@ function CreateClass() {
 
     fetchTeachers();
     fetchStudents();
-  }, [gradeLevel]);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
