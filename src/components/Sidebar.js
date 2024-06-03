@@ -282,9 +282,9 @@ const Sidebar = ({ children }) => {
       </div>
 
       {/* Main Content */}
-      <main>
-        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</div>
-      </main>
+      <div className="bg-white">
+        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">{children} </div>
+      </div>
     </div>
   );
 };
