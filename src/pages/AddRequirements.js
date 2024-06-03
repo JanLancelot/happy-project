@@ -41,15 +41,16 @@ function AddRequirement() {
         ])
       );
 
-      console.log("Query result", q);
+      console.log("Query result: ", q);
 
       const classesSnapshot = await getDocs(q);
-      console.log("Classes Snapshot", classesSnapshot);
+      console.log("Classes Snapshot: ", classesSnapshot);
       const classesData = classesSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setTeacherClasses(classesData);
+      console.log("Classes Data: ", classesData);
     };
 
     fetchTeacherClasses();
