@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,8 @@ function CreateClass() {
   const [sectionName, setSectionName] = useState('');
   const [adviser, setAdviser] = useState('');
   const [teachers, setTeachers] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [assignedTeachers, setAssignedTeachers] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,6 +25,19 @@ function CreateClass() {
     fetchTeachers();
   }, []);
 
+  useEffect(() => {
+    if (gradeLevel) {
+      const fetchSubjects = async () => {
+        const subjectsQuery = query(collection(db, 'subjects'), where('gradeLevel', '==', gradeLevel));
+        const subjectsSnapshot = await getDocs(subjectsQuery);
+        const subjectsData = subjectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setSubjects(subjectsData);
+      };
+
+      fetchSubjects();
+    }
+  }, [gradeLevel]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -32,12 +47,27 @@ function CreateClass() {
         gradeLevel,
         sectionName,
         adviser,
+        subjects: subjects.map(subject => ({
+          ...subject,
+          teacher: assignedTeachers[subject.id] || ''
+        }))
       });
 
       navigate('/');
     } catch (error) {
       console.error('Error adding document: ', error);
     }
+  };
+
+  const handleTeacherChange = (subjectId, teacher) => {
+    setAssignedTeachers({
+      ...assignedTeachers,
+      [subjectId]: teacher
+    });
+  };
+
+  const handleRemoveSubject = (subjectId) => {
+    setSubjects(subjects.filter(subject => subject.id !== subjectId));
   };
 
   const getGradeLevels = () => {
@@ -67,6 +97,7 @@ function CreateClass() {
               onChange={(e) => {
                 setEducationLevel(e.target.value);
                 setGradeLevel("");
+                setSubjects([]);
               }}
               required
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
@@ -127,6 +158,38 @@ function CreateClass() {
               ))}
             </select>
           </div>
+          {subjects.length > 0 && (
+            <div>
+              <h3 className="text-xl font-semibold mt-4">Subjects</h3>
+              {subjects.map(subject => (
+                <div key={subject.id} className="flex items-center space-x-4">
+                  <span className="flex-1">{subject.name}</span>
+                  <select
+                    value={assignedTeachers[subject.id] || ''}
+                    onChange={(e) => handleTeacherChange(subject.id, e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                  >
+                    <option value="" disabled>
+                      Select a teacher
+                    </option>
+                    {teachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.name}>
+                        {teacher.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSubject(subject.id)}
+                    className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <button
             type="submit"
             className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
