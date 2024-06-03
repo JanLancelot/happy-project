@@ -126,7 +126,7 @@ function AddRequirement() {
             ))}
           </select>
         </div>
-        
+
         <div className="mb-4">
           <label htmlFor="subjectSelect" className="block text-gray-700">
             Select Subject:
@@ -180,6 +180,13 @@ function AddRequirement() {
             className="bg-green-500 text-white p-2 rounded hover:bg-green-700"
           >
             Add More Requirements
+          </button>
+          <button
+            type="submit"
+            onClick={handleAddRequirement}
+            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
+          >
+            Submit Requirements
           </button>
         </div>
       </div>
