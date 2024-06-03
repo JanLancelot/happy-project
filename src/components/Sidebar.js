@@ -34,7 +34,7 @@ const navigation = [
     current: false,
   },
   { name: "Tuition Payments", href: "#", icon: CreditCardIcon, current: false },
-  { name: "Notifications", href: "#", icon: BellIcon, current: false },
+  // { name: "Notifications", href: "#", icon: BellIcon, current: false },
   { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
   {
     name: "Settings",
@@ -64,7 +64,7 @@ const teams = [
   },
   { id: 5, name: "Guidance", href: "#", initial: "G", current: false },
   { id: 6, name: "Library", href: "#", initial: "L", current: false },
-  { id: 7, name: "Teacher/Adviser", href: "#", initial: "T", current: false },
+  { id: 7, name: "Teachers", href: "/teachers", initial: "T", current: false },
   {
     id: 8,
     name: "Student Org (SSITE)",
