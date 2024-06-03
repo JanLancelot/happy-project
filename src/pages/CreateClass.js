@@ -46,7 +46,7 @@ function CreateClass() {
 
       const q = query(
         collection(db, "students"),
-        where("section", "==", null),
+        where("section", "==", ""),
       );
 
       const studentsSnapshot = await getDocs(q);
