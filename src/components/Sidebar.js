@@ -57,6 +57,7 @@ export default function Sidebar({ children }) {
           const userData = userDoc.data();
           setUserRole(userData.role);
         }
+        console.log("UID: ", user.uid)
         console.log("User Data: ", userDoc.data());
         console.log("Role: ", userRole);
       }
