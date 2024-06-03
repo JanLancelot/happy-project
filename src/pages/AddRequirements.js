@@ -18,9 +18,7 @@ function AddRequirement() {
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [requirementName, setRequirementName] = useState("");
-  const [newRequirements, setNewRequirements] = useState([
-    { name: "" },
-  ]);
+  const [newRequirements, setNewRequirements] = useState([{ name: "" }]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -33,7 +31,7 @@ function AddRequirement() {
   useEffect(() => {
     const fetchTeacherClasses = async () => {
       if (!user) return;
-  
+
       const classesRef = collection(db, "classes");
       const classesSnapshot = await getDocs(classesRef);
       const classesData = classesSnapshot.docs
@@ -42,14 +40,12 @@ function AddRequirement() {
           ...doc.data(),
         }))
         .filter((classData) =>
-          classData.subjects.some(
-            (subject) => subject.teacherUid === user.uid
-          )
+          classData.subjects.some((subject) => subject.teacherUid === user.uid)
         );
-  
+
       setTeacherClasses(classesData);
     };
-  
+
     fetchTeacherClasses();
   }, [user]);
 
@@ -130,8 +126,7 @@ function AddRequirement() {
             ))}
           </select>
         </div>
-
-        {/* Subject Selection */}
+        
         <div className="mb-4">
           <label htmlFor="subjectSelect" className="block text-gray-700">
             Select Subject:
@@ -147,7 +142,8 @@ function AddRequirement() {
             {selectedClass &&
               teacherClasses
                 .find((c) => c.id === selectedClass)
-                ?.subjects.map((subject) => (
+                ?.subjects.filter((subject) => subject.teacherUid === user.uid)
+                .map((subject) => (
                   <option key={subject.subject} value={subject.subject}>
                     {subject.subject}
                   </option>
