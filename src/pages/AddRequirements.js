@@ -44,6 +44,7 @@ function AddRequirement() {
       console.log("Query result", q);
 
       const classesSnapshot = await getDocs(q);
+      console.log("Classes Snapshot", classesSnapshot);
       const classesData = classesSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
