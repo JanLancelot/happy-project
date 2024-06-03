@@ -32,6 +32,7 @@ function CreateTeacherPage() {
 
       await addDoc(collection(db, "users"), {
         uid: user.uid,
+        email,
         role: "faculty",
       });
 

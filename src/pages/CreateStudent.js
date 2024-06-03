@@ -33,6 +33,12 @@ function CreateStudent() {
         gradeLevel,
       });
 
+      await addDoc(collection(db, "users"), {
+        uid: user.uid,
+        email: user.email,
+        role: "student",
+      });
+
       navigate("/students");
     } catch (error) {
       console.error("Error creating student: ", error);
