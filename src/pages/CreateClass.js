@@ -1,25 +1,22 @@
-import React, { useState, useEffect } from "react";
-import { collection, addDoc, getDocs } from "firebase/firestore";
-import { db } from "../firebaseConfig";
-import { useHistory } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { db } from './firebaseConfig';
+import { useNavigate } from 'react-router-dom';
 
-import Sidebar from "../components/Sidebar";
+import Sidebar from '../components/Sidebar';
 
 function CreateClass() {
-  const [educationLevel, setEducationLevel] = useState("");
-  const [gradeLevel, setGradeLevel] = useState("");
-  const [sectionName, setSectionName] = useState("");
-  const [adviser, setAdviser] = useState("");
+  const [educationLevel, setEducationLevel] = useState('');
+  const [gradeLevel, setGradeLevel] = useState('');
+  const [sectionName, setSectionName] = useState('');
+  const [adviser, setAdviser] = useState('');
   const [teachers, setTeachers] = useState([]);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTeachers = async () => {
-      const teachersSnapshot = await getDocs(collection(db, "teachers"));
-      const teachersData = teachersSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const teachersSnapshot = await getDocs(collection(db, 'teachers'));
+      const teachersData = teachersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setTeachers(teachersData);
     };
 
@@ -30,29 +27,29 @@ function CreateClass() {
     e.preventDefault();
 
     try {
-      await addDoc(collection(db, "classes"), {
+      await addDoc(collection(db, 'classes'), {
         educationLevel,
         gradeLevel,
         sectionName,
         adviser,
       });
 
-      history.push("/");
+      navigate('/');
     } catch (error) {
-      console.error("Error adding document: ", error);
+      console.error('Error adding document: ', error);
     }
   };
 
   const getGradeLevels = () => {
     switch (educationLevel) {
-      case "elementary":
-        return ["1", "2", "3", "4", "5", "6"];
-      case "junior high school":
-        return ["7", "8", "9", "10"];
-      case "senior high school":
-        return ["11", "12"];
-      case "college":
-        return ["Freshman", "Sophomore", "Junior", "Senior"];
+      case 'elementary':
+        return ['1', '2', '3', '4', '5', '6'];
+      case 'junior high school':
+        return ['7', '8', '9', '10'];
+      case 'senior high school':
+        return ['11', '12'];
+      case 'college':
+        return ['Freshman', 'Sophomore', 'Junior', 'Senior'];
       default:
         return [];
     }
