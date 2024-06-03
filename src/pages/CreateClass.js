@@ -46,7 +46,7 @@ function CreateClass() {
 
       const q = query(
         collection(db, "students"),
-        where("section", "==", ""),
+        where("section", "==", null),
         where("gradeLevel", "==", gradeLevel)
       );
 
