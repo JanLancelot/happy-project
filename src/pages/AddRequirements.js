@@ -33,26 +33,23 @@ function AddRequirement() {
   useEffect(() => {
     const fetchTeacherClasses = async () => {
       if (!user) return;
-
-      const q = query(
-        collection(db, "classes"),
-        where("subjects", "array-contains-any", [
-          { teacherUid: user.uid },
-        ])
-      );
-
-      console.log("Query result: ", q);
-
-      const classesSnapshot = await getDocs(q);
-      console.log("Classes Snapshot: ", classesSnapshot);
-      const classesData = classesSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+  
+      const classesRef = collection(db, "classes");
+      const classesSnapshot = await getDocs(classesRef);
+      const classesData = classesSnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .filter((classData) =>
+          classData.subjects.some(
+            (subject) => subject.teacherUid === user.uid
+          )
+        );
+  
       setTeacherClasses(classesData);
-      console.log("Classes Data: ", classesData);
     };
-
+  
     fetchTeacherClasses();
   }, [user]);
 
