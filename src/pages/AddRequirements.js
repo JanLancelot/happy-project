@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   collection,
+  getDoc,
   getDocs,
   query,
   where,
@@ -63,7 +64,7 @@ function AddRequirement() {
     try {
       const teacherDocRef = doc(db, "teachers", user.uid);
 
-      const teacherDoc = await getDocs(teacherDocRef);
+      const teacherDoc = await getDoc(teacherDocRef);
       const teacherData = teacherDoc.data();
       const subjectIndex = teacherData.subjects.findIndex(
         (s) => s.subject === selectedSubject
@@ -72,7 +73,7 @@ function AddRequirement() {
       if (subjectIndex !== -1) {
         await updateDoc(teacherDocRef, {
           [`subjects.${subjectIndex}.requirements`]: arrayUnion(
-            ...newRequirements
+            ...newRequirements.map((req) => req.name)
           ),
         });
 
