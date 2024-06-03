@@ -1,134 +1,166 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Disclosure } from "@headlessui/react";
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import {
+  HomeIcon,
+  ClipboardDocumentCheckIcon,
+  AcademicCapIcon,
+  BellIcon,
+  CogIcon,
+} from "@heroicons/react/24/outline";
 
-const sidebarVariants = {
-  open: {
-    x: 0,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 30,
-    },
-  },
-  closed: {
-    x: "-100%",
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 30,
-    },
-  },
+const user = {
+  role: "admin",
+  name: "Tom Cook",
+  profilePicture:
+    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
 };
 
-const Sidebar = ({ children }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const navigation = [
+  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
+  {
+    name: "Clearances",
+    href: "#",
+    icon: ClipboardDocumentCheckIcon,
+    current: false,
+    children:
+      user.role === "admin"
+        ? [
+            { name: "All Clearances", href: "#" },
+            { name: "Pending Clearances", href: "#" },
+          ]
+        : [],
+  },
+  {
+    name: "Disciplinary Records",
+    href: "#",
+    icon: AcademicCapIcon,
+    current: false,
+    children:
+      user.role === "admin"
+        ? [
+            { name: "All Records", href: "#" },
+            { name: "Pending Sanctions", href: "#" },
+          ]
+        : [],
+  },
+  { name: "Notifications", href: "#", icon: BellIcon, current: false },
+  {
+    name: "Settings",
+    href: "#",
+    icon: CogIcon,
+    current: false,
+    children:
+      user.role === "admin"
+        ? [
+            { name: "User Management", href: "#" },
+            { name: "System Settings", href: "#" },
+          ]
+        : [],
+  },
+];
 
-  const handleOutsideClick = (event) => {
-    if (isOpen && !event.target.closest(".sidebar")) {
-      setIsOpen(false);
-    }
-  };
+function classNames(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 768px)");
-    const handleMediaQueryChange = (e) => {
-      setIsOpen(e.matches);
-    };
-
-    handleMediaQueryChange(mediaQuery);
-    mediaQuery.addListener(handleMediaQueryChange);
-    document.addEventListener("click", handleOutsideClick);
-
-    return () => {
-      mediaQuery.removeListener(handleMediaQueryChange);
-      document.removeEventListener("click", handleOutsideClick);
-    };
-  }, []);
-
+export default function Sidebar() {
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <motion.div
-        initial={false}
-        animate={isOpen ? "open" : "closed"}
-        variants={sidebarVariants}
-        className="absolute md:relative top-0 left-0 w-64 h-full bg-gray-800 text-white shadow-lg z-10 md:block"
-      >
-        <nav className="p-6">
-          <h2 className="text-2xl font-bold mb-4">Menu</h2>
-          <ul className="space-y-4">
-            <li>
-              <Link to="/dashboard/overview" className="block hover:underline">
-                Overview
-              </Link>
-            </li>
-            <li>
-              <Link to="/dashboard/profile" className="block hover:underline">
-                Profile
-              </Link>
-            </li>
-            <li>
-              <Link to="/dashboard/settings" className="block hover:underline">
-                Settings
-              </Link>
-            </li>
-            <li>
-              <Link to="/dashboard/logout" className="block hover:underline">
-                Logout
-              </Link>
-            </li>
-          </ul>
-        </nav>
-      </motion.div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between p-4">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="p-2 bg-blue-600 text-white rounded md:hidden"
-          >
-            {isOpen ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            )}
-          </button>
-        </header>
-
-        {/* Content Area */}
-        <main className="flex-1 p-6 overflow-y-auto">{children}</main>
+    <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
+      <div className="flex h-16 shrink-0 items-center">
+        <img
+          className="h-8 w-auto"
+          src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
+          alt="Your Company"
+        />
       </div>
+      <nav className="flex flex-1 flex-col">
+        <ul role="list" className="flex flex-1 flex-col gap-y-7">
+          <li>
+            <ul role="list" className="-mx-2 space-y-1">
+              {navigation.map((item) => (
+                <li key={item.name}>
+                  {!item.children ? (
+                    <a
+                      href={item.href}
+                      className={classNames(
+                        item.current ? "bg-gray-50" : "hover:bg-gray-50",
+                        "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold text-gray-700"
+                      )}
+                    >
+                      <item.icon
+                        className="h-6 w-6 shrink-0 text-gray-400"
+                        aria-hidden="true"
+                      />
+                      {item.name}
+                    </a>
+                  ) : (
+                    <Disclosure as="div">
+                      {({ open }) => (
+                        <>
+                          <Disclosure.Button
+                            className={classNames(
+                              item.current ? "bg-gray-50" : "hover:bg-gray-50",
+                              "flex items-center w-full text-left rounded-md p-2 gap-x-3 text-sm leading-6 font-semibold text-gray-700"
+                            )}
+                          >
+                            <item.icon
+                              className="h-6 w-6 shrink-0 text-gray-400"
+                              aria-hidden="true"
+                            />
+                            {item.name}
+                            <ChevronRightIcon
+                              className={classNames(
+                                open
+                                  ? "rotate-90 text-gray-500"
+                                  : "text-gray-400",
+                                "ml-auto h-5 w-5 shrink-0"
+                              )}
+                              aria-hidden="true"
+                            />
+                          </Disclosure.Button>
+                          <Disclosure.Panel as="ul" className="mt-1 px-2">
+                            {item.children.map((subItem) => (
+                              <li key={subItem.name}>
+                                {/* 44px */}
+                                <Disclosure.Button
+                                  as="a"
+                                  href={subItem.href}
+                                  className={classNames(
+                                    subItem.current
+                                      ? "bg-gray-50"
+                                      : "hover:bg-gray-50",
+                                    "block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-700"
+                                  )}
+                                >
+                                  {subItem.name}
+                                </Disclosure.Button>
+                              </li>
+                            ))}
+                          </Disclosure.Panel>
+                        </>
+                      )}
+                    </Disclosure>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </li>
+          <li className="-mx-6 mt-auto">
+            <a
+              href="#"
+              className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
+            >
+              <img
+                className="h-8 w-8 rounded-full bg-gray-50"
+                src={user.profilePicture}
+                alt=""
+              />
+              <span className="sr-only">Your profile</span>
+              <span aria-hidden="true">{user.name}</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
   );
-};
-
-export default Sidebar;
+}
