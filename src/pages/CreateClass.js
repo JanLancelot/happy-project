@@ -5,8 +5,6 @@ import {
   getDocs,
   updateDoc,
   doc,
-  query,
-  where
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
@@ -39,17 +37,7 @@ function CreateClass() {
     };
 
     const fetchStudents = async () => {
-      if (!gradeLevel) {
-        setAllStudentOptions([]);
-        return;
-      }
-
-      const q = query(
-        collection(db, "students"),
-        where("section", "==", ""),
-      );
-
-      const studentsSnapshot = await getDocs(q);
+      const studentsSnapshot = await getDocs(collection(db, "students"));
       const studentsData = studentsSnapshot.docs.map((doc) => ({
         value: doc.id,
         label: doc.data().fullName,
@@ -259,6 +247,7 @@ function CreateClass() {
               Add Subject
             </button>
           </div>
+
           <div>
             <label className="block text-gray-700 mb-2">Students</label>
             <Select
