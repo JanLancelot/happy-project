@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getDocs, collection, query, where } from 'firebase/firestore';
-import { db } from './firebaseConfig';
+import { db } from '../firebaseConfig';
 import { Link } from 'react-router-dom';
 
 function TeachersPage() {

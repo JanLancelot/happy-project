@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { addDoc, collection } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { db, auth } from './firebaseConfig';
+import { db, auth } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 
 function CreateTeacherPage() {
