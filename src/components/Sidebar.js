@@ -13,7 +13,7 @@ import {
   CogIcon,
 } from "@heroicons/react/24/outline";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, where, query, doc, getDoc, getDocs } from "firebase/firestore";
 
 const auth = getAuth();
 const db = getFirestore();
@@ -52,14 +52,22 @@ export default function Sidebar({ children }) {
   useEffect(() => {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setUserRole(userData.role);
+        try {
+          const userCollectionRef = collection(db, "users");
+          const q = query(userCollectionRef, where("uid", "==", user.uid));
+          const querySnapshot = await getDocs(q);
+    
+          if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0];
+            const userData = userDoc.data();
+            setUserRole(userData.role);
+          }
+    
+          console.log("UID: ", user.uid);
+          console.log("Role: ", userRole);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
         }
-        console.log("UID: ", user.uid)
-        console.log("User Data: ", userDoc.data());
-        console.log("Role: ", userRole);
       }
     });
   }, []);
