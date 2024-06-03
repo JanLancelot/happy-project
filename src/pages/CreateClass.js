@@ -39,7 +39,7 @@ function CreateClass() {
         subjects,
       });
 
-      navigate("/");
+      navigate("/classes");
     } catch (error) {
       console.error("Error adding document: ", error);
     }
