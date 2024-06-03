@@ -77,6 +77,19 @@ function CreateClass() {
           return acc;
         }, {});
 
+        const additionalClearances = [
+          "Librarian",
+          "Character Renewal Office",
+          "Finance",
+          "Basic Education Registrar",
+          "Class Adviser",
+          "Director/Principal",
+        ];
+
+        additionalClearances.forEach((role) => {
+          clearance[role] = false;
+        });
+
         await updateDoc(studentDocRef, {
           clearance,
         });
