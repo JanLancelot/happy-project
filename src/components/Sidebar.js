@@ -63,7 +63,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Sidebar() {
+export default function Sidebar({ children }) {
   return (
     <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
       <div className="flex h-16 shrink-0 items-center">
@@ -161,6 +161,11 @@ export default function Sidebar() {
           </li>
         </ul>
       </nav>
+      <main>
+        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }
