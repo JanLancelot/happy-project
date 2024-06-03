@@ -9,7 +9,7 @@ import {
   AcademicCapIcon,
   CreditCardIcon,
   CogIcon,
-  BellIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/outline";
 
 const user = {
@@ -36,6 +36,7 @@ const navigation = [
   { name: "Tuition Payments", href: "#", icon: CreditCardIcon, current: false },
   // { name: "Notifications", href: "#", icon: BellIcon, current: false },
   { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
+  { name: "Classes", href: "/classes", icon: UserGroupIcon, current: false },
   {
     name: "Settings",
     href: "#",
