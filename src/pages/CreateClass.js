@@ -60,7 +60,7 @@ function CreateClass() {
 
     fetchTeachers();
     fetchStudents();
-  }, []);
+  }, [gradeLevel]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
