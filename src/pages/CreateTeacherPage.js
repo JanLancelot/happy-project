@@ -30,6 +30,11 @@ function CreateTeacherPage() {
       );
       const user = userCredential.user;
 
+      await addDoc(collection(db, "users"), {
+        uid: user.uid,
+        role: "faculty",
+      });
+
       await addDoc(collection(db, "teachers"), {
         uid: user.uid,
         name,
@@ -49,7 +54,6 @@ function CreateTeacherPage() {
       console.error("Error creating teacher: ", err);
     }
   };
-
   return (
     <Sidebar>
       <div className="container mx-auto p-4">
