@@ -68,13 +68,20 @@ const teams = [
   { id: 7, name: "Teachers", href: "/teachers", initial: "T", current: false },
   {
     id: 8,
+    name: "Students",
+    href: "/students",
+    initial: "S",
+    current: false,
+  },
+  {
+    id: 9,
     name: "Student Org (SSITE)",
     href: "#",
     initial: "S",
     current: false,
   },
   {
-    id: 9,
+    id: 10,
     name: "Student Council (SSC)",
     href: "#",
     initial: "C",

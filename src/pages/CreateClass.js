@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  addDoc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 
@@ -14,6 +20,8 @@ function CreateClass() {
     { subject: "", teacher: "", teacherUid: "" },
   ]);
   const [teachers, setTeachers] = useState([]);
+  const [selectedStudents, setSelectedStudents] = useState([]);
+  const [allStudents, setAllStudents] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,20 +34,54 @@ function CreateClass() {
       setTeachers(teachersData);
     };
 
+    const fetchStudents = async () => {
+      const studentsSnapshot = await getDocs(collection(db, "students"));
+      const studentsData = studentsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setAllStudents(studentsData);
+    };
+
     fetchTeachers();
+    fetchStudents();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      await addDoc(collection(db, "classes"), {
+      // Create the class document
+      const classDocRef = await addDoc(collection(db, "classes"), {
         educationLevel,
         gradeLevel,
         sectionName,
         adviser,
         subjects,
       });
+
+      // Update selected students with section and clearance
+      const updatePromises = selectedStudents.map(async (studentId) => {
+        const studentDocRef = doc(db, "students", studentId);
+
+        // Set the student's section
+        await updateDoc(studentDocRef, {
+          section: sectionName,
+        });
+
+        // Create clearance object with subjects
+        const clearance = subjects.reduce((acc, subject) => {
+          acc[subject.subject] = false; // Initially set all subjects to uncleared
+          return acc;
+        }, {});
+
+        // Update student's clearance
+        await updateDoc(studentDocRef, {
+          clearance,
+        });
+      });
+
+      await Promise.all(updatePromises);
 
       navigate("/classes");
     } catch (error) {
@@ -83,6 +125,14 @@ function CreateClass() {
     newSubjects[index].teacher = selectedTeacher.name;
     newSubjects[index].teacherUid = selectedTeacher.uid;
     setSubjects(newSubjects);
+  };
+
+  const handleStudentChange = (studentId) => {
+    if (selectedStudents.includes(studentId)) {
+      setSelectedStudents(selectedStudents.filter((id) => id !== studentId));
+    } else {
+      setSelectedStudents([...selectedStudents, studentId]);
+    }
   };
 
   return (
@@ -203,6 +253,24 @@ function CreateClass() {
             >
               Add Subject
             </button>
+          </div>
+
+          <div>
+            <label className="block text-gray-700">Students</label>
+            {allStudents.map((student) => (
+              <div key={student.id} className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id={student.id}
+                  checked={selectedStudents.includes(student.id)}
+                  onChange={() => handleStudentChange(student.id)}
+                  className="mr-2"
+                />
+                <label htmlFor={student.id} className="text-gray-700">
+                  {student.fullName}
+                </label>
+              </div>
+            ))}
           </div>
 
           <button

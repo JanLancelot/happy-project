@@ -7,6 +7,8 @@ import Teachers from "./pages/Teachers";
 import CreateTeacherPage from "./pages/CreateTeacherPage";
 import Classes from "./pages/Classes";
 import CreateClass from "./pages/CreateClass";
+import Students from "./pages/Students";
+import CreateStudent from "./pages/CreateStudent";
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
@@ -15,6 +17,9 @@ const router = createBrowserRouter([
   { path: "/create-teacher", element: <CreateTeacherPage />},
   { path: "/classes", element: <Classes />},
   { path: "/create-class", element: <CreateClass />},
+  { path: "/students", element: <Students />},
+  { path: "/create-student", element: <CreateStudent />},
+
 ]);
 function App() {
   return (
