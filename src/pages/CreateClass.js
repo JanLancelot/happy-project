@@ -10,7 +10,9 @@ function CreateClass() {
   const [gradeLevel, setGradeLevel] = useState("");
   const [sectionName, setSectionName] = useState("");
   const [adviser, setAdviser] = useState("");
-  const [subjects, setSubjects] = useState([{ subject: "", teacher: "" }]);
+  const [subjects, setSubjects] = useState([
+    { subject: "", teacher: "", teacherUid: "" },
+  ]);
   const [teachers, setTeachers] = useState([]);
   const navigate = useNavigate();
 
@@ -18,7 +20,7 @@ function CreateClass() {
     const fetchTeachers = async () => {
       const teachersSnapshot = await getDocs(collection(db, "teachers"));
       const teachersData = teachersSnapshot.docs.map((doc) => ({
-        id: doc.id,
+        uid: doc.data().uid,
         ...doc.data(),
       }));
       setTeachers(teachersData);
@@ -67,11 +69,19 @@ function CreateClass() {
   };
 
   const addSubject = () => {
-    setSubjects([...subjects, { subject: "", teacher: "" }]);
+    setSubjects([...subjects, { subject: "", teacher: "", teacherUid: "" }]);
   };
 
   const removeSubject = (index) => {
     const newSubjects = subjects.filter((_, i) => i !== index);
+    setSubjects(newSubjects);
+  };
+
+  const handleTeacherChange = (index, value) => {
+    const selectedTeacher = teachers.find((teacher) => teacher.uid === value);
+    const newSubjects = [...subjects];
+    newSubjects[index].teacher = selectedTeacher.name;
+    newSubjects[index].teacherUid = selectedTeacher.uid;
     setSubjects(newSubjects);
   };
 
@@ -141,7 +151,7 @@ function CreateClass() {
                 Select an adviser
               </option>
               {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.name}>
+                <option key={teacher.uid} value={teacher.name}>
                   {teacher.name}
                 </option>
               ))}
@@ -163,10 +173,8 @@ function CreateClass() {
                   className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                 />
                 <select
-                  value={subject.teacher}
-                  onChange={(e) =>
-                    handleSubjectChange(index, "teacher", e.target.value)
-                  }
+                  value={subject.teacherUid}
+                  onChange={(e) => handleTeacherChange(index, e.target.value)}
                   required
                   className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                 >
@@ -174,7 +182,7 @@ function CreateClass() {
                     Select a teacher
                   </option>
                   {teachers.map((teacher) => (
-                    <option key={teacher.id} value={teacher.name}>
+                    <option key={teacher.uid} value={teacher.uid}>
                       {teacher.name}
                     </option>
                   ))}
