@@ -72,16 +72,16 @@ const Sidebar = ({ children }) => {
   return (
     <div>
       {/* Mobile Sidebar */}
+      <button
+        type="button"
+        className="lg:hidden fixed z-50 top-4 left-4 inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        onClick={() => setSidebarOpen(true)}
+        style={{ marginTop: "1rem", marginLeft: "1rem" }}
+      >
+        <span className="sr-only">Open sidebar</span>
+        <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+      </button>
       <Transition.Root show={sidebarOpen} as={Fragment}>
-        <button
-          type="button"
-          className="lg:hidden fixed z-50 top-4 left-4 inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          onClick={() => setSidebarOpen(true)}
-          style={{ marginTop: "1rem", marginLeft: "1rem" }}
-        >
-          <span className="sr-only">Open sidebar</span>
-          <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-        </button>
         <Dialog
           as="div"
           className="relative z-50 lg:hidden"
