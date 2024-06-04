@@ -15,15 +15,20 @@ const SignIn = () => {
 
   useEffect(() => {
     const checkUserRoleAndRedirect = async () => {
-      if (user) {
+      if (user && user.uid) {
         setRedirecting(true);
         try {
-          const userDocQuery = query(collection(db, 'users'), where('uid', '==', user.uid));
+          const userDocQuery = query(
+            collection(db, "users"),
+            where("uid", "==", user.uid)
+          );
           const userDocSnap = await getDocs(userDocQuery);
           const userData = userDocSnap.docs[0]?.data();
-  
+
           if (userData) {
-            navigate(userData.role === 'faculty' ? '/add-requirement' : '/dashboard');
+            navigate(
+              userData.role === "faculty" ? "/add-requirement" : "/dashboard"
+            );
           } else {
             console.error("User document not found in Firestore.");
           }
@@ -34,7 +39,7 @@ const SignIn = () => {
         }
       }
     };
-  
+
     checkUserRoleAndRedirect();
   }, [user, navigate]);
 
