@@ -43,8 +43,10 @@ const StudentClearance = () => {
         );
         const classSnapshot = await getDocs(classQuery);
 
+        console.log("Class Snapshot", classSnapshot);
         if (!classSnapshot.empty) {
           const classData = classSnapshot.docs[0].data();
+          console.log("Class Data", classData.requirements);
           setClassRequirements(classData.requirements || {});
         }
       } catch (error) {
