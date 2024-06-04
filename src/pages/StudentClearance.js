@@ -33,7 +33,7 @@ const StudentClearance = () => {
 
   useEffect(() => {
     const fetchClassRequirements = async () => {
-      if (!studentData || !studentData.classId) return;
+      if (!studentData || !studentData.section) return;
 
       try {
         const classesRef = collection(db, 'classes');
