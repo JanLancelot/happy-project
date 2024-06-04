@@ -61,6 +61,7 @@ const StudentClearance = () => {
     setSelectedSubject(selectedSubject === subject ? null : subject);
   };
 
+  console.log("Class Requirements", classRequirements);
   return (
     <Sidebar>
       <div className="container mx-auto p-4">
