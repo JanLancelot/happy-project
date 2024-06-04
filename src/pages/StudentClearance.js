@@ -3,6 +3,8 @@ import { useAuth } from '../components/AuthContext';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import Sidebar from '../components/Sidebar';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
 const StudentClearance = () => {
   const { currentUser } = useAuth();
@@ -69,12 +71,12 @@ const StudentClearance = () => {
           Student Clearance
         </h2>
 
-        <table className="min-w-full bg-white">
+        <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr>
-              <th className="py-2">Subject</th>
-              <th className="py-2">Cleared</th>
-              <th className="py-2">Details</th>
+              <th className="py-2 border-b border-gray-200">Subject</th>
+              <th className="py-2 border-b border-gray-200 text-center">Cleared</th>
+              <th className="py-2 border-b border-gray-200">Details</th>
             </tr>
           </thead>
           <tbody>
@@ -89,8 +91,12 @@ const StudentClearance = () => {
                       >
                         {subject}
                       </td>
-                      <td className="border px-4 py-2">
-                        {isCleared ? 'Cleared' : 'Not Cleared'}
+                      <td className="border px-4 py-2 text-center">
+                        {isCleared ? (
+                          <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />
+                        ) : (
+                          <FontAwesomeIcon icon={faTimesCircle} className="text-red-500" />
+                        )}
                       </td>
                       <td className="border px-4 py-2">
                         <button
@@ -102,7 +108,6 @@ const StudentClearance = () => {
                       </td>
                     </tr>
 
-                    {/* Conditionally render requirement details */}
                     {selectedSubject === subject && (
                       <tr className="bg-gray-100">
                         <td colSpan={3} className="border px-4 py-2">
