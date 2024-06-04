@@ -1,47 +1,38 @@
-import React, { useState, useEffect } from "react";
-import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
-import { auth, db } from "../firebaseConfig";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import React, { useState, useEffect } from 'react';
+import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import { auth, db } from '../firebaseConfig'; // Import Firestore
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { collection, query, where, getDocs } from 'firebase/firestore'; // Import Firestore functions
 
 const SignIn = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [signInWithEmailAndPassword, user, loading, error] =
-    useSignInWithEmailAndPassword(auth);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [signInWithEmailAndPassword, user, loading, error] = useSignInWithEmailAndPassword(auth);
   const navigate = useNavigate();
-  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    const checkUserRoleAndRedirect = async () => {
-      if (user && user.uid) {
-        setRedirecting(true);
-        try {
-          const userDocQuery = query(
-            collection(db, "users"),
-            where("uid", "==", user.uid)
-          );
-          const userDocSnap = await getDocs(userDocQuery);
-          const userData = userDocSnap.docs[0]?.data();
-          console.log("User Data:", userData);
+    const checkUserRole = async () => {
+      if (user) {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('uid', '==', user.user.uid));
+        const querySnapshot = await getDocs(q);
 
-          if (userData) {
-            navigate(
-              userData.role === "faculty" ? "/add-requirement" : "/dashboard"
-            );
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          const userData = userDoc.data();
+          if (userData.role === 'faculty') {
+            navigate('/add-requirement');
           } else {
-            console.error("User document not found in Firestore.");
+            navigate('/dashboard');
           }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        } finally {
-          setRedirecting(false);
+        } else {
+          console.error('No such document!');
         }
       }
     };
 
-    checkUserRoleAndRedirect();
+    checkUserRole();
   }, [user, navigate]);
 
   const handleSignIn = async (e) => {
@@ -59,9 +50,7 @@ const SignIn = () => {
         className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full"
       >
         <h1 className="text-2xl font-bold mb-6 text-center">Sign In</h1>
-        {error && (
-          <p className="text-red-500 text-center mb-4">{error.message}</p>
-        )}
+        {error && <p className="text-red-500 text-center mb-4">{error.message}</p>}
         <form onSubmit={handleSignIn} className="space-y-4">
           <div>
             <label className="block text-gray-700">Email</label>
@@ -86,9 +75,9 @@ const SignIn = () => {
           <button
             type="submit"
             className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
-            disabled={loading || redirecting}
+            disabled={loading}
           >
-            {loading || redirecting ? "Signing in..." : "Sign In"}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
       </motion.div>
