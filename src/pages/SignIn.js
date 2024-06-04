@@ -1,19 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
-import { auth } from '../firebaseConfig'; 
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { auth, firestore } from "../firebaseConfig";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { doc, getDoc } from "firebase/firestore";
 
 const SignIn = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [signInWithEmailAndPassword, user, loading, error] = useSignInWithEmailAndPassword(auth);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [signInWithEmailAndPassword, user, loading, error] =
+    useSignInWithEmailAndPassword(auth);
   const navigate = useNavigate();
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
+    const checkUserRoleAndRedirect = async () => {
+      if (user) {
+        setRedirecting(true);
+        try {
+          const userDocRef = doc(firestore, "users", user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            navigate(userData.role === "faculty" ? "/add-requirement" : "/");
+          } else {
+            console.error("User document not found in Firestore.");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        } finally {
+          setRedirecting(false);
+        }
+      }
+    };
+
+    checkUserRoleAndRedirect();
   }, [user, navigate]);
 
   const handleSignIn = async (e) => {
@@ -31,7 +53,9 @@ const SignIn = () => {
         className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full"
       >
         <h1 className="text-2xl font-bold mb-6 text-center">Sign In</h1>
-        {error && <p className="text-red-500 text-center mb-4">{error.message}</p>}
+        {error && (
+          <p className="text-red-500 text-center mb-4">{error.message}</p>
+        )}
         <form onSubmit={handleSignIn} className="space-y-4">
           <div>
             <label className="block text-gray-700">Email</label>
@@ -56,9 +80,9 @@ const SignIn = () => {
           <button
             type="submit"
             className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
-            disabled={loading}
+            disabled={loading || redirecting}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading || redirecting ? "Signing in..." : "Sign In"}
           </button>
         </form>
       </motion.div>
