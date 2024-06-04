@@ -110,17 +110,12 @@ export default function Sidebar({ children }) {
     });
   }, [userRole]);
 
-  const filteredNavigation =
-    userRole === "faculty"
-      ? [
-          {
-            name: "Manage Requirements",
-            href: "/add-requirement",
-            icon: CogIcon,
-            current: true,
-          },
-        ]
-      : navigation;
+  const filteredNavigation = navigation.filter((item) => {
+    if (userRole === "faculty") {
+      return item.name !== "Manage Requirements";
+    }
+    return true;
+  });
 
   return (
     <>
