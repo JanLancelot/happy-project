@@ -55,16 +55,18 @@ function AddRequirement() {
       if (!currentUser || !selectedSubject) return;
 
       try {
-        const q = query(
-          collection(db, "classes"),
-          where("subjects", "array-contains", {
-            subject: selectedSubject,
-            teacherUid: currentUser.uid,
-          })
-        );
-        const classesSnapshot = await getDocs(q);
+        const allClassesSnapshot = await getDocs(collection(db, "classes"));
 
-        const classesData = classesSnapshot.docs.map((classDoc) => ({
+        const filteredClasses = allClassesSnapshot.docs.filter((classDoc) => {
+          const subjects = classDoc.data().subjects || [];
+          return subjects.some(
+            (subject) =>
+              subject.subject === selectedSubject &&
+              subject.teacherUid === currentUser.uid
+          );
+        });
+
+        const classesData = filteredClasses.map((classDoc) => ({
           id: classDoc.id,
           ...classDoc.data(),
         }));
@@ -116,15 +118,11 @@ function AddRequirement() {
   return (
     <Sidebar>
       <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">
-          Add Requirement
-        </h2>
+        <h2 className="text-2xl font-semibold mb-4">Add Requirement</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Subject Selection */}
           <div>
-            <label className="block text-gray-700">
-              Select Subject:
-            </label>
+            <label className="block text-gray-700">Select Subject:</label>
             <select
               value={selectedSubject}
               onChange={handleSubjectChange}
@@ -141,9 +139,7 @@ function AddRequirement() {
 
           {/* Class Selection */}
           <div>
-            <label className="block text-gray-700">
-              Select Class:
-            </label>
+            <label className="block text-gray-700">Select Class:</label>
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
@@ -153,8 +149,7 @@ function AddRequirement() {
               <option value="">Select a class</option>
               {classes.map((classItem) => (
                 <option key={classItem.id} value={classItem.id}>
-                  {classItem.educationLevel} -{" "}
-                  {classItem.gradeLevel} -{" "}
+                  {classItem.educationLevel} - {classItem.gradeLevel} -{" "}
                   {classItem.sectionName}
                 </option>
               ))}
@@ -163,9 +158,7 @@ function AddRequirement() {
 
           {/* Requirement Name */}
           <div>
-            <label className="block text-gray-700">
-              Requirement Name:
-            </label>
+            <label className="block text-gray-700">Requirement Name:</label>
             <input
               type="text"
               value={requirementName}
@@ -177,14 +170,10 @@ function AddRequirement() {
 
           {/* Requirement Description */}
           <div>
-            <label className="block text-gray-700">
-              Description:
-            </label>
+            <label className="block text-gray-700">Description:</label>
             <textarea
               value={requirementDescription}
-              onChange={(e) =>
-                setRequirementDescription(e.target.value)
-              }
+              onChange={(e) => setRequirementDescription(e.target.value)}
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             />
           </div>
