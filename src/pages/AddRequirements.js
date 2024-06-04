@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   collection,
   getDocs,
-  query,
-  where,
   doc,
   updateDoc,
   arrayUnion,
@@ -11,13 +9,14 @@ import {
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import Sidebar from "../components/Sidebar";
+import Select from "react-select";
 
 function AddRequirement() {
   const { currentUser } = useAuth();
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [classes, setClasses] = useState([]);
-  const [selectedClasses, setSelectedClasses] = useState([]);
+  const [selectedClassOptions, setSelectedClassOptions] = useState([]);
   const [requirementName, setRequirementName] = useState("");
   const [requirementDescription, setRequirementDescription] = useState("");
 
@@ -26,7 +25,9 @@ function AddRequirement() {
       if (!currentUser) return;
 
       try {
-        const allClassesSnapshot = await getDocs(collection(db, "classes"));
+        const allClassesSnapshot = await getDocs(
+          collection(db, "classes")
+        );
 
         const userSubjects = [];
         allClassesSnapshot.docs.forEach((classDoc) => {
@@ -75,7 +76,12 @@ function AddRequirement() {
           ...classDoc.data(),
         }));
 
-        setClasses(classesData);
+        const formattedClasses = classesData.map((classItem) => ({
+          value: classItem.id,
+          label: `${classItem.educationLevel} - ${classItem.gradeLevel} - ${classItem.sectionName}`,
+        }));
+
+        setClasses(formattedClasses);
       } catch (error) {
         console.error("Error fetching classes: ", error);
       }
@@ -86,43 +92,36 @@ function AddRequirement() {
 
   const handleSubjectChange = (e) => {
     setSelectedSubject(e.target.value);
-    setSelectedClasses([]);
-  };
-
-  const handleClassChange = (e) => {
-    const { options } = e.target;
-    const selectedValues = Array.from(options)
-      .filter((option) => option.selected)
-      .map((option) => option.value);
-
-    setSelectedClasses(selectedValues);
+    setSelectedClassOptions([]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedClasses.length || !selectedSubject) {
+    if (!selectedClassOptions.length || !selectedSubject) {
       alert("Please select at least one class and a subject.");
       return;
     }
 
     try {
-      const updatePromises = selectedClasses.map(async (classId) => {
-        const classDocRef = doc(db, "classes", classId);
+      const updatePromises = selectedClassOptions.map(
+        async (classOption) => {
+          const classDocRef = doc(db, "classes", classOption.value);
 
-        await updateDoc(classDocRef, {
-          [`requirements.${selectedSubject}`]: arrayUnion({
-            name: requirementName,
-            description: requirementDescription,
-            teacherUid: currentUser.uid,
-          }),
-        });
-      });
+          await updateDoc(classDocRef, {
+            [`requirements.${selectedSubject}`]: arrayUnion({
+              name: requirementName,
+              description: requirementDescription,
+              teacherUid: currentUser.uid,
+            }),
+          });
+        }
+      );
 
       await Promise.all(updatePromises);
 
       setSelectedSubject("");
-      setSelectedClasses([]);
+      setSelectedClassOptions([]);
       setRequirementName("");
       setRequirementDescription("");
 
@@ -162,24 +161,17 @@ function AddRequirement() {
           {/* Class Selection */}
           <div>
             <label className="block text-gray-700">
-              Select Class:
+              Select Classes:
             </label>
-            <select
-              multiple
-              value={selectedClasses}
-              onChange={handleClassChange}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-              disabled={!selectedSubject}
-              size={5}
-            >
-              {classes.map((classItem) => (
-                <option key={classItem.id} value={classItem.id}>
-                  {classItem.educationLevel} -{" "}
-                  {classItem.gradeLevel} -{" "}
-                  {classItem.sectionName}
-                </option>
-              ))}
-            </select>
+            <Select
+              isMulti
+              value={selectedClassOptions}
+              onChange={setSelectedClassOptions}
+              options={classes}
+              className="basic-multi-select"
+              classNamePrefix="select"
+              isDisabled={!selectedSubject}
+            />
           </div>
 
           {/* Requirement Name */}
@@ -190,7 +182,9 @@ function AddRequirement() {
             <input
               type="text"
               value={requirementName}
-              onChange={(e) => setRequirementName(e.target.value)}
+              onChange={(e) =>
+                setRequirementName(e.target.value)
+              }
               required
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             />
