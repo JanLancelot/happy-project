@@ -110,11 +110,12 @@ export default function Sidebar({ children }) {
     });
   }, [userRole]);
 
-  const filteredNavigation = navigation.filter((item) => {
+  const filteredNavigation = navigation.filter(item => {
     if (userRole === "faculty") {
-      return item.name !== "Manage Requirements";
+      return item.name === "Manage Requirements"; 
+    } else {
+      return item.name !== "Manage Requirements"; 
     }
-    return true;
   });
 
   return (
