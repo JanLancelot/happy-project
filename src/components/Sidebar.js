@@ -42,6 +42,12 @@ const navigation = [
   { name: "Tuition Payments", href: "#", icon: CreditCardIcon, current: false },
   { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
   { name: "Classes", href: "/classes", icon: UserGroupIcon, current: false },
+  {
+    name: "Manage Requirements",
+    href: "/add-requirement",
+    icon: CogIcon,
+    current: true,
+  },
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
 ];
 
@@ -109,14 +115,6 @@ export default function Sidebar({ children }) {
       }
     });
   }, [userRole]);
-
-  const filteredNavigation = navigation.filter(item => {
-    if (userRole === "faculty") {
-      return item.name === "Manage Requirements"; 
-    } else {
-      return item.name !== "Manage Requirements"; 
-    }
-  });
 
   return (
     <>
@@ -195,7 +193,7 @@ export default function Sidebar({ children }) {
                             >
                               <li>
                                 <ul role="list" className="-mx-2 space-y-1">
-                                  {filteredNavigation.map((item) => (
+                                  {navigation.map((item) => (
                                     <li key={item.name}>
                                       <a
                                         href={item.href}
@@ -283,7 +281,7 @@ export default function Sidebar({ children }) {
                     <ul role="list" className="flex flex-1 flex-col gap-y-7">
                       <li>
                         <ul role="list" className="-mx-2 space-y-1">
-                          {filteredNavigation.map((item) => (
+                          {navigation.map((item) => (
                             <li key={item.name}>
                               <a
                                 href={item.href}
