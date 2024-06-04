@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../components/AuthContext'; 
+import { useAuth } from '../components/AuthContext';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import SidebarStudent from '../components/SidebarStudent';
+import Sidebar from '../components/Sidebar';
 
 const StudentClearance = () => {
   const { currentUser } = useAuth();
-  const [clearanceData, setClearanceData] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState(null); 
+  const [studentData, setStudentData] = useState(null);
+  const [clearanceData, setClearanceData] = useState({});
+  const [selectedSubject, setSelectedSubject] = useState(null);
 
   useEffect(() => {
-    const fetchClearanceData = async () => {
+    const fetchStudentData = async () => {
       if (!currentUser) return;
 
       try {
@@ -20,20 +21,33 @@ const StudentClearance = () => {
 
         if (!querySnapshot.empty) {
           const studentDoc = querySnapshot.docs[0];
-          const studentData = studentDoc.data();
+          setStudentData(studentDoc.data());
+        }
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+      }
+    };
 
-          const section = studentData.section; 
+    fetchStudentData();
+  }, [currentUser]);
 
-          const classesRef = collection(db, 'classes');
-          const classQuery = query(classesRef, where('sectionName', '==', section));
-          const classSnapshot = await getDocs(classQuery);
+  useEffect(() => {
+    const fetchClearanceData = async () => {
+      if (!studentData || !studentData.classId) return;
 
-          if (!classSnapshot.empty) {
-            const classData = classSnapshot.docs[0].data();
-            setClearanceData(classData.requirements || {}); 
-          } else {
-            console.log("No class found with this ID");
-          }
+      try {
+        const classesRef = collection(db, 'classes');
+        const classQuery = query(
+          classesRef,
+          where('id', '==', studentData.classId)
+        );
+        const classSnapshot = await getDocs(classQuery);
+
+        if (!classSnapshot.empty) {
+          const classData = classSnapshot.docs[0].data();
+          setClearanceData(classData.requirements || {});
+        } else {
+          console.log('No class found with this ID');
         }
       } catch (error) {
         console.error('Error fetching clearance data:', error);
@@ -41,16 +55,18 @@ const StudentClearance = () => {
     };
 
     fetchClearanceData();
-  }, [currentUser]); 
+  }, [studentData]); 
 
   const handleSubjectClick = (subject) => {
     setSelectedSubject(selectedSubject === subject ? null : subject);
   };
 
   return (
-    <SidebarStudent>
+    <Sidebar>
       <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">Student Clearance</h2>
+        <h2 className="text-2xl font-semibold mb-4">
+          Student Clearance
+        </h2>
 
         <table className="min-w-full bg-white">
           <thead>
@@ -61,49 +77,56 @@ const StudentClearance = () => {
             </tr>
           </thead>
           <tbody>
-            {Object.entries(clearanceData).map(([subject, requirements]) => (
-              <React.Fragment key={subject}>
-                <tr>
-                  <td
-                    className="border px-4 py-2 cursor-pointer"
-                    onClick={() => handleSubjectClick(subject)} 
-                  >
-                    {subject}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {currentUser.clearance && currentUser.clearance[subject]
-                      ? 'Cleared'
-                      : 'Not Cleared'}
-                  </td>
-                  <td className="border px-4 py-2">
-                    <button
-                      className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                      onClick={() => handleSubjectClick(subject)}
-                    >
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-                
-                {selectedSubject === subject && ( 
-                  <tr className="bg-gray-100">
-                    <td colSpan={3} className="border px-4 py-2">
-                      <ul className="list-disc list-inside">
-                        {(requirements || []).map((req, index) => (
-                          <li key={index}>
-                            <strong>{req.name}:</strong> {req.description}
-                          </li>
-                        ))}
-                      </ul>
-                    </td>
-                  </tr>
-                )}
-              </React.Fragment>
-            ))}
+            {studentData &&
+              studentData.clearance &&
+              Object.entries(studentData.clearance).map(
+                ([subject, isCleared]) => (
+                  <React.Fragment key={subject}>
+                    <tr>
+                      <td
+                        className="border px-4 py-2 cursor-pointer"
+                        onClick={() => handleSubjectClick(subject)}
+                      >
+                        {subject}
+                      </td>
+                      <td className="border px-4 py-2">
+                        {isCleared ? 'Cleared' : 'Not Cleared'}
+                      </td>
+                      <td className="border px-4 py-2">
+                        <button
+                          className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                          onClick={() => handleSubjectClick(subject)}
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* Conditionally render requirement details */}
+                    {selectedSubject === subject && (
+                      <tr className="bg-gray-100">
+                        <td colSpan={3} className="border px-4 py-2">
+                          <ul className="list-disc list-inside">
+                            {clearanceData[subject]?.map(
+                              (req, index) => (
+                                <li key={index}>
+                                  <strong>{req.name}:</strong>{' '}
+                                  {req.description} (
+                                  {req.teacherUid})
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                )
+              )}
           </tbody>
         </table>
       </div>
-    </SidebarStudent>
+    </Sidebar>
   );
 };
 
