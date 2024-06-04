@@ -100,13 +100,10 @@ function AddRequirement() {
         [`requirements.${selectedSubject}`]: arrayUnion({
           name: requirementName,
           description: requirementDescription,
+          teacherUid: currentUser.uid, 
         }),
       });
 
-      setSelectedClass("");
-      setSelectedSubject("");
-      setRequirementName("");
-      setRequirementDescription("");
 
       alert("Requirement added successfully!");
     } catch (error) {
