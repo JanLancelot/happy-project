@@ -10,6 +10,7 @@ import CreateClass from "./pages/CreateClass";
 import Students from "./pages/Students";
 import CreateStudent from "./pages/CreateStudent";
 import AddRequirement from "./pages/AddRequirements";
+import StudentClearance from "./pages/StudentClearance";
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
   { path: "/students", element: <Students /> },
   { path: "/create-student", element: <CreateStudent /> },
   { path: "/add-requirement", element: <AddRequirement /> },
+  { path: "/student-clearance", element: <StudentClearance /> },
 ]);
 function App() {
   return (
