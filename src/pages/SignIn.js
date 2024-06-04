@@ -23,7 +23,7 @@ const SignIn = () => {
   
           if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
-            navigate(userData.role === 'faculty' ? '/add-requirement' : '/');
+            navigate(userData.role === 'faculty' ? '/add-requirement' : '/dashboard');
           } else {
             console.error("User document not found in Firestore.");
           }
