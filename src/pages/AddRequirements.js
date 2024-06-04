@@ -9,7 +9,7 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../components/AuthContext";
 import Sidebar from "../components/Sidebar";
 
 function AddRequirement() {
