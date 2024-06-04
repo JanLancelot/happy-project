@@ -24,6 +24,7 @@ const SignIn = () => {
           );
           const userDocSnap = await getDocs(userDocQuery);
           const userData = userDocSnap.docs[0]?.data();
+          console.log("User Data:", userData);
 
           if (userData) {
             navigate(
