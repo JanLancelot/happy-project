@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
-import { auth, firestore } from "../firebaseConfig";
+import { auth, db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { doc, getDoc } from "firebase/firestore";
@@ -16,14 +16,14 @@ const SignIn = () => {
   useEffect(() => {
     const checkUserRoleAndRedirect = async () => {
       if (user) {
-        setRedirecting(true);
+        setRedirecting(true); 
         try {
-          const userDocRef = doc(firestore, "users", user.uid);
+          const userDocRef = doc(db, 'users', user.uid);
           const userDocSnap = await getDoc(userDocRef);
-
+  
           if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
-            navigate(userData.role === "faculty" ? "/add-requirement" : "/");
+            navigate(userData.role === 'faculty' ? '/add-requirement' : '/');
           } else {
             console.error("User document not found in Firestore.");
           }
@@ -34,7 +34,7 @@ const SignIn = () => {
         }
       }
     };
-
+  
     checkUserRoleAndRedirect();
   }, [user, navigate]);
 
