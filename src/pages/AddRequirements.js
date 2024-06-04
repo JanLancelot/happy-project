@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   collection,
+  getDoc,
   getDocs,
   query,
   where,
@@ -8,155 +9,187 @@ import {
   updateDoc,
   arrayUnion,
 } from "firebase/firestore";
-import { db } from "../firebaseConfig";
-import { useAuth } from "../components/AuthContext";
+import { db, auth } from "../firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 import Sidebar from "../components/Sidebar";
 
 function AddRequirement() {
-  const { currentUser } = useAuth();
-  const [classes, setClasses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState("");
+  const [user, setUser] = useState(null);
+  const [teacherSubjects, setTeacherSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
-  const [requirementName, setRequirementName] = useState("");
-  const [requirementDescription, setRequirementDescription] = useState("");
+  const [selectedClass, setSelectedClass] = useState("");
+  const [newRequirements, setNewRequirements] = useState([{ name: "" }]);
 
   useEffect(() => {
-    const fetchClasses = async () => {
-      if (!currentUser) return;
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
 
-      const q = query(
-        collection(db, "classes"),
-        where("subjects", "array-contains-any", [
-          { teacherUid: currentUser.uid },
-        ])
-      );
+    return () => unsubscribeAuth();
+  }, []);
 
-      const classesSnapshot = await getDocs(q);
-      const classesData = classesSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setClasses(classesData);
+  useEffect(() => {
+    const fetchTeacherSubjects = async () => {
+      if (!user) return;
+
+      const teacherDocRef = doc(db, "teachers", user.uid);
+      const teacherDoc = await getDoc(teacherDocRef);
+
+      if (teacherDoc.exists()) {
+        const teacherData = teacherDoc.data();
+        setTeacherSubjects(teacherData.subjects);
+      } else {
+        console.error("Teacher document does not exist!");
+      }
     };
 
-    fetchClasses();
-  }, [currentUser]);
+    fetchTeacherSubjects();
+  }, [user]);
 
-  const handleClassChange = (e) => {
-    const classId = e.target.value;
-    setSelectedClass(classId);
-
-    setSelectedSubject("");
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleAddRequirement = async () => {
     if (!selectedClass || !selectedSubject) {
-      alert("Please select a class and subject.");
+      alert("Please select a class and subject!");
+      return;
+    }
+
+    if (newRequirements.some((req) => req.name.trim() === "")) {
+      alert("Please fill in all requirement names!");
       return;
     }
 
     try {
-      const classDocRef = doc(db, "classes", selectedClass);
+      const teacherDocRef = doc(db, "teachers", user.uid);
+      const teacherDoc = await getDoc(teacherDocRef);
 
-      await updateDoc(classDocRef, {
-        [`requirements.${selectedSubject}`]: arrayUnion({
-          name: requirementName,
-          description: requirementDescription,
-        }),
-      });
+      if (teacherDoc.exists()) {
+        const teacherData = teacherDoc.data();
+        const subjectIndex = teacherData.subjects.findIndex(
+          (s) => s.subject === selectedSubject
+        );
 
-      setSelectedClass("");
-      setSelectedSubject("");
-      setRequirementName("");
-      setRequirementDescription("");
+        if (subjectIndex !== -1) {
+          await updateDoc(teacherDocRef, {
+            [`subjects.${subjectIndex}.requirements`]: arrayUnion(
+              ...newRequirements.map((req) => req.name)
+            ),
+          });
 
-      alert("Requirement added successfully!");
+          console.log("Requirements added successfully!");
+          setNewRequirements([{ name: "" }]);
+        } else {
+          console.error("Subject not found in teacher's document!");
+        }
+      } else {
+        console.error("Teacher document does not exist!");
+      }
     } catch (error) {
-      console.error("Error adding requirement: ", error);
-      alert("Error adding requirement. Please try again later.");
+      console.error("Error adding requirements: ", error);
     }
+  };
+
+  const handleRequirementNameChange = (index, value) => {
+    const updatedRequirements = [...newRequirements];
+    updatedRequirements[index].name = value;
+    setNewRequirements(updatedRequirements);
+  };
+
+  const addRequirementField = () => {
+    setNewRequirements([...newRequirements, { name: "" }]);
+  };
+
+  const removeRequirementField = (index) => {
+    const updatedRequirements = newRequirements.filter((_, i) => i !== index);
+    setNewRequirements(updatedRequirements);
   };
 
   return (
     <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Add Requirement</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Class Selection */}
-          <div>
-            <label className="block text-gray-700">Select Class:</label>
-            <select
-              value={selectedClass}
-              onChange={handleClassChange}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-            >
-              <option value="">Select a class</option>
-              {classes.map((classItem) => (
-                <option key={classItem.id} value={classItem.id}>
-                  {classItem.educationLevel} - {classItem.gradeLevel} -{" "}
-                  {classItem.sectionName}
-                </option>
-              ))}
-            </select>
-          </div>
 
-          {/* Subject Selection (dynamically populated) */}
-          <div>
-            <label className="block text-gray-700">Select Subject:</label>
-            <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-              disabled={!selectedClass}
-            >
-              <option value="">Select a subject</option>
-              {selectedClass &&
-                classes
-                  .find((c) => c.id === selectedClass)
-                  ?.subjects.filter(
-                    (subject) => subject.teacherUid === currentUser.uid
-                  )
-                  .map((subject) => (
-                    <option key={subject.subject} value={subject.subject}>
-                      {subject.subject}
-                    </option>
-                  ))}
-            </select>
-          </div>
+        {/* Subject Selection */}
+        <div className="mb-4">
+          <label htmlFor="subjectSelect" className="block text-gray-700">
+            Select Subject:
+          </label>
+          <select
+            id="subjectSelect"
+            value={selectedSubject}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+          >
+            <option value="">Select a subject</option>
+            {teacherSubjects.map((subject) => (
+              <option key={subject.subject} value={subject.subject}>
+                {subject.subject}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          {/* Requirement Name */}
-          <div>
-            <label className="block text-gray-700">
-              Requirement Name:
-            </label>
-            <input
-              type="text"
-              value={requirementName}
-              onChange={(e) => setRequirementName(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-            />
-          </div>
+        {/* Class Selection */}
+        <div className="mb-4">
+          <label htmlFor="classSelect" className="block text-gray-700">
+            Select Class:
+          </label>
+          <select
+            id="classSelect"
+            value={selectedClass}
+            onChange={(e) => setSelectedClass(e.target.value)}
+            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            disabled={!selectedSubject}
+          >
+            <option value="">Select a class</option>
+            {selectedSubject &&
+              teacherSubjects
+                .find((s) => s.subject === selectedSubject)
+                ?.classes.map((classItem) => (
+                  <option key={classItem.id} value={classItem.id}>
+                    {classItem.educationLevel} - {classItem.gradeLevel} -{" "}
+                    {classItem.sectionName}
+                  </option>
+                ))}
+          </select>
+        </div>
 
-          {/* Requirement Description */}
-          <div>
-            <label className="block text-gray-700">Description:</label>
-            <textarea
-              value={requirementDescription}
-              onChange={(e) => setRequirementDescription(e.target.value)}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-            />
-          </div>
-
+        {/* Requirement Input */}
+        <div className="mb-4">
+          <label className="block text-gray-700 mb-2">Requirements:</label>
+          {newRequirements.map((requirement, index) => (
+            <div key={index} className="flex items-center mb-2">
+              <input
+                type="text"
+                placeholder="Requirement Name"
+                value={requirement.name}
+                onChange={(e) =>
+                  handleRequirementNameChange(index, e.target.value)
+                }
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300 mr-2"
+              />
+              <button
+                type="button"
+                onClick={() => removeRequirementField(index)}
+                className="bg-red-500 text-white p-2 rounded hover:bg-red-700"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addRequirementField}
+            className="bg-green-500 text-white p-2 rounded hover:bg-green-700"
+          >
+            Add More Requirements
+          </button>
           <button
             type="submit"
+            onClick={handleAddRequirement}
             className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
           >
-            Add Requirement
+            Submit Requirements
           </button>
-        </form>
+        </div>
       </div>
     </Sidebar>
   );
