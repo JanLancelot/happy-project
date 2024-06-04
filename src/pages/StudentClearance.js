@@ -7,7 +7,7 @@ import Sidebar from '../components/Sidebar';
 const StudentClearance = () => {
   const { currentUser } = useAuth();
   const [studentData, setStudentData] = useState(null);
-  const [clearanceData, setClearanceData] = useState({});
+  const [classRequirements, setClassRequirements] = useState({});
   const [selectedSubject, setSelectedSubject] = useState(null);
 
   useEffect(() => {
@@ -32,30 +32,28 @@ const StudentClearance = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    const fetchClearanceData = async () => {
+    const fetchClassRequirements = async () => {
       if (!studentData || !studentData.classId) return;
 
       try {
         const classesRef = collection(db, 'classes');
         const classQuery = query(
           classesRef,
-          where('id', '==', studentData.classId)
+          where('sectionName', '==', studentData.section)
         );
         const classSnapshot = await getDocs(classQuery);
 
         if (!classSnapshot.empty) {
           const classData = classSnapshot.docs[0].data();
-          setClearanceData(classData.requirements || {});
-        } else {
-          console.log('No class found with this ID');
+          setClassRequirements(classData.requirements || {});
         }
       } catch (error) {
-        console.error('Error fetching clearance data:', error);
+        console.error('Error fetching class requirements:', error);
       }
     };
 
-    fetchClearanceData();
-  }, [studentData]); 
+    fetchClassRequirements();
+  }, [studentData]);
 
   const handleSubjectClick = (subject) => {
     setSelectedSubject(selectedSubject === subject ? null : subject);
@@ -77,8 +75,7 @@ const StudentClearance = () => {
             </tr>
           </thead>
           <tbody>
-            {studentData &&
-              studentData.clearance &&
+            {studentData?.clearance &&
               Object.entries(studentData.clearance).map(
                 ([subject, isCleared]) => (
                   <React.Fragment key={subject}>
@@ -107,12 +104,11 @@ const StudentClearance = () => {
                       <tr className="bg-gray-100">
                         <td colSpan={3} className="border px-4 py-2">
                           <ul className="list-disc list-inside">
-                            {clearanceData[subject]?.map(
-                              (req, index) => (
+                            {(classRequirements[subject] || []).map(
+                              (requirement, index) => (
                                 <li key={index}>
-                                  <strong>{req.name}:</strong>{' '}
-                                  {req.description} (
-                                  {req.teacherUid})
+                                  <strong>{requirement.name}:</strong>{' '}
+                                  {requirement.description}
                                 </li>
                               )
                             )}
