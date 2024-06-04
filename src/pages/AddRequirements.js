@@ -9,32 +9,62 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { useAuth } from "../components/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import Sidebar from "../components/Sidebar";
 
 function AddRequirement() {
   const { currentUser } = useAuth();
+  const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
   const [requirementName, setRequirementName] = useState("");
   const [requirementDescription, setRequirementDescription] = useState("");
 
   useEffect(() => {
-    const fetchClasses = async () => {
+    const fetchAvailableSubjects = async () => {
       if (!currentUser) return;
 
       try {
         const allClassesSnapshot = await getDocs(collection(db, "classes"));
 
-        const userClasses = allClassesSnapshot.docs.filter((classDoc) => {
+        const userSubjects = [];
+        allClassesSnapshot.docs.forEach((classDoc) => {
           const subjects = classDoc.data().subjects || [];
-          return subjects.some(
-            (subject) => subject.teacherUid === currentUser.uid
-          );
+          subjects.forEach((subject) => {
+            if (
+              subject.teacherUid === currentUser.uid &&
+              !userSubjects.includes(subject.subject)
+            ) {
+              userSubjects.push(subject.subject);
+            }
+          });
         });
 
-        const classesData = userClasses.map((classDoc) => ({
+        setAvailableSubjects(userSubjects);
+      } catch (error) {
+        console.error("Error fetching subjects: ", error);
+      }
+    };
+
+    fetchAvailableSubjects();
+  }, [currentUser]);
+
+  useEffect(() => {
+    const fetchClassesForSubject = async () => {
+      if (!currentUser || !selectedSubject) return;
+
+      try {
+        const q = query(
+          collection(db, "classes"),
+          where("subjects", "array-contains", {
+            subject: selectedSubject,
+            teacherUid: currentUser.uid,
+          })
+        );
+        const classesSnapshot = await getDocs(q);
+
+        const classesData = classesSnapshot.docs.map((classDoc) => ({
           id: classDoc.id,
           ...classDoc.data(),
         }));
@@ -45,13 +75,12 @@ function AddRequirement() {
       }
     };
 
-    fetchClasses();
-  }, [currentUser]);
+    fetchClassesForSubject();
+  }, [currentUser, selectedSubject]);
 
-  const handleClassChange = (e) => {
-    const classId = e.target.value;
-    setSelectedClass(classId);
-    setSelectedSubject(""); // Reset selected subject
+  const handleSubjectChange = (e) => {
+    setSelectedSubject(e.target.value);
+    setSelectedClass("");
   };
 
   const handleSubmit = async (e) => {
@@ -87,47 +116,48 @@ function AddRequirement() {
   return (
     <Sidebar>
       <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">Add Requirement</h2>
+        <h2 className="text-2xl font-semibold mb-4">
+          Add Requirement
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Class Selection */}
+          {/* Subject Selection */}
           <div>
-            <label className="block text-gray-700">Select Class:</label>
+            <label className="block text-gray-700">
+              Select Subject:
+            </label>
             <select
-              value={selectedClass}
-              onChange={handleClassChange}
+              value={selectedSubject}
+              onChange={handleSubjectChange}
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             >
-              <option value="">Select a class</option>
-              {classes.map((classItem) => (
-                <option key={classItem.id} value={classItem.id}>
-                  {classItem.educationLevel} - {classItem.gradeLevel} -{" "}
-                  {classItem.sectionName}
+              <option value="">Select a subject</option>
+              {availableSubjects.map((subject) => (
+                <option key={subject} value={subject}>
+                  {subject}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Subject Selection */}
+          {/* Class Selection */}
           <div>
-            <label className="block text-gray-700">Select Subject:</label>
+            <label className="block text-gray-700">
+              Select Class:
+            </label>
             <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-              disabled={!selectedClass}
+              disabled={!selectedSubject}
             >
-              <option value="">Select a subject</option>
-              {selectedClass &&
-                classes
-                  .find((c) => c.id === selectedClass)
-                  ?.subjects.filter(
-                    (subject) => subject.teacherUid === currentUser.uid
-                  )
-                  .map((subject) => (
-                    <option key={subject.subject} value={subject.subject}>
-                      {subject.subject}
-                    </option>
-                  ))}
+              <option value="">Select a class</option>
+              {classes.map((classItem) => (
+                <option key={classItem.id} value={classItem.id}>
+                  {classItem.educationLevel} -{" "}
+                  {classItem.gradeLevel} -{" "}
+                  {classItem.sectionName}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -147,10 +177,14 @@ function AddRequirement() {
 
           {/* Requirement Description */}
           <div>
-            <label className="block text-gray-700">Description:</label>
+            <label className="block text-gray-700">
+              Description:
+            </label>
             <textarea
               value={requirementDescription}
-              onChange={(e) => setRequirementDescription(e.target.value)}
+              onChange={(e) =>
+                setRequirementDescription(e.target.value)
+              }
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             />
           </div>
