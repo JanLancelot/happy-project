@@ -42,12 +42,6 @@ const navigation = [
   { name: "Tuition Payments", href: "#", icon: CreditCardIcon, current: false },
   { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
   { name: "Classes", href: "/classes", icon: UserGroupIcon, current: false },
-  {
-    name: "Manage Requirements",
-    href: "/add-requirement",
-    icon: CogIcon,
-    current: true,
-  },
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
 ];
 
