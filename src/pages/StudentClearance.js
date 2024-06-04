@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import Sidebar from '../components/Sidebar';
+import SidebarStudent from "../components/SidebarStudent";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
@@ -65,7 +65,7 @@ const StudentClearance = () => {
 
   console.log("Class Requirements", classRequirements);
   return (
-    <Sidebar>
+    <SidebarStudent>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">
           Student Clearance
@@ -130,7 +130,7 @@ const StudentClearance = () => {
           </tbody>
         </table>
       </div>
-    </Sidebar>
+    </SidebarStudent>
   );
 };
 
