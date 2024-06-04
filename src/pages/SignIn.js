@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
-import { auth, db } from '../firebaseConfig'; // Import Firestore
+import { auth, db } from '../firebaseConfig'; 
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { collection, query, where, getDocs } from 'firebase/firestore'; // Import Firestore functions
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
@@ -23,6 +23,8 @@ const SignIn = () => {
           const userData = userDoc.data();
           if (userData.role === 'faculty') {
             navigate('/add-requirement');
+          } else if (userData.role === 'student') {
+            navigate('/student-clearance');
           } else {
             navigate('/dashboard');
           }
