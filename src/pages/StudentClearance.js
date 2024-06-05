@@ -21,7 +21,7 @@ import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
 const StudentClearance = () => {
   const { currentUser } = useAuth();
   const [studentData, setStudentData] = useState(null);
-  const [classRequirements, setClassRequirements] = useState({});
+  const [classData, setClassData] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [file, setFile] = useState(null);
@@ -48,7 +48,7 @@ const StudentClearance = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    const fetchClassRequirements = async () => {
+    const fetchClassData = async () => {
       if (!studentData || !studentData.section) return;
 
       try {
@@ -60,15 +60,14 @@ const StudentClearance = () => {
         const classSnapshot = await getDocs(classQuery);
 
         if (!classSnapshot.empty) {
-          const classData = classSnapshot.docs[0].data();
-          setClassRequirements(classData.requirements || {});
+          setClassData(classSnapshot.docs[0].data());
         }
       } catch (error) {
-        console.error('Error fetching class requirements:', error);
+        console.error('Error fetching class data:', error);
       }
     };
 
-    fetchClassRequirements();
+    fetchClassData();
   }, [studentData]);
 
   const handleSubjectClick = (subject) => {
@@ -80,11 +79,16 @@ const StudentClearance = () => {
   };
 
   const handleRequestClearance = async () => {
-    if (!studentData || !selectedSubject) return;
+    if (!studentData || !selectedSubject || !classData) return;
 
     setIsUploading(true);
 
     try {
+      const teacherSubject = classData.subjects.find(
+        (sub) => sub.subject === selectedSubject
+      );
+      const teacherUid = teacherSubject ? teacherSubject.teacherUid : null; 
+
       let fileURL = null;
       if (file) {
         const storageRef = ref(storage, `clearance_requests/${currentUser.uid}/${selectedSubject}/${file.name}`);
@@ -96,9 +100,9 @@ const StudentClearance = () => {
       await addDoc(clearanceRequestsRef, {
         studentId: currentUser.uid,
         studentName: studentData.fullName,
-        section: studentData.section,
+        classId: studentData.classId,
         subject: selectedSubject,
-        teacherUid: classRequirements[selectedSubject]?.teacherUid,
+        teacherUid: teacherUid, 
         timestamp: serverTimestamp(),
         fileURL: fileURL,
         status: 'pending',
@@ -157,18 +161,20 @@ const StudentClearance = () => {
                   </tr>
 
                   {/* Expandable Section for Requirements & Request */}
-                  {selectedSubject === subject && (
+                  {selectedSubject === subject && classData?.requirements?.[subject] && (
                     <tr className="bg-gray-100">
                       <td colSpan={3} className="border px-4 py-2">
+                        {/* Requirements List */}
                         <ul className="list-disc list-inside">
-                          {(classRequirements[subject] || []).map((requirement, index) => (
+                          {(classData.requirements[subject] || []).map((requirement, index) => (
                             <li key={index}>
                               <strong>{requirement.name}:</strong> {requirement.description}
                             </li>
                           ))}
                         </ul>
 
-                        {classRequirements[subject]?.length > 0 && ( 
+                        {/* Request Clearance Section (if requirements exist) */}
+                        {classData.requirements[subject]?.length > 0 && (
                           <div className="mt-4">
                             <label className="block text-sm font-medium text-gray-700">
                               Optional: Submit Files (e.g., proof of payment, documents)
