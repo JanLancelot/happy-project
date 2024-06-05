@@ -3,12 +3,13 @@ import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
 import { auth, db } from '../firebaseConfig'; 
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [signInWithEmailAndPassword, user, loading, error] = useSignInWithEmailAndPassword(auth);
+  const [failedAttempts, setFailedAttempts] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,7 +40,33 @@ const SignIn = () => {
 
   const handleSignIn = async (e) => {
     e.preventDefault();
-    await signInWithEmailAndPassword(email, password);
+    
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data();
+
+      if (userData.locked) {
+        alert('Your account is locked due to multiple failed login attempts. Please contact support.');
+        return;
+      }
+
+      try {
+        await signInWithEmailAndPassword(email, password);
+        setFailedAttempts(0);
+      } catch (error) {
+        setFailedAttempts((prev) => prev + 1);
+        if (failedAttempts + 1 >= 3) {
+          await updateDoc(doc(db, 'users', userDoc.id), { locked: true });
+          alert('Your account has been locked due to multiple failed login attempts. Please contact support.');
+        }
+      }
+    } else {
+      console.error('No such document!');
+    }
   };
 
   return (
