@@ -96,7 +96,7 @@ const StudentClearance = () => {
       await addDoc(clearanceRequestsRef, {
         studentId: currentUser.uid,
         studentName: studentData.fullName,
-        classId: studentData.classId,
+        section: studentData.section,
         subject: selectedSubject,
         teacherUid: classRequirements[selectedSubject]?.teacherUid,
         timestamp: serverTimestamp(),
