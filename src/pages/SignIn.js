@@ -64,6 +64,7 @@ const SignIn = () => {
           alert('Your account has been locked due to multiple failed login attempts. Please contact support.');
         }
       }
+      console.log("Failed Attempts: ", failedAttempts);
     } else {
       console.error('No such document!');
     }
