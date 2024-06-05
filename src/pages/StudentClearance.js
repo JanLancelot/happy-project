@@ -7,11 +7,13 @@ import {
   query, 
   where, 
   addDoc, 
-  serverTimestamp, 
+  serverTimestamp,
+} from 'firebase/firestore';
+import { 
   ref, 
   uploadBytes, 
   getDownloadURL 
-} from 'firebase/firestore';
+} from 'firebase/storage';
 import SidebarStudent from "../components/SidebarStudent";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
