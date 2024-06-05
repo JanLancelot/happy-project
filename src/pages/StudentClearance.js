@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthContext';
-import { db } from '../firebaseConfig';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db, storage } from '../firebaseConfig';
+import { 
+  collection, 
+  getDocs, 
+  query, 
+  where, 
+  addDoc, 
+  serverTimestamp, 
+  ref, 
+  uploadBytes, 
+  getDownloadURL 
+} from 'firebase/firestore';
 import SidebarStudent from "../components/SidebarStudent";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
@@ -11,6 +21,8 @@ const StudentClearance = () => {
   const [studentData, setStudentData] = useState(null);
   const [classRequirements, setClassRequirements] = useState({});
   const [selectedSubject, setSelectedSubject] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [file, setFile] = useState(null);
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -45,10 +57,8 @@ const StudentClearance = () => {
         );
         const classSnapshot = await getDocs(classQuery);
 
-        console.log("Class Snapshot", classSnapshot);
         if (!classSnapshot.empty) {
           const classData = classSnapshot.docs[0].data();
-          console.log("Class Data", classData.requirements);
           setClassRequirements(classData.requirements || {});
         }
       } catch (error) {
@@ -63,13 +73,50 @@ const StudentClearance = () => {
     setSelectedSubject(selectedSubject === subject ? null : subject);
   };
 
-  console.log("Class Requirements", classRequirements);
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleRequestClearance = async () => {
+    if (!studentData || !selectedSubject) return;
+
+    setIsUploading(true);
+
+    try {
+      let fileURL = null;
+      if (file) {
+        const storageRef = ref(storage, `clearance_requests/${currentUser.uid}/${selectedSubject}/${file.name}`);
+        await uploadBytes(storageRef, file);
+        fileURL = await getDownloadURL(storageRef);
+      }
+
+      const clearanceRequestsRef = collection(db, 'clearanceRequests');
+      await addDoc(clearanceRequestsRef, {
+        studentId: currentUser.uid,
+        studentName: studentData.fullName,
+        classId: studentData.classId,
+        subject: selectedSubject,
+        teacherUid: classRequirements[selectedSubject]?.teacherUid,
+        timestamp: serverTimestamp(),
+        fileURL: fileURL,
+        status: 'pending',
+      });
+
+      alert('Clearance requested successfully!');
+      setSelectedSubject(null);
+      setFile(null); 
+    } catch (error) {
+      console.error('Error requesting clearance:', error);
+      alert('Error requesting clearance. Please try again later.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <SidebarStudent>
       <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">
-          Student Clearance
-        </h2>
+        <h2 className="text-2xl font-semibold mb-4">Student Clearance</h2>
 
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
@@ -81,52 +128,68 @@ const StudentClearance = () => {
           </thead>
           <tbody>
             {studentData?.clearance &&
-              Object.entries(studentData.clearance).map(
-                ([subject, isCleared]) => (
-                  <React.Fragment key={subject}>
-                    <tr>
-                      <td
-                        className="border px-4 py-2 cursor-pointer"
+              Object.entries(studentData.clearance).map(([subject, isCleared]) => (
+                <React.Fragment key={subject}>
+                  <tr>
+                    <td
+                      className="border px-4 py-2 cursor-pointer"
+                      onClick={() => handleSubjectClick(subject)}
+                    >
+                      {subject}
+                    </td>
+                    <td className="border px-4 py-2 text-center">
+                      {isCleared ? (
+                        <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />
+                      ) : (
+                        <FontAwesomeIcon icon={faTimesCircle} className="text-red-500" />
+                      )}
+                    </td>
+                    <td className="border px-4 py-2">
+                      <button
+                        className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                         onClick={() => handleSubjectClick(subject)}
                       >
-                        {subject}
-                      </td>
-                      <td className="border px-4 py-2 text-center">
-                        {isCleared ? (
-                          <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />
-                        ) : (
-                          <FontAwesomeIcon icon={faTimesCircle} className="text-red-500" />
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+
+                  {/* Expandable Section for Requirements & Request */}
+                  {selectedSubject === subject && (
+                    <tr className="bg-gray-100">
+                      <td colSpan={3} className="border px-4 py-2">
+                        <ul className="list-disc list-inside">
+                          {(classRequirements[subject] || []).map((requirement, index) => (
+                            <li key={index}>
+                              <strong>{requirement.name}:</strong> {requirement.description}
+                            </li>
+                          ))}
+                        </ul>
+
+                        {classRequirements[subject]?.length > 0 && ( 
+                          <div className="mt-4">
+                            <label className="block text-sm font-medium text-gray-700">
+                              Optional: Submit Files (e.g., proof of payment, documents)
+                            </label>
+                            <input
+                              type="file"
+                              onChange={handleFileChange}
+                              className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                            />
+                            <button
+                              onClick={handleRequestClearance}
+                              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                              disabled={isUploading}
+                            >
+                              {isUploading ? 'Requesting...' : 'Request Clearance'}
+                            </button>
+                          </div>
                         )}
                       </td>
-                      <td className="border px-4 py-2">
-                        <button
-                          className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                          onClick={() => handleSubjectClick(subject)}
-                        >
-                          View Details
-                        </button>
-                      </td>
                     </tr>
-
-                    {selectedSubject === subject && (
-                      <tr className="bg-gray-100">
-                        <td colSpan={3} className="border px-4 py-2">
-                          <ul className="list-disc list-inside">
-                            {(classRequirements[subject] || []).map(
-                              (requirement, index) => (
-                                <li key={index}>
-                                  <strong>{requirement.name}:</strong>{' '}
-                                  {requirement.description}
-                                </li>
-                              )
-                            )}
-                          </ul>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                )
-              )}
+                  )}
+                </React.Fragment>
+              ))}
           </tbody>
         </table>
       </div>
