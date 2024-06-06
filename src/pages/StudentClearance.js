@@ -7,19 +7,21 @@ import {
   query,
   where,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteDoc,
+  doc,
 } from "firebase/firestore";
-import { 
-  ref, 
-  uploadBytes, 
-  getDownloadURL 
-} from 'firebase/storage';
 import SidebarStudent from "../components/SidebarStudent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheckCircle,
   faTimesCircle,
+  faExclamationCircle,
 } from "@fortawesome/free-solid-svg-icons";
+import Modal from "../components/Modal";
 
 const StudentClearance = () => {
   const { currentUser } = useAuth();
@@ -28,6 +30,9 @@ const StudentClearance = () => {
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
+  const [clearanceRequests, setClearanceRequests] = useState({});
+  const [isResubmitModalOpen, setIsResubmitModalOpen] = useState(false);
+  const [subjectToResubmit, setSubjectToResubmit] = useState(null);
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -74,6 +79,36 @@ const StudentClearance = () => {
     fetchClassRequirements();
   }, [studentData]);
 
+  useEffect(() => {
+    const fetchClearanceRequests = async () => {
+      if (!currentUser) return;
+
+      try {
+        const requestsRef = collection(db, "clearanceRequests");
+        const q = query(
+          requestsRef,
+          where("studentId", "==", currentUser.uid)
+        );
+        const requestsSnapshot = await getDocs(q);
+
+        const requestsData = {};
+        requestsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          requestsData[data.subject] = {
+            status: data.status,
+            id: doc.id,
+            fileURLs: data.fileURLs,
+          };
+        });
+        setClearanceRequests(requestsData);
+      } catch (error) {
+        console.error("Error fetching clearance requests:", error);
+      }
+    };
+
+    fetchClearanceRequests();
+  }, [currentUser]);
+
   const handleSubjectClick = (subject) => {
     setSelectedSubject(selectedSubject === subject ? null : subject);
   };
@@ -107,6 +142,7 @@ const StudentClearance = () => {
         await addDoc(clearanceRequestsRef, {
           studentId: currentUser.uid,
           studentName: studentData.fullName,
+          classId: studentData.classId,
           section: studentData.section,
           subject: selectedSubject,
           teacherUid: subjectRequirements[0].teacherUid,
@@ -129,6 +165,36 @@ const StudentClearance = () => {
       alert("Error requesting clearance. Please try again later.");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const openResubmitModal = (subject) => {
+    setSubjectToResubmit(subject);
+    setIsResubmitModalOpen(true);
+  };
+
+  const closeResubmitModal = () => {
+    setSubjectToResubmit(null);
+    setIsResubmitModalOpen(false);
+  };
+
+  const handleResubmitClearance = async (subject) => {
+    closeResubmitModal();
+
+    try {
+      const requestToDelete = clearanceRequests[subject];
+      if (requestToDelete) {
+        await deleteDoc(
+          doc(db, "clearanceRequests", requestToDelete.id)
+        );
+      }
+
+      await handleRequestClearance();
+    } catch (error) {
+      console.error("Error resubmitting clearance:", error);
+      alert(
+        "Error resubmitting clearance request. Please try again later."
+      );
     }
   };
 
@@ -210,29 +276,94 @@ const StudentClearance = () => {
                               ))}
                             </ul>
 
-                            {/* Request Clearance Section */}
+                            {/* Request/Resubmit Clearance Section */}
                             <div className="mt-4">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Optional: Submit Files (e.g.,
-                                proof of payment, documents)
-                              </label>
-                              <input
-                                type="file"
-                                multiple
-                                onChange={handleFileChange}
-                                className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                              />
-                              <button
-                                onClick={
-                                  handleRequestClearance
-                                }
-                                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-                                disabled={isUploading}
-                              >
-                                {isUploading
-                                  ? "Requesting..."
-                                  : "Request Clearance"}
-                              </button>
+                              {clearanceRequests[subject] ? (
+                                <div>
+                                  <p className="mb-2">
+                                    <FontAwesomeIcon
+                                      icon={faExclamationCircle}
+                                      className="text-yellow-500 mr-2"
+                                    />
+                                    Your clearance request is
+                                    currently{" "}
+                                    <strong>
+                                      {
+                                        clearanceRequests[
+                                          subject
+                                        ].status
+                                      }
+                                    </strong>
+                                    .
+                                  </p>
+                                  <button
+                                    onClick={() =>
+                                      openResubmitModal(subject)
+                                    }
+                                    className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
+                                    disabled={isUploading}
+                                  >
+                                    {isUploading
+                                      ? "Resubmitting..."
+                                      : "Resubmit Clearance"}
+                                  </button>
+                                  {clearanceRequests[
+                                    subject
+                                  ].fileURLs &&
+                                  clearanceRequests[
+                                    subject
+                                  ].fileURLs.length > 0 ? (
+                                    <div className="mt-2">
+                                      <p className="text-sm font-medium text-gray-700">
+                                        Submitted Files:
+                                      </p>
+                                      <ul>
+                                        {clearanceRequests[
+                                          subject
+                                        ].fileURLs.map(
+                                          (url, index) => (
+                                            <li key={index}>
+                                              <a
+                                                href={url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-500 hover:underline"
+                                              >
+                                                File {index + 1}
+                                              </a>
+                                            </li>
+                                          )
+                                        )}
+                                      </ul>
+                                    </div>
+                                  ) : null}
+                                </div>
+                              ) : (
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700">
+                                    Optional: Submit Files
+                                    (e.g., proof of payment,
+                                    documents)
+                                  </label>
+                                  <input
+                                    type="file"
+                                    multiple
+                                    onChange={handleFileChange}
+                                    className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                  />
+                                  <button
+                                    onClick={
+                                      handleRequestClearance
+                                    }
+                                    className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                                    disabled={isUploading}
+                                  >
+                                    {isUploading
+                                      ? "Requesting..."
+                                      : "Request Clearance"}
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -243,6 +374,33 @@ const StudentClearance = () => {
           </tbody>
         </table>
       </div>
+      <Modal isOpen={isResubmitModalOpen} onClose={closeResubmitModal}>
+        <div className="p-6">
+          <h3 className="text-lg font-semibold mb-4">
+            Resubmit Clearance Request
+          </h3>
+          <p>
+            Are you sure you want to resubmit your clearance
+            request for{" "}
+            <strong>{subjectToResubmit}</strong>? This will delete your
+            previous request.
+          </p>
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={closeResubmitModal}
+              className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => handleResubmitClearance(subjectToResubmit)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Resubmit
+            </button>
+          </div>
+        </div>
+      </Modal>
     </SidebarStudent>
   );
 };
