@@ -15,8 +15,14 @@ import Modal from "../components/Modal";
 function ApproveClearanceTeachers() {
   const { currentUser } = useAuth();
   const [clearanceRequests, setClearanceRequests] = useState([]);
+  const [originalRequests, setOriginalRequests] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [requestToReject, setRequestToReject] = useState(null);
+  const [filterSection, setFilterSection] = useState("");
+  const [filterSubject, setFilterSubject] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [availableSections, setAvailableSections] = useState([]);
+  const [availableSubjects, setAvailableSubjects] = useState([]);
 
   useEffect(() => {
     const fetchClearanceRequests = async () => {
@@ -24,14 +30,28 @@ function ApproveClearanceTeachers() {
 
       try {
         const requestsRef = collection(db, "clearanceRequests");
-        const q = query(requestsRef, where("teacherUid", "==", currentUser.uid));
+        const q = query(
+          requestsRef,
+          where("teacherUid", "==", currentUser.uid)
+        );
 
         const requestsSnapshot = await getDocs(q);
         const requestsData = requestsSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+
         setClearanceRequests(requestsData);
+        setOriginalRequests(requestsData);
+
+        const uniqueSections = [
+          ...new Set(requestsData.map((req) => req.section)),
+        ];
+        const uniqueSubjects = [
+          ...new Set(requestsData.map((req) => req.subject)),
+        ];
+        setAvailableSections(uniqueSections);
+        setAvailableSubjects(uniqueSubjects);
       } catch (error) {
         console.error("Error fetching clearance requests:", error);
       }
@@ -40,30 +60,39 @@ function ApproveClearanceTeachers() {
     fetchClearanceRequests();
   }, [currentUser]);
 
+  useEffect(() => {
+    let filteredRequests = [...originalRequests];
+
+    if (filterSection) {
+      filteredRequests = filteredRequests.filter(
+        (request) => request.section === filterSection
+      );
+    }
+
+    if (filterSubject) {
+      filteredRequests = filteredRequests.filter(
+        (request) => request.subject === filterSubject
+      );
+    }
+
+    if (searchQuery) {
+      filteredRequests = filteredRequests.filter((request) =>
+        request.studentName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    setClearanceRequests(filteredRequests);
+  }, [filterSection, filterSubject, searchQuery, originalRequests]);
+
   const handleApprove = async (requestId, studentId, subject) => {
     try {
       await updateDoc(doc(db, "clearanceRequests", requestId), {
         status: "approved",
       });
 
-      // await updateDoc(doc(db, "students", studentId), {
-      //   [`clearance.${subject}`]: true,
-      // });
-
-      const studentsRef = collection(db, "students");
-      const q = query(studentsRef, where("uid", "==", studentId));
-      const querySnapshot = await getDocs(q);
-    
-      if (!querySnapshot.empty) {
-        const studentDoc = querySnapshot.docs[0];
-    
-        await updateDoc(studentDoc.ref, {
-          [`clearance.${subject}`]: true,
-        });
-        console.log(`Student clearance for ${subject} updated successfully.`);
-      } else {
-        console.log(`No student found with uid ${studentId}.`);
-      }
+      await updateDoc(doc(db, "students", studentId), {
+        [`clearance.${subject}`]: true,
+      });
 
       setClearanceRequests((prevRequests) =>
         prevRequests.map((req) =>
@@ -119,6 +148,61 @@ function ApproveClearanceTeachers() {
           Approve Clearance Requests
         </h2>
 
+        {/* Filtering and Search Section */}
+        <div className="mb-4 flex space-x-4">
+          {/* Filter by Section */}
+          <div>
+            <label className="block text-gray-700 mb-1">
+              Filter by Section:
+            </label>
+            <select
+              value={filterSection}
+              onChange={(e) => setFilterSection(e.target.value)}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            >
+              <option value="">All Sections</option>
+              {availableSections.map((section) => (
+                <option key={section} value={section}>
+                  {section}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filter by Subject */}
+          <div>
+            <label className="block text-gray-700 mb-1">
+              Filter by Subject:
+            </label>
+            <select
+              value={filterSubject}
+              onChange={(e) => setFilterSubject(e.target.value)}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            >
+              <option value="">All Subjects</option>
+              {availableSubjects.map((subject) => (
+                <option key={subject} value={subject}>
+                  {subject}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Search by Student Name */}
+          <div>
+            <label className="block text-gray-700 mb-1">
+              Search by Student Name:
+            </label>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            />
+          </div>
+        </div>
+
+        {/* Table of Clearance Requests */}
         {clearanceRequests.length === 0 ? (
           <p>No clearance requests found.</p>
         ) : (
@@ -130,6 +214,9 @@ function ApproveClearanceTeachers() {
                 </th>
                 <th className="py-2 border-b border-gray-200">
                   Subject
+                </th>
+                <th className="py-2 border-b border-gray-200">
+                  Section
                 </th>
                 <th className="py-2 border-b border-gray-200">
                   Status
@@ -150,6 +237,9 @@ function ApproveClearanceTeachers() {
                   </td>
                   <td className="border px-4 py-2">
                     {request.subject}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {request.section}
                   </td>
                   <td className="border px-4 py-2">
                     {request.status}
@@ -189,7 +279,6 @@ function ApproveClearanceTeachers() {
                         >
                           Approve
                         </button>
-
                         <button
                           onClick={() => openRejectModal(request)}
                           className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
@@ -206,6 +295,7 @@ function ApproveClearanceTeachers() {
         )}
       </div>
 
+      {/* Reject Confirmation Modal */}
       <Modal isOpen={isModalOpen} onClose={closeRejectModal}>
         <div className="p-6">
           <h3 className="text-lg font-semibold mb-4">
