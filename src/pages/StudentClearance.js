@@ -8,12 +8,10 @@ import {
   where,
   addDoc,
   serverTimestamp,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteDoc,
   doc,
+  deleteDoc,
 } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import SidebarStudent from "../components/SidebarStudent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -85,10 +83,7 @@ const StudentClearance = () => {
 
       try {
         const requestsRef = collection(db, "clearanceRequests");
-        const q = query(
-          requestsRef,
-          where("studentId", "==", currentUser.uid)
-        );
+        const q = query(requestsRef, where("studentId", "==", currentUser.uid));
         const requestsSnapshot = await getDocs(q);
 
         const requestsData = {};
@@ -184,39 +179,29 @@ const StudentClearance = () => {
     try {
       const requestToDelete = clearanceRequests[subject];
       if (requestToDelete) {
-        await deleteDoc(
-          doc(db, "clearanceRequests", requestToDelete.id)
-        );
+        await deleteDoc(doc(db, "clearanceRequests", requestToDelete.id));
       }
 
       await handleRequestClearance();
     } catch (error) {
       console.error("Error resubmitting clearance:", error);
-      alert(
-        "Error resubmitting clearance request. Please try again later."
-      );
+      alert("Error resubmitting clearance request. Please try again later.");
     }
   };
 
   return (
     <SidebarStudent>
       <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">
-          Student Clearance
-        </h2>
+        <h2 className="text-2xl font-semibold mb-4">Student Clearance</h2>
 
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr>
-              <th className="py-2 border-b border-gray-200">
-                Subject
-              </th>
+              <th className="py-2 border-b border-gray-200">Subject</th>
               <th className="py-2 border-b border-gray-200 text-center">
                 Cleared
               </th>
-              <th className="py-2 border-b border-gray-200">
-                Details
-              </th>
+              <th className="py-2 border-b border-gray-200">Details</th>
             </tr>
           </thead>
           <tbody>
@@ -258,22 +243,17 @@ const StudentClearance = () => {
                     {selectedSubject === subject &&
                       classRequirements[subject] && (
                         <tr className="bg-gray-100">
-                          <td
-                            colSpan={3}
-                            className="border px-4 py-2"
-                          >
+                          <td colSpan={3} className="border px-4 py-2">
                             {/* Requirements List */}
                             <ul className="list-disc list-inside">
-                              {(
-                                classRequirements[subject] || []
-                              ).map((requirement, index) => (
-                                <li key={index}>
-                                  <strong>
-                                    {requirement.name}:
-                                  </strong>{" "}
-                                  {requirement.description}
-                                </li>
-                              ))}
+                              {(classRequirements[subject] || []).map(
+                                (requirement, index) => (
+                                  <li key={index}>
+                                    <strong>{requirement.name}:</strong>{" "}
+                                    {requirement.description}
+                                  </li>
+                                )
+                              )}
                             </ul>
 
                             {/* Request/Resubmit Clearance Section */}
@@ -285,21 +265,14 @@ const StudentClearance = () => {
                                       icon={faExclamationCircle}
                                       className="text-yellow-500 mr-2"
                                     />
-                                    Your clearance request is
-                                    currently{" "}
+                                    Your clearance request is currently{" "}
                                     <strong>
-                                      {
-                                        clearanceRequests[
-                                          subject
-                                        ].status
-                                      }
+                                      {clearanceRequests[subject].status}
                                     </strong>
                                     .
                                   </p>
                                   <button
-                                    onClick={() =>
-                                      openResubmitModal(subject)
-                                    }
+                                    onClick={() => openResubmitModal(subject)}
                                     className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
                                     disabled={isUploading}
                                   >
@@ -307,12 +280,9 @@ const StudentClearance = () => {
                                       ? "Resubmitting..."
                                       : "Resubmit Clearance"}
                                   </button>
-                                  {clearanceRequests[
-                                    subject
-                                  ].fileURLs &&
-                                  clearanceRequests[
-                                    subject
-                                  ].fileURLs.length > 0 ? (
+                                  {clearanceRequests[subject].fileURLs &&
+                                  clearanceRequests[subject].fileURLs.length >
+                                    0 ? (
                                     <div className="mt-2">
                                       <p className="text-sm font-medium text-gray-700">
                                         Submitted Files:
@@ -320,20 +290,18 @@ const StudentClearance = () => {
                                       <ul>
                                         {clearanceRequests[
                                           subject
-                                        ].fileURLs.map(
-                                          (url, index) => (
-                                            <li key={index}>
-                                              <a
-                                                href={url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-500 hover:underline"
-                                              >
-                                                File {index + 1}
-                                              </a>
-                                            </li>
-                                          )
-                                        )}
+                                        ].fileURLs.map((url, index) => (
+                                          <li key={index}>
+                                            <a
+                                              href={url}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-blue-500 hover:underline"
+                                            >
+                                              File {index + 1}
+                                            </a>
+                                          </li>
+                                        ))}
                                       </ul>
                                     </div>
                                   ) : null}
@@ -341,9 +309,8 @@ const StudentClearance = () => {
                               ) : (
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700">
-                                    Optional: Submit Files
-                                    (e.g., proof of payment,
-                                    documents)
+                                    Optional: Submit Files (e.g., proof of
+                                    payment, documents)
                                   </label>
                                   <input
                                     type="file"
@@ -352,9 +319,7 @@ const StudentClearance = () => {
                                     className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                                   />
                                   <button
-                                    onClick={
-                                      handleRequestClearance
-                                    }
+                                    onClick={handleRequestClearance}
                                     className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
                                     disabled={isUploading}
                                   >
@@ -380,10 +345,9 @@ const StudentClearance = () => {
             Resubmit Clearance Request
           </h3>
           <p>
-            Are you sure you want to resubmit your clearance
-            request for{" "}
-            <strong>{subjectToResubmit}</strong>? This will delete your
-            previous request.
+            Are you sure you want to resubmit your clearance request for{" "}
+            <strong>{subjectToResubmit}</strong>? This will delete your previous
+            request.
           </p>
           <div className="mt-6 flex justify-end">
             <button
