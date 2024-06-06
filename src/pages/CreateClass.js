@@ -53,11 +53,15 @@ function CreateClass() {
     e.preventDefault();
 
     try {
+      const selectedAdviser = teachers.find((teacher) => teacher.name === adviser);
+      const adviserUid = selectedAdviser ? selectedAdviser.uid : null;
+
       const classDocRef = await addDoc(collection(db, "classes"), {
         educationLevel,
         gradeLevel,
         sectionName,
         adviser,
+        adviserUid,
         subjects,
       });
 

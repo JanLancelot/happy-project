@@ -23,7 +23,7 @@ const SignIn = () => {
           const userDoc = querySnapshot.docs[0];
           const userData = userDoc.data();
           if (userData.role === 'faculty') {
-            navigate('/add-requirement');
+            navigate('/approve-clearance-faculty');
           } else if (userData.role === 'student') {
             navigate('/student-clearance');
           } else {

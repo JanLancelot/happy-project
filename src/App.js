@@ -11,6 +11,7 @@ import Students from "./pages/Students";
 import CreateStudent from "./pages/CreateStudent";
 import AddRequirement from "./pages/AddRequirements";
 import StudentClearance from "./pages/StudentClearance";
+import ApproveClearanceTeachers from "./pages/ApproveClearanceTeachers"
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
   { path: "/create-student", element: <CreateStudent /> },
   { path: "/add-requirement", element: <AddRequirement /> },
   { path: "/student-clearance", element: <StudentClearance /> },
+  { path: "/approve-clearance-faculty", element: <ApproveClearanceTeachers />}
 ]);
 function App() {
   return (
