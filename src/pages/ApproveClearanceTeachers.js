@@ -90,9 +90,24 @@ function ApproveClearanceTeachers() {
         status: "approved",
       });
 
-      await updateDoc(doc(db, "students", studentId), {
-        [`clearance.${subject}`]: true,
-      });
+      // await updateDoc(doc(db, "students", studentId), {
+      //   [`clearance.${subject}`]: true,
+      // });
+
+      const studentsRef = collection(db, "students");
+      const q = query(studentsRef, where("uid", "==", studentId));
+      const querySnapshot = await getDocs(q);
+    
+      if (!querySnapshot.empty) {
+        const studentDoc = querySnapshot.docs[0];
+        await updateDoc(studentDoc.ref, {
+          [`clearance.${subject}`]: true,
+        });
+    
+        console.log(`Student clearance for ${subject} updated successfully.`);
+      } else {
+        console.log(`No student found with uid ${studentId}.`);
+      }
 
       setClearanceRequests((prevRequests) =>
         prevRequests.map((req) =>
