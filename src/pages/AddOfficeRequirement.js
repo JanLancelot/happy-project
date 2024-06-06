@@ -9,7 +9,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../components/AuthContext";
 import SidebarOffice from "../components/SidebarOffice";
 
 function AddOfficeRequirement() {

@@ -8,7 +8,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../components/AuthContext";
 import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
 
