@@ -30,14 +30,26 @@ const SignIn = () => {
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
           const userData = userDoc.data();
-          if (userData.role === "faculty") {
-            navigate("/approve-clearance-faculty");
-          } else if (userData.role === "student") {
-            navigate("/student-clearance");
-          } else if (userData.role === "super-admin") {
-            navigate("/user-management");
-          } else {
-            navigate("/dashboard");
+
+          switch (userData.role) {
+            case "faculty":
+              navigate("/approve-clearance-faculty");
+              break;
+            case "student":
+              navigate("/student-clearance");
+              break;
+            case "super-admin":
+              navigate("/user-management");
+              break;
+            case "librarian":
+            case "characterRenewalOfficer":
+            case "finance":
+            case "registrarBasicEd":
+            case "directorPrincipal":
+              navigate("/add-office-requirement");
+              break;
+            default:
+              navigate("/dashboard");
           }
         } else {
           console.error("No such document!");
