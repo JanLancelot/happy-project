@@ -13,6 +13,7 @@ import AddRequirement from "./pages/AddRequirements";
 import StudentClearance from "./pages/StudentClearance";
 import ApproveClearanceTeachers from "./pages/ApproveClearanceTeachers"
 import UserManagement from "./pages/UserManagement";
+import CreateUser from "./pages/CreateUser";
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
@@ -26,7 +27,8 @@ const router = createBrowserRouter([
   { path: "/add-requirement", element: <AddRequirement /> },
   { path: "/student-clearance", element: <StudentClearance /> },
   { path: "/approve-clearance-faculty", element: <ApproveClearanceTeachers />},
-  { path: "/user-management", element: <UserManagement /> }
+  { path: "/user-management", element: <UserManagement /> },
+  { path: "/create-user", element: <CreateUser />}
 ]);
 
 function App() {

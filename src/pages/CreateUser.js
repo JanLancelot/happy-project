@@ -1,132 +1,104 @@
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, collection, addDoc } from "firebase/firestore";
-import { auth, db } from "../firebaseConfig";
+import { collection, addDoc } from "firebase/firestore";
+import { db, auth } from "../firebaseConfig";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import SidebarSuper from "../components/SidebarSuper"; 
 
-const UserForm = () => {
-  const [displayName, setDisplayName] = useState("");
-  const [fullName, setFullName] = useState("");
+function CreateUser() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("teacher");
-  const [additionalInfo, setAdditionalInfo] = useState({});
-  const [error, setError] = useState("");
+  const [role, setRole] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!email || !password || !role) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    setIsLoading(true); 
+
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
-      await updateProfile(userCredential.user, { displayName });
+      const user = userCredential.user;
 
-      const uid = userCredential.user.uid;
-      await setDoc(doc(db, "users", uid), {
-        displayName,
-        fullName,
-        email,
-        role,
+      await addDoc(collection(db, "users"), {
+        uid: user.uid,
+        email: email,
+        role: role,
+        isLocked: false, 
       });
 
-      if (role === "teacher") {
-        await addDoc(collection(db, "teachers"), {
-          uid,
-          ...additionalInfo,
-        });
-      }
-
-      console.log("User created:", userCredential.user);
+      alert("User created successfully!");
+      navigate("/user-management"); 
     } catch (error) {
-      setError(error.message);
+      console.error("Error creating user: ", error);
+      alert("Error creating user. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleAdditionalInfoChange = (e) => {
-    setAdditionalInfo({ ...additionalInfo, [e.target.name]: e.target.value });
-  };
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Create User</h2>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700">Display Name</label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700">Full Name</label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700">Email</label>
+    <SidebarSuper>
+      <div className="container mx-auto p-4">
+        <h2 className="text-2xl font-semibold mb-4">Create User</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-700">Email:</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md"
               required
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700">Password</label>
+          <div>
+            <label className="block text-gray-700">Password:</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md"
               required
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700">Role</label>
+          <div>
+            <label className="block text-gray-700">Role:</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md"
+              required
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             >
-              <option value="teacher">Teacher</option>
-              {/* More roles pa Ady */}
+              <option value="">Select Role</option>
+              <option value="librarian">Librarian</option>
+              <option value="characterRenewalOfficer">Character Renewal Officer</option>
+              <option value="finance">Finance</option>
+              <option value="registrarBasicEd">Basic Education Registrar</option>
+              <option value="directorPrincipal">Director/Principal</option>
             </select>
           </div>
-          {role === "teacher" && (
-            <div className="mb-4">
-              <label className="block text-gray-700">Subject</label>
-              <input
-                type="text"
-                name="subject"
-                value={additionalInfo.subject || ""}
-                onChange={handleAdditionalInfoChange}
-                className="w-full px-3 py-2 border rounded-md"
-                required
-              />
-            </div>
-          )}
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-200"
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            disabled={isLoading}
           >
-            Create User
+            {isLoading ? "Creating..." : "Create User"} 
           </button>
         </form>
       </div>
-    </div>
+    </SidebarSuper>
   );
-};
+}
 
-export default UserForm;
+export default CreateUser;
