@@ -74,9 +74,6 @@ function UserManagement() {
                 <td className="border px-4 py-2">{user.email}</td>
                 <td className="border px-4 py-2">{user.role}</td>
                 <td className="border px-4 py-2">
-                  {user.disabled ? "Locked" : "Unlocked"}
-                </td>
-                <td className="border px-4 py-2">
                   {user.isLocked ? "Locked" : "Unlocked"} 
                 </td>
                 <td className="border px-4 py-2">
