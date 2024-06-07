@@ -53,7 +53,7 @@ function UserManagement() {
   }, []);
 
   useEffect(() => {
-    let filteredUsers = [...originalUsers];
+    let filteredUsers = [...originalUsers]; 
 
     if (selectedRole) {
       filteredUsers = filteredUsers.filter(
@@ -62,26 +62,26 @@ function UserManagement() {
     }
 
     if (searchQuery) {
-      filteredUsers = filteredUsers.filter((user) =>
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
+        filteredUsers = filteredUsers.filter((user) =>
+          user.email.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
 
     if (sortStatusAsc !== null) {
       filteredUsers.sort((a, b) => {
-        const statusA = a.isLocked ? 1 : 0;
+        const statusA = a.isLocked ? 1 : 0; 
         const statusB = b.isLocked ? 1 : 0;
 
         if (sortStatusAsc) {
-          return statusA - statusB;
+          return statusA - statusB; 
         } else {
-          return statusB - statusA;
+          return statusB - statusA; 
         }
       });
     }
 
     setUsers(filteredUsers);
-  }, [selectedRole, searchQuery, sortStatusAsc, originalUsers, users]);
+  }, [selectedRole, searchQuery, sortStatusAsc, originalUsers]);
 
   const handleLockUnlock = async (userId, currentStatus) => {
     try {
