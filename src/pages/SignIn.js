@@ -1,36 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
-import { auth, db } from '../firebaseConfig'; 
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import React, { useState, useEffect } from "react";
+import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { auth, db } from "../firebaseConfig";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 
 const SignIn = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [signInWithEmailAndPassword, user, loading, error] = useSignInWithEmailAndPassword(auth);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [signInWithEmailAndPassword, user, loading, error] =
+    useSignInWithEmailAndPassword(auth);
   const [localError, setLocalError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkUserRole = async () => {
       if (user) {
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef, where('uid', '==', user.user.uid));
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("uid", "==", user.user.uid));
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
           const userData = userDoc.data();
-          if (userData.role === 'faculty') {
-            navigate('/approve-clearance-faculty');
-          } else if (userData.role === 'student') {
-            navigate('/student-clearance');
+          if (userData.role === "faculty") {
+            navigate("/approve-clearance-faculty");
+          } else if (userData.role === "student") {
+            navigate("/student-clearance");
+          } else if (userData.role === "super-admin") {
+            navigate("/user-management");
           } else {
-            navigate('/dashboard');
+            navigate("/dashboard");
           }
         } else {
-          console.error('No such document!');
+          console.error("No such document!");
         }
       }
     };
@@ -40,9 +50,9 @@ const SignIn = () => {
 
   const handleSignIn = async (e) => {
     e.preventDefault();
-    
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('email', '==', email));
+
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
@@ -50,7 +60,9 @@ const SignIn = () => {
       const userData = userDoc.data();
 
       if (userData.isLocked) {
-        setLocalError('Your account is locked due to multiple failed sign-in attempts.');
+        setLocalError(
+          "Your account is locked due to multiple failed sign-in attempts."
+        );
         return;
       }
     }
@@ -64,23 +76,25 @@ const SignIn = () => {
         const failedAttempts = userData.failedSignInAttempts || 0;
 
         if (failedAttempts >= 2) {
-          await updateDoc(doc(db, 'users', userDoc.id), {
+          await updateDoc(doc(db, "users", userDoc.id), {
             failedSignInAttempts: 3,
-            isLocked: true
+            isLocked: true,
           });
-          setLocalError('Your account is locked due to multiple failed sign-in attempts.');
+          setLocalError(
+            "Your account is locked due to multiple failed sign-in attempts."
+          );
         } else {
-          await updateDoc(doc(db, 'users', userDoc.id), {
-            failedSignInAttempts: failedAttempts + 1
+          await updateDoc(doc(db, "users", userDoc.id), {
+            failedSignInAttempts: failedAttempts + 1,
           });
-          setLocalError('Invalid email or password.');
+          setLocalError("Invalid email or password.");
         }
       }
     } else {
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
-        await updateDoc(doc(db, 'users', userDoc.id), {
-          failedSignInAttempts: 0
+        await updateDoc(doc(db, "users", userDoc.id), {
+          failedSignInAttempts: 0,
         });
       }
     }
@@ -96,7 +110,11 @@ const SignIn = () => {
         className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full"
       >
         <h1 className="text-2xl font-bold mb-6 text-center">Sign In</h1>
-        {(error || localError) && <p className="text-red-500 text-center mb-4">{localError || error.message}</p>}
+        {(error || localError) && (
+          <p className="text-red-500 text-center mb-4">
+            {localError || error.message}
+          </p>
+        )}
         <form onSubmit={handleSignIn} className="space-y-4">
           <div>
             <label className="block text-gray-700">Email</label>
@@ -123,7 +141,7 @@ const SignIn = () => {
             className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
             disabled={loading}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
       </motion.div>
