@@ -62,12 +62,10 @@ function UserManagement() {
     }
 
     if (searchQuery) {
-      filteredUsers = filteredUsers.filter(
-        (user) =>
-          user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        filteredUsers = filteredUsers.filter((user) =>
           user.email.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
+        );
+      }
 
     if (sortStatusAsc !== null) {
       filteredUsers.sort((a, b) => {
