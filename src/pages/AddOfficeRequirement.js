@@ -89,6 +89,51 @@ function AddOfficeRequirement() {
     setIsConfirmModalOpen(true);
   };
 
+  // const confirmAddRequirement = async () => {
+  //   setIsConfirmModalOpen(false);
+  //   setIsAdding(true);
+
+  //   try {
+  //     const selectedLevelValues = selectedEducationLevels.map(
+  //       (level) => level.value
+  //     );
+
+  //     const addRequirementPromises = selectedLevelValues.map(async (level) => {
+
+  //       const classesRef = collection(db, "classes");
+  //       const q = query(classesRef, where("educationLevel", "==", level));
+  //       const classesSnapshot = await getDocs(q);
+
+  //       const officeRequirementsRef = collection(db, "officeRequirements");
+  //       const classAddPromises = classesSnapshot.docs.map(async (classDoc) => {
+  //         await addDoc(officeRequirementsRef, {
+  //           classId: classDoc.id,
+  //           educationLevel: level,
+  //           office: officeName,
+  //           name: requirementName,
+  //           description: requirementDescription,
+  //           addedBy: currentUser.uid,
+  //         });
+  //       });
+
+  //       await Promise.all(classAddPromises);
+  //     });
+
+  //     await Promise.all(addRequirementPromises);
+
+  //     setSelectedEducationLevels([]);
+  //     setRequirementName("");
+  //     setRequirementDescription("");
+
+  //     alert("Requirement added successfully to selected education levels!");
+  //   } catch (error) {
+  //     console.error("Error adding requirement: ", error);
+  //     alert("Error adding requirement. Please try again later.");
+  //   } finally {
+  //     setIsAdding(false);
+  //   }
+  // };
+
   const confirmAddRequirement = async () => {
     setIsConfirmModalOpen(false);
     setIsAdding(true);
@@ -98,34 +143,20 @@ function AddOfficeRequirement() {
         (level) => level.value
       );
 
-      const addRequirementPromises = selectedLevelValues.map(async (level) => {
-
-        const classesRef = collection(db, "classes");
-        const q = query(classesRef, where("educationLevel", "==", level));
-        const classesSnapshot = await getDocs(q);
-
-        const officeRequirementsRef = collection(db, "officeRequirements");
-        const classAddPromises = classesSnapshot.docs.map(async (classDoc) => {
-          await addDoc(officeRequirementsRef, {
-            classId: classDoc.id,
-            educationLevel: level,
-            office: officeName,
-            name: requirementName,
-            description: requirementDescription,
-            addedBy: currentUser.uid,
-          });
-        });
-
-        await Promise.all(classAddPromises);
+      const officeRequirementsRef = collection(db, "officeRequirements");
+      await addDoc(officeRequirementsRef, {
+        educationLevels: selectedLevelValues,
+        office: officeName,
+        name: requirementName,
+        description: requirementDescription,
+        addedBy: currentUser.uid,
       });
-
-      await Promise.all(addRequirementPromises);
 
       setSelectedEducationLevels([]);
       setRequirementName("");
       setRequirementDescription("");
 
-      alert("Requirement added successfully to selected education levels!");
+      alert("Requirement added successfully!");
     } catch (error) {
       console.error("Error adding requirement: ", error);
       alert("Error adding requirement. Please try again later.");
