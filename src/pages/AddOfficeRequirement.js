@@ -8,7 +8,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../components/AuthContext";
 import SidebarOffice from "../components/SidebarOffice";
 import Select from "react-select";
 import Modal from "../components/Modal";
