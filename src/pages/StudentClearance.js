@@ -34,6 +34,7 @@ const StudentClearance = () => {
   const { currentUser } = useAuth();
   const [studentData, setStudentData] = useState(null);
   const [classRequirements, setClassRequirements] = useState({});
+  const [officeRequirements, setOfficeRequirements] = useState({});
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
@@ -113,6 +114,37 @@ const StudentClearance = () => {
     fetchClearanceRequests();
   }, [currentUser]);
 
+  useEffect(() => {
+    const fetchOfficeRequirements = async () => {
+      if (!studentData) return;
+
+      try {
+        const requirementsRef = collection(db, "officeRequirements");
+        const officeRequirementsSnapshot = await getDocs(requirementsRef);
+
+        const requirementsData = {};
+        officeRequirementsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          const { office, educationLevels } = data;
+
+          if (!requirementsData[office]) {
+            requirementsData[office] = [];
+          }
+
+          if (educationLevels.includes(studentData.educationLevel)) {
+            requirementsData[office].push(data);
+          }
+        });
+
+        setOfficeRequirements(requirementsData);
+      } catch (error) {
+        console.error("Error fetching office requirements:", error);
+      }
+    };
+
+    fetchOfficeRequirements();
+  }, [studentData]);
+
   const handleSubjectClick = (subject) => {
     setSelectedSubject(selectedSubject === subject ? null : subject);
   };
@@ -141,7 +173,8 @@ const StudentClearance = () => {
 
       const clearanceRequestsRef = collection(db, "clearanceRequests");
 
-      const subjectRequirements = classRequirements[selectedSubject];
+      const subjectRequirements =
+        classRequirements[selectedSubject] || officeRequirements[selectedSubject];
       if (subjectRequirements && subjectRequirements.length > 0) {
         await addDoc(clearanceRequestsRef, {
           studentId: currentUser.uid,
@@ -413,11 +446,11 @@ const StudentClearance = () => {
                     </tr>
 
                     {selectedSubject === subject &&
-                      classRequirements[subject] && (
+                      officeRequirements[subject] && (
                         <tr className="bg-gray-100">
                           <td colSpan={3} className="border px-4 py-2">
                             <ul className="list-disc list-inside">
-                              {(classRequirements[subject] || []).map(
+                              {(officeRequirements[subject] || []).map(
                                 (requirement, index) => (
                                   <li key={index}>
                                     <strong>{requirement.name}:</strong>{" "}
