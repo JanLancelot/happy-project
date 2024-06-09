@@ -22,7 +22,7 @@ import {
 import Modal from "../components/Modal";
 
 const SPECIAL_SUBJECTS = [
-  "Library",
+  "Librarian",
   "Finance",
   "Director/Principal",
   "Basic Education Registrar",
