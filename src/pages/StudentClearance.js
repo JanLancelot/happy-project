@@ -22,7 +22,7 @@ import {
 import Modal from "../components/Modal";
 
 const SPECIAL_SUBJECTS = [
-  "Librarian",
+  "Library",
   "Finance",
   "Director/Principal",
   "Basic Education Registrar",
@@ -88,6 +88,32 @@ const StudentClearance = () => {
   }, [studentData]);
 
   useEffect(() => {
+    const fetchOfficeRequirements = async () => {
+      if (!studentData?.educationLevel) return;
+
+      try {
+        const officeReqsRef = collection(db, "officeRequirements");
+        const q = query(
+          officeReqsRef,
+          where("educationLevels", "array-contains", studentData.educationLevel)
+        );
+        const officeReqsSnapshot = await getDocs(q);
+
+        const reqsData = {};
+        officeReqsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          reqsData[data.office] = (reqsData[data.office] || []).concat(data);
+        });
+        setOfficeRequirements(reqsData);
+      } catch (error) {
+        console.error("Error fetching office requirements:", error);
+      }
+    };
+
+    fetchOfficeRequirements();
+  }, [studentData?.educationLevel]);
+
+  useEffect(() => {
     const fetchClearanceRequests = async () => {
       if (!currentUser) return;
 
@@ -113,39 +139,6 @@ const StudentClearance = () => {
 
     fetchClearanceRequests();
   }, [currentUser]);
-
-  useEffect(() => {
-    const fetchOfficeRequirements = async () => {
-      if (!studentData) return;
-
-      try {
-        const requirementsRef = collection(db, "officeRequirements");
-        const officeRequirementsSnapshot = await getDocs(requirementsRef);
-
-        const requirementsData = {};
-        officeRequirementsSnapshot.forEach((doc) => {
-          const data = doc.data();
-          const { office, educationLevels } = data;
-
-          if (!requirementsData[office]) {
-            requirementsData[office] = [];
-          }
-
-          if (educationLevels.includes(studentData.educationLevel)) {
-            requirementsData[office].push(data);
-          }
-        });
-
-        console.log("Fetched office requirements:", requirementsData); // Debug log
-
-        setOfficeRequirements(requirementsData);
-      } catch (error) {
-        console.error("Error fetching office requirements:", error);
-      }
-    };
-
-    fetchOfficeRequirements();
-  }, [studentData]);
 
   const handleSubjectClick = (subject) => {
     setSelectedSubject(selectedSubject === subject ? null : subject);
@@ -175,24 +168,38 @@ const StudentClearance = () => {
 
       const clearanceRequestsRef = collection(db, "clearanceRequests");
 
-      const subjectRequirements =
-        classRequirements[selectedSubject] || officeRequirements[selectedSubject];
-      if (subjectRequirements && subjectRequirements.length > 0) {
+      if (SPECIAL_SUBJECTS.includes(selectedSubject)) {
+        // Office requirement clearance request
         await addDoc(clearanceRequestsRef, {
           studentId: currentUser.uid,
           studentName: studentData.fullName,
           section: studentData.section,
           subject: selectedSubject,
-          teacherUid: subjectRequirements[0].teacherUid,
+          // No teacherUid for office requirements
           timestamp: serverTimestamp(),
           fileURLs: fileURLs,
           status: "pending",
         });
       } else {
-        alert(
-          "No requirements found for this subject. You do not need to request clearance."
-        );
-        return;
+        // Regular subject clearance request
+        const subjectRequirements = classRequirements[selectedSubject];
+        if (subjectRequirements && subjectRequirements.length > 0) {
+          await addDoc(clearanceRequestsRef, {
+            studentId: currentUser.uid,
+            studentName: studentData.fullName,
+            section: studentData.section,
+            subject: selectedSubject,
+            teacherUid: subjectRequirements[0].teacherUid,
+            timestamp: serverTimestamp(),
+            fileURLs: fileURLs,
+            status: "pending",
+          });
+        } else {
+          alert(
+            "No requirements found for this subject. You do not need to request clearance."
+          );
+          return;
+        }
       }
 
       alert("Clearance requested successfully!");
@@ -292,110 +299,114 @@ const StudentClearance = () => {
                   </td>
                 </tr>
 
-                {selectedSubject === subject && classRequirements[subject] && (
-                  <tr className="bg-gray-100">
-                    <td colSpan={3} className="border px-4 py-2">
-                      <ul className="list-disc list-inside">
-                        {(classRequirements[subject] || []).map(
-                          (requirement, index) => (
-                            <li key={index}>
-                              <strong>{requirement.name}:</strong>{" "}
-                              {requirement.description}
-                            </li>
-                          )
-                        )}
-                      </ul>
+                {selectedSubject === subject &&
+                  classRequirements[subject] && (
+                    <tr className="bg-gray-100">
+                      <td colSpan={3} className="border px-4 py-2">
+                        <ul className="list-disc list-inside">
+                          {(classRequirements[subject] || []).map(
+                            (requirement, index) => (
+                              <li key={index}>
+                                <strong>{requirement.name}:</strong>{" "}
+                                {requirement.description}
+                              </li>
+                            )
+                          )}
+                        </ul>
 
-                      <div className="mt-4">
-                        {clearanceRequests[subject] ? (
-                          <div>
-                            <p className="mb-2">
-                              <FontAwesomeIcon
-                                icon={faExclamationCircle}
-                                className={
-                                  clearanceRequests[subject].status ===
-                                  "approved"
-                                    ? "text-green-500 mr-2"
-                                    : "text-yellow-500 mr-2"
-                                }
+                        <div className="mt-4">
+                          {clearanceRequests[subject] ? (
+                            <div>
+                              <p className="mb-2">
+                                <FontAwesomeIcon
+                                  icon={faExclamationCircle}
+                                  className={
+                                    clearanceRequests[subject].status ===
+                                    "approved"
+                                      ? "text-green-500 mr-2"
+                                      : "text-yellow-500 mr-2"
+                                  }
+                                />
+                                Your clearance request is currently{" "}
+                                <strong
+                                  className={
+                                    clearanceRequests[subject].status ===
+                                    "approved"
+                                      ? "text-green-500"
+                                      : ""
+                                  }
+                                >
+                                  {clearanceRequests[subject].status}
+                                </strong>
+                                .
+                              </p>
+                              {clearanceRequests[subject].status !==
+                                "approved" && (
+                                <button
+                                  onClick={() =>
+                                    openResubmitModal(subject)
+                                  }
+                                  className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
+                                  disabled={isUploading}
+                                >
+                                  {isUploading
+                                    ? "Resubmitting..."
+                                    : "Resubmit Clearance"}
+                                </button>
+                              )}
+                              {clearanceRequests[subject].fileURLs &&
+                              clearanceRequests[subject].fileURLs.length >
+                                0 ? (
+                                <div className="mt-2">
+                                  <p className="text-sm font-medium text-gray-700">
+                                    Submitted Files:
+                                  </p>
+                                  <ul>
+                                    {clearanceRequests[
+                                      subject
+                                    ].fileURLs.map((url, index) => (
+                                      <li key={index}>
+                                        <a
+                                          href={url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-500 hover:underline"
+                                        >
+                                          File {index + 1}
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">
+                                Optional: Submit Files (e.g., proof of payment,
+                                documents)
+                              </label>
+                              <input
+                                type="file"
+                                multiple
+                                onChange={handleFileChange}
+                                className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                               />
-                              Your clearance request is currently{" "}
-                              <strong
-                                className={
-                                  clearanceRequests[subject].status ===
-                                  "approved"
-                                    ? "text-green-500"
-                                    : ""
-                                }
-                              >
-                                {clearanceRequests[subject].status}
-                              </strong>
-                              .
-                            </p>
-                            {clearanceRequests[subject].status !==
-                              "approved" && (
                               <button
-                                onClick={() => openResubmitModal(subject)}
-                                className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
+                                onClick={handleRequestClearance}
+                                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
                                 disabled={isUploading}
                               >
                                 {isUploading
-                                  ? "Resubmitting..."
-                                  : "Resubmit Clearance"}
+                                  ? "Requesting..."
+                                  : "Request Clearance"}
                               </button>
-                            )}
-                            {clearanceRequests[subject].fileURLs &&
-                            clearanceRequests[subject].fileURLs.length > 0 ? (
-                              <div className="mt-2">
-                                <p className="text-sm font-medium text-gray-700">
-                                  Submitted Files:
-                                </p>
-                                <ul>
-                                  {clearanceRequests[
-                                    subject
-                                  ].fileURLs.map((url, index) => (
-                                    <li key={index}>
-                                      <a
-                                        href={url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-500 hover:underline"
-                                      >
-                                        File {index + 1}
-                                      </a>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ) : null}
-                          </div>
-                        ) : (
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Optional: Submit Files (e.g., proof of payment,
-                              documents)
-                            </label>
-                            <input
-                              type="file"
-                              multiple
-                              onChange={handleFileChange}
-                              className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                            />
-                            <button
-                              onClick={handleRequestClearance}
-                              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-                              disabled={isUploading}
-                            >
-                              {isUploading
-                                ? "Requesting..."
-                                : "Request Clearance"}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                )}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
               </React.Fragment>
             ))}
           </tbody>
@@ -403,29 +414,35 @@ const StudentClearance = () => {
 
         {specialSubjects.length > 0 && (
           <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-4">Special Subjects</h3>
+            <h3 className="text-xl font-semibold mb-4">
+              Office Requirements
+            </h3>
             <table className="min-w-full bg-white border border-gray-200">
               <thead>
                 <tr>
-                  <th className="py-2 border-b border-gray-200">Subject</th>
+                  <th className="py-2 border-b border-gray-200">
+                    Office Names
+                  </th>
                   <th className="py-2 border-b border-gray-200 text-center">
                     Cleared
                   </th>
-                  <th className="py-2 border-b border-gray-200">Details</th>
+                  <th className="py-2 border-b border-gray-200">
+                    Details
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {specialSubjects.map((subject) => (
-                  <React.Fragment key={subject}>
+                {specialSubjects.map((office) => (
+                  <React.Fragment key={office}>
                     <tr>
                       <td
                         className="border px-4 py-2 cursor-pointer"
-                        onClick={() => handleSubjectClick(subject)}
+                        onClick={() => handleSubjectClick(office)}
                       >
-                        {subject}
+                        {office}
                       </td>
                       <td className="border px-4 py-2 text-center">
-                        {studentData.clearance[subject] ? (
+                        {studentData.clearance[office] ? (
                           <FontAwesomeIcon
                             icon={faCheckCircle}
                             className="text-green-500"
@@ -440,127 +457,123 @@ const StudentClearance = () => {
                       <td className="border px-4 py-2">
                         <button
                           className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                          onClick={() => handleSubjectClick(subject)}
+                          onClick={() => handleSubjectClick(office)}
                         >
                           View Details
                         </button>
                       </td>
                     </tr>
 
-                    {selectedSubject === subject &&
-                      officeRequirements[subject] && (
-                        <tr className="bg-gray-100">
-                          <td colSpan={3} className="border px-4 py-2">
-                            <ul className="list-disc list-inside">
-                              {(officeRequirements[subject] || []).map(
-                                (requirement, index) => (
-                                  <li key={index}>
-                                    <strong>{requirement.name}:</strong>{" "}
-                                    {requirement.description}
-                                    <br />
-                                    <strong>Office:</strong>{" "}
-                                    {requirement.office}
-                                    <br />
-                                    <strong>Education Levels:</strong>{" "}
-                                    {requirement.educationLevels.join(", ")}
-                                  </li>
-                                )
-                              )}
-                            </ul>
+                    {/* Expandable Section for Office Requirements & Request */}
+                    {selectedSubject === office && (
+                      <tr className="bg-gray-100">
+                        <td colSpan={3} className="border px-4 py-2">
+                          {/* Office Requirements List */}
+                          <ul className="list-disc list-inside">
+                            {(officeRequirements[office] || []).map(
+                              (requirement, index) => (
+                                <li key={index}>
+                                  <strong>{requirement.name}:</strong>{" "}
+                                  {requirement.description}
+                                </li>
+                              )
+                            )}
+                          </ul>
 
-                            <div className="mt-4">
-                              {clearanceRequests[subject] ? (
-                                <div>
-                                  <p className="mb-2">
-                                    <FontAwesomeIcon
-                                      icon={faExclamationCircle}
-                                      className={
-                                        clearanceRequests[subject].status ===
-                                        "approved"
-                                          ? "text-green-500 mr-2"
-                                          : "text-yellow-500 mr-2"
-                                      }
-                                    />
-                                    Your clearance request is currently{" "}
-                                    <strong
-                                      className={
-                                        clearanceRequests[subject].status ===
-                                        "approved"
-                                          ? "text-green-500"
-                                          : ""
-                                      }
-                                    >
-                                      {clearanceRequests[subject].status}
-                                    </strong>
-                                    .
-                                  </p>
-                                  {clearanceRequests[subject].status !==
-                                    "approved" && (
-                                    <button
-                                      onClick={() =>
-                                        openResubmitModal(subject)
-                                      }
-                                      className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
-                                      disabled={isUploading}
-                                    >
-                                      {isUploading
-                                        ? "Resubmitting..."
-                                        : "Resubmit Clearance"}
-                                    </button>
-                                  )}
-                                  {clearanceRequests[subject].fileURLs &&
-                                  clearanceRequests[subject].fileURLs.length >
-                                    0 ? (
-                                    <div className="mt-2">
-                                      <p className="text-sm font-medium text-gray-700">
-                                        Submitted Files:
-                                      </p>
-                                      <ul>
-                                        {clearanceRequests[
-                                          subject
-                                        ].fileURLs.map((url, index) => (
-                                          <li key={index}>
-                                            <a
-                                              href={url}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className="text-blue-500 hover:underline"
-                                            >
-                                              File {index + 1}
-                                            </a>
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </div>
-                                  ) : null}
-                                </div>
-                              ) : (
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700">
-                                    Optional: Submit Files (e.g., proof of
-                                    payment, documents)
-                                  </label>
-                                  <input
-                                    type="file"
-                                    multiple
-                                    onChange={handleFileChange}
-                                    className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                          {/* Request/Resubmit Clearance Section */}
+                          <div className="mt-4">
+                            {clearanceRequests[office] ? (
+                              <div>
+                                <p className="mb-2">
+                                  <FontAwesomeIcon
+                                    icon={faExclamationCircle}
+                                    className={
+                                      clearanceRequests[office].status ===
+                                      "approved"
+                                        ? "text-green-500 mr-2"
+                                        : "text-yellow-500 mr-2"
+                                    }
                                   />
+                                  Your clearance request is currently{" "}
+                                  <strong
+                                    className={
+                                      clearanceRequests[office].status ===
+                                      "approved"
+                                        ? "text-green-500"
+                                        : ""
+                                    }
+                                  >
+                                    {clearanceRequests[office].status}
+                                  </strong>
+                                  .
+                                </p>
+                                {clearanceRequests[office].status !==
+                                  "approved" && (
                                   <button
-                                    onClick={handleRequestClearance}
-                                    className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                                    onClick={() =>
+                                      openResubmitModal(office)
+                                    }
+                                    className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
                                     disabled={isUploading}
                                   >
                                     {isUploading
-                                      ? "Requesting..."
-                                      : "Request Clearance"}
+                                      ? "Resubmitting..."
+                                      : "Resubmit Clearance"}
                                   </button>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
+                                )}
+                                {clearanceRequests[office].fileURLs &&
+                                clearanceRequests[office].fileURLs.length >
+                                  0 ? (
+                                  <div className="mt-2">
+                                    <p className="text-sm font-medium text-gray-700">
+                                      Submitted Files:
+                                    </p>
+                                    <ul>
+                                      {clearanceRequests[
+                                        office
+                                      ].fileURLs.map((url, index) => (
+                                        <li key={index}>
+                                          <a
+                                            href={url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-500 hover:underline"
+                                          >
+                                            File {index + 1}
+                                          </a>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ) : null}
+                              </div>
+                            ) : (
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                  Optional: Submit Files (e.g., proof of
+                                  payment, documents)
+                                </label>
+                                <input
+                                  type="file"
+                                  multiple
+                                  onChange={handleFileChange}
+                                  className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                />
+                                <button
+                                  onClick={handleRequestClearance}
+                                  className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                                  disabled={isUploading}
+                                >
+                                  {isUploading
+                                    ? "Requesting..."
+                                    : "Request Clearance"}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                   </React.Fragment>
                 ))}
               </tbody>
