@@ -136,6 +136,8 @@ const StudentClearance = () => {
           }
         });
 
+        console.log("Fetched office requirements:", requirementsData); // Debug log
+
         setOfficeRequirements(requirementsData);
       } catch (error) {
         console.error("Error fetching office requirements:", error);
@@ -241,7 +243,6 @@ const StudentClearance = () => {
   const specialSubjects = sortedSubjects.filter((subject) =>
     SPECIAL_SUBJECTS.includes(subject)
   );
-  console.log("Office Requirements:", officeRequirements);
 
   return (
     <SidebarStudent>
@@ -456,6 +457,12 @@ const StudentClearance = () => {
                                   <li key={index}>
                                     <strong>{requirement.name}:</strong>{" "}
                                     {requirement.description}
+                                    <br />
+                                    <strong>Office:</strong>{" "}
+                                    {requirement.office}
+                                    <br />
+                                    <strong>Education Levels:</strong>{" "}
+                                    {requirement.educationLevels.join(", ")}
                                   </li>
                                 )
                               )}
