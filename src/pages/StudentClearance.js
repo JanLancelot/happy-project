@@ -241,6 +241,7 @@ const StudentClearance = () => {
   const specialSubjects = sortedSubjects.filter((subject) =>
     SPECIAL_SUBJECTS.includes(subject)
   );
+  console.log("Office Requirements:", officeRequirements);
 
   return (
     <SidebarStudent>
