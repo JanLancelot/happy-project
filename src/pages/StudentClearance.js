@@ -155,21 +155,23 @@ const StudentClearance = () => {
       }
 
       const clearanceRequestsRef = collection(db, "clearanceRequests");
+      const officerRequirement = officeRequirements.find(
+        (requirement) => requirement.office === selectedSubject
+      );
+      const officerId = officerRequirement ? officerRequirement.addedBy : null;
 
       if (SPECIAL_SUBJECTS.includes(selectedSubject)) {
-        // Office requirement clearance request
         await addDoc(clearanceRequestsRef, {
           studentId: currentUser.uid,
           studentName: studentData.fullName,
           section: studentData.section,
           subject: selectedSubject,
-          // No teacherUid for office requirements
+          officerId: officerId,
           timestamp: serverTimestamp(),
           fileURLs: fileURLs,
           status: "pending",
         });
       } else {
-        // Regular subject clearance request
         const subjectRequirements = classRequirements[selectedSubject];
         if (subjectRequirements && subjectRequirements.length > 0) {
           await addDoc(clearanceRequestsRef, {
