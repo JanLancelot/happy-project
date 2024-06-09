@@ -273,16 +273,17 @@ const StudentClearance = () => {
                               )
                             )}
 
-                            {/* Display office requirements (if any) */}
+                            {/* Display office requirements only if they exist for the subject */}
                             {Object.entries(officeRequirements).map(
-                              ([office, requirement]) => (
-                                <li key={office}>
-                                  <strong>
-                                    {office} - {requirement.name}:
-                                  </strong>{" "}
-                                  {requirement.description}
-                                </li>
-                              )
+                              ([office, requirement]) =>
+                                requirement.name ? ( // Check if requirement.name exists
+                                  <li key={office}>
+                                    <strong>
+                                      {office} - {requirement.name}:
+                                    </strong>{" "}
+                                    {requirement.description}
+                                  </li>
+                                ) : null // Render nothing if requirement doesn't exist
                             )}
                           </ul>
 
