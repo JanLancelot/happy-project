@@ -244,6 +244,8 @@ const StudentClearance = () => {
     SPECIAL_SUBJECTS.includes(subject)
   );
 
+  console.log("Office Requirements: ", officeRequirements);
+
   return (
     <SidebarStudent>
       <div className="container mx-auto p-4">
