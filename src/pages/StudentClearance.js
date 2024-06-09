@@ -55,45 +55,53 @@ const StudentClearance = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    const fetchRequirements = async () => {
+    const fetchClassRequirements = async () => {
       if (!studentData || !studentData.section) return;
 
       try {
-        // Fetch class requirements
         const classesRef = collection(db, "classes");
         const classQuery = query(
           classesRef,
           where("sectionName", "==", studentData.section)
         );
         const classSnapshot = await getDocs(classQuery);
+
         if (!classSnapshot.empty) {
           const classData = classSnapshot.docs[0].data();
           setClassRequirements(classData.requirements || {});
         }
-
-        // Fetch office requirements
-        const officeReqsRef = collection(db, "officeRequirements");
-        const officeReqsQuery = query(
-          officeReqsRef,
-          where("educationLevels", "array-contains", studentData.educationLevel)
-        );
-        const officeReqsSnapshot = await getDocs(officeReqsQuery);
-
-        const officeReqsData = {};
-        officeReqsSnapshot.forEach((doc) => {
-          const data = doc.data();
-          officeReqsData[data.office] = {
-            name: data.name,
-            description: data.description,
-          };
-        });
-        setOfficeRequirements(officeReqsData);
       } catch (error) {
-        console.error("Error fetching requirements:", error);
+        console.error("Error fetching class requirements:", error);
       }
     };
 
-    fetchRequirements();
+    fetchClassRequirements();
+  }, [studentData]);
+
+  useEffect(() => {
+    const fetchOfficeRequirements = async () => {
+      if (!studentData) return;
+
+      try {
+        const officeReqRef = collection(db, "officeRequirements");
+        const q = query(
+          officeReqRef,
+          where("educationLevels", "array-contains", studentData.educationLevel)
+        );
+        const officeReqSnapshot = await getDocs(q);
+
+        const reqData = {};
+        officeReqSnapshot.forEach((doc) => {
+          const data = doc.data();
+          reqData[data.office] = data;
+        });
+        setOfficeRequirements(reqData);
+      } catch (error) {
+        console.error("Error fetching office requirements:", error);
+      }
+    };
+
+    fetchOfficeRequirements();
   }, [studentData]);
 
   useEffect(() => {
@@ -102,7 +110,10 @@ const StudentClearance = () => {
 
       try {
         const requestsRef = collection(db, "clearanceRequests");
-        const q = query(requestsRef, where("studentId", "==", currentUser.uid));
+        const q = query(
+          requestsRef,
+          where("studentId", "==", currentUser.uid)
+        );
         const requestsSnapshot = await getDocs(q);
 
         const requestsData = {};
@@ -151,21 +162,25 @@ const StudentClearance = () => {
 
       const clearanceRequestsRef = collection(db, "clearanceRequests");
 
-      const subjectRequirements = classRequirements[selectedSubject];
-      if (subjectRequirements && subjectRequirements.length > 0) {
+      // Determine teacherUid based on whether it's a class or office requirement
+      const teacherUid =
+        classRequirements[selectedSubject]?.[0]?.teacherUid ||
+        officeRequirements[selectedSubject]?.addedBy;
+
+      if (teacherUid) {
         await addDoc(clearanceRequestsRef, {
           studentId: currentUser.uid,
           studentName: studentData.fullName,
           section: studentData.section,
           subject: selectedSubject,
-          teacherUid: subjectRequirements[0].teacherUid,
+          teacherUid: teacherUid,
           timestamp: serverTimestamp(),
           fileURLs: fileURLs,
           status: "pending",
         });
       } else {
         alert(
-          "No requirements found for this subject. You do not need to request clearance."
+          "Unable to determine the responsible person for this clearance. Please contact the administration."
         );
         return;
       }
@@ -197,29 +212,39 @@ const StudentClearance = () => {
     try {
       const requestToDelete = clearanceRequests[subject];
       if (requestToDelete) {
-        await deleteDoc(doc(db, "clearanceRequests", requestToDelete.id));
+        await deleteDoc(
+          doc(db, "clearanceRequests", requestToDelete.id)
+        );
       }
 
       await handleRequestClearance();
     } catch (error) {
       console.error("Error resubmitting clearance:", error);
-      alert("Error resubmitting clearance request. Please try again later.");
+      alert(
+        "Error resubmitting clearance request. Please try again later."
+      );
     }
   };
 
   return (
     <SidebarStudent>
       <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">Student Clearance</h2>
+        <h2 className="text-2xl font-semibold mb-4">
+          Student Clearance
+        </h2>
 
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr>
-              <th className="py-2 border-b border-gray-200">Subject</th>
+              <th className="py-2 border-b border-gray-200">
+                Subject
+              </th>
               <th className="py-2 border-b border-gray-200 text-center">
                 Cleared
               </th>
-              <th className="py-2 border-b border-gray-200">Details</th>
+              <th className="py-2 border-b border-gray-200">
+                Details
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -258,84 +283,83 @@ const StudentClearance = () => {
                     </tr>
 
                     {/* Expandable Section for Requirements & Request */}
-                    {selectedSubject === subject && (
-                      <tr className="bg-gray-100">
-                        <td colSpan={3} className="border px-4 py-2">
-                          {/* Requirements List */}
-                          <ul className="list-disc list-inside">
-                            {/* Display class requirements */}
-                            {(classRequirements[subject] || []).map(
-                              (requirement, index) => (
+                    {selectedSubject === subject &&
+                      (classRequirements[subject] ||
+                        officeRequirements[subject]) && (
+                        <tr className="bg-gray-100">
+                          <td
+                            colSpan={3}
+                            className="border px-4 py-2"
+                          >
+                            {/* Requirements List */}
+                            <ul className="list-disc list-inside">
+                              {(
+                                classRequirements[subject] ||
+                                officeRequirements[subject] ||
+                                []
+                              ).map((requirement, index) => (
                                 <li key={index}>
-                                  <strong>{requirement.name}:</strong>{" "}
+                                  <strong>
+                                    {requirement.name}:
+                                  </strong>{" "}
                                   {requirement.description}
                                 </li>
-                              )
-                            )}
+                              ))}
+                            </ul>
 
-                            {/* Display office requirements only if they exist for the subject */}
-                            {Object.entries(officeRequirements).map(
-                              ([office, requirement]) =>
-                                requirement.name ? ( // Check if requirement.name exists
-                                  <li key={office}>
-                                    <strong>
-                                      {office} - {requirement.name}:
-                                    </strong>{" "}
-                                    {requirement.description}
-                                  </li>
-                                ) : null // Render nothing if requirement doesn't exist
-                            )}
-                          </ul>
-
-                          {/* Request/Resubmit Clearance Section */}
-                          <div className="mt-4">
-                            {clearanceRequests[subject] ? (
-                              <div>
-                                <p className="mb-2">
-                                  <FontAwesomeIcon
-                                    icon={faExclamationCircle}
-                                    className={
-                                      clearanceRequests[subject].status ===
-                                      "approved"
-                                        ? "text-green-500 mr-2"
-                                        : "text-yellow-500 mr-2"
-                                    }
-                                  />
-                                  Your clearance request is currently{" "}
-                                  <strong
-                                    className={
-                                      clearanceRequests[subject].status ===
-                                      "approved"
+                            {/* Request/Resubmit Clearance Section */}
+                            <div className="mt-4">
+                              {clearanceRequests[subject] ? (
+                                <div>
+                                  <p
+                                    className={`mb-2 ${
+                                      clearanceRequests[subject]
+                                        .status === "approved"
                                         ? "text-green-500"
-                                        : ""
-                                    }
+                                        : "text-yellow-500"
+                                    }`}
                                   >
-                                    {clearanceRequests[subject].status}
-                                  </strong>
-                                  .
-                                </p>
-                                {clearanceRequests[subject].status !==
-                                  "approved" && (
-                                  <button
-                                    onClick={() => openResubmitModal(subject)}
-                                    className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
-                                    disabled={isUploading}
-                                  >
-                                    {isUploading
-                                      ? "Resubmitting..."
-                                      : "Resubmit Clearance"}
-                                  </button>
-                                )}
-                                {clearanceRequests[subject].fileURLs &&
-                                clearanceRequests[subject].fileURLs.length >
-                                  0 ? (
-                                  <div className="mt-2">
-                                    <p className="text-sm font-medium text-gray-700">
-                                      Submitted Files:
-                                    </p>
-                                    <ul>
-                                      {clearanceRequests[subject].fileURLs.map(
-                                        (url, index) => (
+                                    <FontAwesomeIcon
+                                      icon={faExclamationCircle}
+                                      className="mr-2"
+                                    />
+                                    Your clearance request is
+                                    currently{" "}
+                                    <strong>
+                                      {
+                                        clearanceRequests[subject]
+                                          .status
+                                      }
+                                    </strong>
+                                    .
+                                  </p>
+
+                                  {/* Allow resubmission only if not approved */}
+                                  {clearanceRequests[subject]
+                                    .status !== "approved" && (
+                                    <button
+                                      onClick={() =>
+                                        openResubmitModal(subject)
+                                      }
+                                      className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
+                                      disabled={isUploading}
+                                    >
+                                      {isUploading
+                                        ? "Resubmitting..."
+                                        : "Resubmit Clearance"}
+                                    </button>
+                                  )}
+                                  {clearanceRequests[subject].fileURLs &&
+                                  clearanceRequests[subject].fileURLs.length >
+                                    0 ? (
+                                    <div className="mt-2">
+                                      <p className="text-sm font-medium text-gray-700">
+                                        Submitted Files:
+                                      </p>
+                                      <ul>
+                                        {clearanceRequests[
+                                          subject
+                                        ].fileURLs.map((url, index) => (
                                           <li key={index}>
                                             <a
                                               href={url}
@@ -346,39 +370,38 @@ const StudentClearance = () => {
                                               File {index + 1}
                                             </a>
                                           </li>
-                                        )
-                                      )}
-                                    </ul>
-                                  </div>
-                                ) : null}
-                              </div>
-                            ) : (
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                  Optional: Submit Files (e.g., proof of
-                                  payment, documents)
-                                </label>
-                                <input
-                                  type="file"
-                                  multiple
-                                  onChange={handleFileChange}
-                                  className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                                />
-                                <button
-                                  onClick={handleRequestClearance}
-                                  className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-                                  disabled={isUploading}
-                                >
-                                  {isUploading
-                                    ? "Requesting..."
-                                    : "Request Clearance"}
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  ) : null}
+                                </div>
+                              ) : (
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700">
+                                    Optional: Submit Files (e.g., proof of
+                                    payment, documents)
+                                  </label>
+                                  <input
+                                    type="file"
+                                    multiple
+                                    onChange={handleFileChange}
+                                    className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                  />
+                                  <button
+                                    onClick={handleRequestClearance}
+                                    className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                                    disabled={isUploading}
+                                  >
+                                    {isUploading
+                                      ? "Requesting..."
+                                      : "Request Clearance"}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
                   </React.Fragment>
                 )
               )}
