@@ -34,7 +34,7 @@ const StudentClearance = () => {
   const { currentUser } = useAuth();
   const [studentData, setStudentData] = useState(null);
   const [classRequirements, setClassRequirements] = useState({});
-  const [officeRequirements, setOfficeRequirements] = useState({});
+  const [officeRequirements, setOfficeRequirements] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
@@ -89,29 +89,19 @@ const StudentClearance = () => {
 
   useEffect(() => {
     const fetchOfficeRequirements = async () => {
-      if (!studentData?.educationLevel) return;
-
       try {
         const officeReqsRef = collection(db, "officeRequirements");
-        const q = query(
-          officeReqsRef,
-          where("educationLevels", "array-contains", studentData.educationLevel)
+        const officeReqsSnapshot = await getDocs(officeReqsRef);
+        setOfficeRequirements(
+          officeReqsSnapshot.docs.map((doc) => doc.data())
         );
-        const officeReqsSnapshot = await getDocs(q);
-
-        const reqsData = {};
-        officeReqsSnapshot.forEach((doc) => {
-          const data = doc.data();
-          reqsData[data.office] = (reqsData[data.office] || []).concat(data);
-        });
-        setOfficeRequirements(reqsData);
       } catch (error) {
         console.error("Error fetching office requirements:", error);
       }
     };
 
     fetchOfficeRequirements();
-  }, [studentData?.educationLevel]);
+  }, []);
 
   useEffect(() => {
     const fetchClearanceRequests = async () => {
@@ -119,7 +109,10 @@ const StudentClearance = () => {
 
       try {
         const requestsRef = collection(db, "clearanceRequests");
-        const q = query(requestsRef, where("studentId", "==", currentUser.uid));
+        const q = query(
+          requestsRef,
+          where("studentId", "==", currentUser.uid)
+        );
         const requestsSnapshot = await getDocs(q);
 
         const requestsData = {};
@@ -250,14 +243,13 @@ const StudentClearance = () => {
   const specialSubjects = sortedSubjects.filter((subject) =>
     SPECIAL_SUBJECTS.includes(subject)
   );
-  
-  console.log("Office Requirements:", officeRequirements)
 
   return (
     <SidebarStudent>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Student Clearance</h2>
 
+        {/* Regular Subjects Table */}
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr>
@@ -301,6 +293,7 @@ const StudentClearance = () => {
                   </td>
                 </tr>
 
+                {/* Expandable section for regular subject requirements */}
                 {selectedSubject === subject &&
                   classRequirements[subject] && (
                     <tr className="bg-gray-100">
@@ -414,6 +407,7 @@ const StudentClearance = () => {
           </tbody>
         </table>
 
+        {/* Office Requirements Table */}
         {specialSubjects.length > 0 && (
           <div className="mt-8">
             <h3 className="text-xl font-semibold mb-4">
@@ -472,14 +466,16 @@ const StudentClearance = () => {
                         <td colSpan={3} className="border px-4 py-2">
                           {/* Office Requirements List */}
                           <ul className="list-disc list-inside">
-                            {(officeRequirements[office] || []).map(
-                              (requirement, index) => (
+                            {officeRequirements
+                              .filter(
+                                (requirement) => requirement.office === office
+                              )
+                              .map((requirement, index) => (
                                 <li key={index}>
                                   <strong>{requirement.name}:</strong>{" "}
                                   {requirement.description}
                                 </li>
-                              )
-                            )}
+                              ))}
                           </ul>
 
                           {/* Request/Resubmit Clearance Section */}
