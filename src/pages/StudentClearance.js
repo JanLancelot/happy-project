@@ -301,7 +301,7 @@ const StudentClearance = () => {
                         <td colSpan={3} className="border px-4 py-2">
                           {/* Requirements List */}
                           <ul className="list-disc list-inside">
-                            {((["Library", "Finance", "Basic Education Registrar", "Character Renewal Office"].includes(
+                            {((["Librarian", "Finance", "Basic Education Registrar", "Character Renewal Office"].includes(
                               selectedSubject
                             )
                               ? [officeRequirements[selectedSubject]]
