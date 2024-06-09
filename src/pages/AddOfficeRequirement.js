@@ -56,7 +56,7 @@ function AddOfficeRequirement() {
 
         switch (userRole) {
           case "librarian":
-            setOfficeName("Library");
+            setOfficeName("Librarian");
             break;
           case "finance":
             setOfficeName("Finance");
