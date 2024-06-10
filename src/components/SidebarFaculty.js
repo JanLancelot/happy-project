@@ -26,11 +26,17 @@ const auth = getAuth();
 const db = getFirestore();
 
 const navigation = [
-  { name: "Dashboard", href: "/approve-clearance-office", icon: HomeIcon, current: true },
-  { name: "Clearances", href: "/add-office-requirement", icon: DocumentDuplicateIcon, current: false },
-  { name: "Classes", href: "/view-classes", icon: AcademicCapIcon, current: false },
+  { name: "Dashboard", href: "/approve-clearance-faculty", icon: HomeIcon, current: true },
+  {
+    name: "Clearances",
+    href: "/add-requirement",
+    icon: DocumentDuplicateIcon,
+    current: false,
+  },
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
+  { name: "View Classes", href: "/view-classes", icon: UserGroupIcon, current: false}
 ];
+
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
