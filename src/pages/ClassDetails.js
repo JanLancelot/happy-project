@@ -1,34 +1,44 @@
 import React, { useState, useEffect, useRef } from "react";
-import { collection, getDoc, getDocs, query, where, doc } from "firebase/firestore";
+import {
+  collection,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  doc,
+} from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import SidebarFaculty from "../components/SidebarFaculty";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheckCircle,
+  faTimesCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import { useParams } from "react-router-dom";
-import { PieChart, Pie, Cell, Legend } from "recharts"; 
-import ReactToPrint from "react-to-print"; 
-import * as XLSX from "xlsx"; 
+import { PieChart, Pie, Cell, Legend } from "recharts";
+import ReactToPrint from "react-to-print";
+import * as XLSX from "xlsx";
 
 function ClassDetails() {
   const { currentUser } = useAuth();
-  const { classId } = useParams(); 
+  const { classId } = useParams();
   const [classData, setClassData] = useState(null);
   const [students, setStudents] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [clearanceFilter, setClearanceFilter] = useState("all"); 
+  const [clearanceFilter, setClearanceFilter] = useState("all");
   const componentRef = useRef(null);
 
   useEffect(() => {
     const fetchClassData = async () => {
-      if (!classId || !currentUser) return; 
+      if (!classId || !currentUser) return;
 
       try {
         const classDocRef = doc(db, "classes", classId);
-        const classDocSnapshot = await getDoc(classDocRef); 
+        const classDocSnapshot = await getDoc(classDocRef);
 
-        if (classDocSnapshot.exists()) { 
+        if (classDocSnapshot.exists()) {
           const data = classDocSnapshot.data();
           setClassData(data);
 
@@ -97,15 +107,13 @@ function ClassDetails() {
   const chartData = [
     {
       name: "Cleared",
-      value: students.filter(
-        (student) => student.clearance[selectedSubject]
-      ).length,
+      value: students.filter((student) => student.clearance[selectedSubject])
+        .length,
     },
     {
       name: "Uncleared",
-      value: students.filter(
-        (student) => !student.clearance[selectedSubject]
-      ).length,
+      value: students.filter((student) => !student.clearance[selectedSubject])
+        .length,
     },
   ];
 
@@ -160,7 +168,11 @@ function ClassDetails() {
 
         <div className="mb-4 flex space-x-4">
           <div>
+            <label htmlFor="search" className="block text-gray-700">
+              Search:
+            </label>
             <input
+              id="search"
               type="text"
               placeholder="Search by student name..."
               value={searchQuery}
@@ -215,9 +227,7 @@ function ClassDetails() {
               <table className="min-w-full bg-white border border-gray-200">
                 <thead>
                   <tr>
-                    <th className="py-2 border-b border-gray-200">
-                      Name
-                    </th>
+                    <th className="py-2 border-b border-gray-200">Name</th>
                     <th className="py-2 border-b border-gray-200 text-center">
                       Cleared
                     </th>
@@ -226,9 +236,7 @@ function ClassDetails() {
                 <tbody>
                   {getFilteredStudents().map((student) => (
                     <tr key={student.uid}>
-                      <td className="border px-4 py-2">
-                        {student.fullName}
-                      </td>
+                      <td className="border px-4 py-2">{student.fullName}</td>
                       <td className="border px-4 py-2 text-center">
                         {student.clearance[selectedSubject] ? (
                           <FontAwesomeIcon
