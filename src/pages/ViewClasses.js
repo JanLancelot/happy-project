@@ -14,14 +14,18 @@ function ViewClasses() {
     const fetchClasses = async () => {
       if (currentUser) {
         try {
-          const allClassesSnapshot = await getDocs(collection(db, "classes"));
+          const allClassesSnapshot = await getDocs(
+            collection(db, "classes")
+          );
 
-          const teachingClasses = allClassesSnapshot.docs.filter((classDoc) => {
-            const subjects = classDoc.data().subjects || [];
-            return subjects.some(
-              (subject) => subject.teacherUid === currentUser.uid
-            );
-          });
+          const teachingClasses = allClassesSnapshot.docs.filter(
+            (classDoc) => {
+              const subjects = classDoc.data().subjects || [];
+              return subjects.some(
+                (subject) => subject.teacherUid === currentUser.uid
+              );
+            }
+          );
           setTeachingClasses(
             teachingClasses.map((doc) => ({
               id: doc.id,
@@ -29,9 +33,11 @@ function ViewClasses() {
             }))
           );
 
-          const advisoryClasses = allClassesSnapshot.docs.filter((classDoc) => {
-            return classDoc.data().adviserUid === currentUser.uid;
-          });
+          const advisoryClasses = allClassesSnapshot.docs.filter(
+            (classDoc) => {
+              return classDoc.data().adviserUid === currentUser.uid;
+            }
+          );
           setAdvisoryClasses(
             advisoryClasses.map((doc) => ({
               id: doc.id,
@@ -60,12 +66,8 @@ function ViewClasses() {
             <table className="min-w-full bg-white border border-gray-200">
               <thead>
                 <tr>
-                  <th className="py-2 border-b border-gray-200">
-                    Section Name
-                  </th>{" "}
-                  <th className="py-2 border-b border-gray-200">
-                    Education Level
-                  </th>
+                  <th className="py-2 border-b border-gray-200">Section Name</th> 
+                  <th className="py-2 border-b border-gray-200">Education Level</th>
                   <th className="py-2 border-b border-gray-200">Grade Level</th>
                 </tr>
               </thead>
@@ -77,16 +79,9 @@ function ViewClasses() {
                     className="hover:bg-gray-100"
                   >
                     <tr className="cursor-pointer">
-                      {" "}
-                      <td className="border px-4 py-2">
-                        {classItem.sectionName}
-                      </td>
-                      <td className="border px-4 py-2">
-                        {classItem.educationLevel}
-                      </td>
-                      <td className="border px-4 py-2">
-                        {classItem.gradeLevel}
-                      </td>
+                      <td className="border px-4 py-2">{classItem.sectionName}</td>
+                      <td className="border px-4 py-2">{classItem.educationLevel}</td>
+                      <td className="border px-4 py-2">{classItem.gradeLevel}</td>
                     </tr>
                   </Link>
                 ))}
@@ -103,12 +98,8 @@ function ViewClasses() {
             <table className="min-w-full bg-white border border-gray-200">
               <thead>
                 <tr>
-                  <th className="py-2 border-b border-gray-200">
-                    Section Name
-                  </th>{" "}
-                  <th className="py-2 border-b border-gray-200">
-                    Education Level
-                  </th>
+                  <th className="py-2 border-b border-gray-200">Section Name</th>
+                  <th className="py-2 border-b border-gray-200">Education Level</th>
                   <th className="py-2 border-b border-gray-200">Grade Level</th>
                 </tr>
               </thead>
@@ -120,16 +111,9 @@ function ViewClasses() {
                     className="hover:bg-gray-100"
                   >
                     <tr className="cursor-pointer">
-                      {" "}
-                      <td className="border px-4 py-2">
-                        {classItem.sectionName}
-                      </td>
-                      <td className="border px-4 py-2">
-                        {classItem.educationLevel}
-                      </td>
-                      <td className="border px-4 py-2">
-                        {classItem.gradeLevel}
-                      </td>
+                      <td className="border px-4 py-2">{classItem.sectionName}</td>
+                      <td className="border px-4 py-2">{classItem.educationLevel}</td>
+                      <td className="border px-4 py-2">{classItem.gradeLevel}</td>
                     </tr>
                   </Link>
                 ))}
