@@ -9,40 +9,35 @@ import { useParams } from "react-router-dom";
 
 function ClassDetails() {
   const { currentUser } = useAuth();
-  const { sectionName } = useParams();
+  const { classId } = useParams();
   const [classData, setClassData] = useState(null);
   const [students, setStudents] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
-  const [filteredStudents, setFilteredStudents] = useState([]);
-  const [clearanceFilter, setClearanceFilter] = useState("all");
 
   useEffect(() => {
     const fetchClassData = async () => {
-      if (!sectionName) return;
-  
+      if (!classId) return;
+
       try {
-        const classQuery = query(
-          collection(db, "classes"),
-          where("sectionName", "==", sectionName)
-        );
-        const classQuerySnapshot = await getDocs(classQuery);
-  
-        if (!classQuerySnapshot.empty) {
-          const classDoc = classQuerySnapshot.docs[0];
-          const data = classDoc.data();
+        const classDocRef = doc(db, "classes", classId);
+        const classDocSnapshot = await getDoc(classDocRef);
+
+        if (classDocSnapshot.exists()) {
+          const data = classDocSnapshot.docs[0].data();
           setClassData(data);
-          setSelectedSubject(
-            data.subjects.find((s) => s.teacherUid === currentUser.uid)
-              ?.subject || null
-          );
+
+          const firstSubject = data.subjects.find(
+            (s) => s.teacherUid === currentUser.uid
+          )?.subject;
+          setSelectedSubject(firstSubject);
         }
       } catch (error) {
         console.error("Error fetching class data: ", error);
       }
     };
-  
+
     fetchClassData();
-  }, [sectionName, currentUser.uid]);
+  }, [classId, currentUser.uid]);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -68,25 +63,8 @@ function ClassDetails() {
     fetchStudents();
   }, [classData]);
 
-  useEffect(() => {
-    if (clearanceFilter === "all") {
-      setFilteredStudents(students);
-    } else {
-      setFilteredStudents(
-        students.filter((student) => {
-          const isCleared = student.clearance[selectedSubject];
-          return clearanceFilter === "cleared" ? isCleared : !isCleared;
-        })
-      );
-    }
-  }, [clearanceFilter, students, selectedSubject]);
-
   const handleSubjectChange = (subjectName) => {
     setSelectedSubject(subjectName);
-  };
-
-  const handleClearanceFilterChange = (e) => {
-    setClearanceFilter(e.target.value);
   };
 
   if (!classData) {
@@ -100,6 +78,7 @@ function ClassDetails() {
           Class Details: {classData.sectionName}
         </h2>
 
+        {/* Subject Selection (Dynamic) */}
         <div className="mb-4">
           <label htmlFor="subjectSelect" className="block text-gray-700">
             Select Subject:
@@ -123,28 +102,13 @@ function ClassDetails() {
           </select>
         </div>
 
-        <div className="mb-4">
-          <label htmlFor="clearanceFilter" className="block text-gray-700">
-            Filter by Clearance:
-          </label>
-          <select
-            id="clearanceFilter"
-            value={clearanceFilter}
-            onChange={handleClearanceFilterChange}
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-          >
-            <option value="all">All Students</option>
-            <option value="cleared">Cleared</option>
-            <option value="uncleared">Uncleared</option>
-          </select>
-        </div>
-
+        {/* Students Table */}
         {selectedSubject && (
           <div>
             <h3 className="text-xl font-semibold mb-2">
               Students - {selectedSubject}
             </h3>
-            {filteredStudents.length === 0 ? (
+            {students.length === 0 ? (
               <p>No students found.</p>
             ) : (
               <table className="min-w-full bg-white border border-gray-200">
@@ -157,7 +121,7 @@ function ClassDetails() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map((student) => (
+                  {students.map((student) => (
                     <tr key={student.uid}>
                       <td className="border px-4 py-2">{student.fullName}</td>
                       <td className="border px-4 py-2 text-center">
