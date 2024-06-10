@@ -10,7 +10,7 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../components/AuthContext";
 import SidebarFaculty from "../components/SidebarFaculty";
 import { useParams } from "react-router-dom";
 import { PieChart, Pie, Cell, Legend } from "recharts";
