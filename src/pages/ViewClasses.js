@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import SidebarFaculty from "../components/SidebarOffice";
+import SidebarFaculty from "../components/SidebarFaculty";
 
 function ViewClasses() {
   const { currentUser } = useAuth();

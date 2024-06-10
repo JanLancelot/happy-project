@@ -33,8 +33,8 @@ const navigation = [
     icon: DocumentDuplicateIcon,
     current: false,
   },
+  { name: "Classes", href: "/view-classes", icon: UserGroupIcon, current: false},
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
-  { name: "View Classes", href: "/view-classes", icon: UserGroupIcon, current: false}
 ];
 
 

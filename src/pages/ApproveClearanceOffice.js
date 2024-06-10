@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import SidebarFaculty from "../components/SidebarOffice";
+import SidebarOffice from "../components/SidebarOffice";
 import Modal from "../components/Modal";
 
 function ApproveClearanceOffice() {
@@ -157,7 +157,7 @@ function ApproveClearanceOffice() {
   };
 
   return (
-    <SidebarFaculty>
+    <SidebarOffice>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">
           Approve Clearance Requests
@@ -337,7 +337,7 @@ function ApproveClearanceOffice() {
           </div>
         </div>
       </Modal>
-    </SidebarFaculty>
+    </SidebarOffice>
   );
 }
 
