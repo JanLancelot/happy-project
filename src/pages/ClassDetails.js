@@ -16,18 +16,18 @@ function ClassDetails() {
 
   useEffect(() => {
     const fetchClassData = async () => {
-      if (!classId) return;
-  
+      if (!classId || !currentUser) return;
+
       try {
         const classDocRef = doc(db, "classes", classId);
         const classDocSnapshot = await getDoc(classDocRef);
-  
-        if (classDocSnapshot.exists()) { 
+
+        if (classDocSnapshot.exists()) {
           const data = classDocSnapshot.data();
           setClassData(data);
-  
+
           const firstSubject = data.subjects.find(
-            (s) => s.teacherUid === currentUser.uid
+            (s) => s.teacherUid === currentUser.uid 
           )?.subject;
           setSelectedSubject(firstSubject);
         }
@@ -35,9 +35,9 @@ function ClassDetails() {
         console.error("Error fetching class data: ", error);
       }
     };
-  
+
     fetchClassData();
-  }, [classId, currentUser.uid]);
+  }, [classId, currentUser]); 
 
   useEffect(() => {
     const fetchStudents = async () => {
