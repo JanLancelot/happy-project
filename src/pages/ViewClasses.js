@@ -18,6 +18,7 @@ function ViewClasses() {
             collection(db, "classes")
           );
 
+          // Filter teaching classes 
           const teachingClasses = allClassesSnapshot.docs.filter(
             (classDoc) => {
               const subjects = classDoc.data().subjects || [];
@@ -33,6 +34,7 @@ function ViewClasses() {
             }))
           );
 
+          // Filter advisory classes
           const advisoryClasses = allClassesSnapshot.docs.filter(
             (classDoc) => {
               return classDoc.data().adviserUid === currentUser.uid;
@@ -58,6 +60,7 @@ function ViewClasses() {
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Your Classes</h2>
 
+        {/* Teaching Classes Table */}
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-2">Teaching</h3>
           {teachingClasses.length === 0 ? (
@@ -73,6 +76,7 @@ function ViewClasses() {
               </thead>
               <tbody>
                 {teachingClasses.map((classItem) => (
+                  // Make the entire row a Link
                   <Link
                     to={`/class-details/${classItem.id}`}
                     key={classItem.id}
@@ -90,6 +94,7 @@ function ViewClasses() {
           )}
         </div>
 
+        {/* Advisory Classes Table */}
         <div>
           <h3 className="text-xl font-semibold mb-2">Advisory</h3>
           {advisoryClasses.length === 0 ? (
@@ -105,6 +110,7 @@ function ViewClasses() {
               </thead>
               <tbody>
                 {advisoryClasses.map((classItem) => (
+                  // Make the entire row a Link
                   <Link
                     to={`/class-details-adviser/${classItem.id}`}
                     key={classItem.id}
