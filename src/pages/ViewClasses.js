@@ -3,13 +3,13 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import SidebarFaculty from "../components/SidebarFaculty";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function ViewClasses() {
   const { currentUser } = useAuth();
   const [teachingClasses, setTeachingClasses] = useState([]);
   const [advisoryClasses, setAdvisoryClasses] = useState([]);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -49,7 +49,7 @@ function ViewClasses() {
   }, [currentUser]);
 
   const handleRowClick = (path) => {
-    history.push(path);
+    navigate(path);
   };
 
   return (
@@ -65,15 +65,9 @@ function ViewClasses() {
             <table className="min-w-full bg-white border border-gray-200">
               <thead>
                 <tr>
-                  <th className="py-2 border-b border-gray-200">
-                    Section Name
-                  </th>
-                  <th className="py-2 border-b border-gray-200">
-                    Education Level
-                  </th>
-                  <th className="py-2 border-b border-gray-200">
-                    Grade Level
-                  </th>
+                  <th className="py-2 border-b border-gray-200">Section Name</th>
+                  <th className="py-2 border-b border-gray-200">Education Level</th>
+                  <th className="py-2 border-b border-gray-200">Grade Level</th>
                 </tr>
               </thead>
               <tbody>
@@ -101,15 +95,9 @@ function ViewClasses() {
             <table className="min-w-full bg-white border border-gray-200">
               <thead>
                 <tr>
-                  <th className="py-2 border-b border-gray-200">
-                    Section Name
-                  </th>
-                  <th className="py-2 border-b border-gray-200">
-                    Education Level
-                  </th>
-                  <th className="py-2 border-b border-gray-200">
-                    Grade Level
-                  </th>
+                  <th className="py-2 border-b border-gray-200">Section Name</th>
+                  <th className="py-2 border-b border-gray-200">Education Level</th>
+                  <th className="py-2 border-b border-gray-200">Grade Level</th>
                 </tr>
               </thead>
               <tbody>
