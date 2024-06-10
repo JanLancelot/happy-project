@@ -26,6 +26,7 @@ function ViewClasses() {
               ...doc.data(),
             }))
           );
+          console.log("User Uid!: ", currentUser.uid);
 
           const advisoryQuery = query(
             collection(db, "classes"),
