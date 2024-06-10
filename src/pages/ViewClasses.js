@@ -46,6 +46,7 @@ function ViewClasses() {
 
     fetchClasses();
   }, [currentUser]);
+  console.log("Current User: ", currentUser.uid);
 
   return (
     <SidebarFaculty>
