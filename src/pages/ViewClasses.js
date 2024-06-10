@@ -61,7 +61,7 @@ function ViewClasses() {
 
       try {
         const studentsRef = collection(db, "students");
-        const q = query(studentsRef, where("classId", "==", selectedClass));
+        const q = query(studentsRef, where("sectionName", "==", selectedClass));
         const querySnapshot = await getDocs(q);
 
         const studentsData = querySnapshot.docs.map((doc) => ({
@@ -78,8 +78,8 @@ function ViewClasses() {
     fetchStudents();
   }, [selectedClass]);
 
-  const handleClassSelect = (classId) => {
-    setSelectedClass(classId);
+  const handleClassSelect = (sectionName) => {
+    setSelectedClass(sectionName);
   };
 
   return (
@@ -112,7 +112,7 @@ function ViewClasses() {
                 {teachingClasses.map((classItem) => (
                   <tr
                     key={classItem.id}
-                    onClick={() => handleClassSelect(classItem.id)}
+                    onClick={() => handleClassSelect(classItem.sectionName)}
                     className="cursor-pointer hover:bg-gray-100"
                   >
                     <td className="border px-4 py-2">
@@ -163,7 +163,7 @@ function ViewClasses() {
                 {advisoryClasses.map((classItem) => (
                   <tr
                     key={classItem.id}
-                    onClick={() => handleClassSelect(classItem.id)}
+                    onClick={() => handleClassSelect(classItem.sectionName)}
                     className="cursor-pointer hover:bg-gray-100"
                   >
                     <td className="border px-4 py-2">
