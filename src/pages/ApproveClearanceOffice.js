@@ -228,7 +228,7 @@ function ApproveClearanceOffice() {
                   Student Name
                 </th>
                 <th className="py-2 border-b border-gray-200">
-                  Subject
+                  Office
                 </th>
                 <th className="py-2 border-b border-gray-200">
                   Section

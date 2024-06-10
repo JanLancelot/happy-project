@@ -29,7 +29,7 @@ const navigation = [
   { name: "Dashboard", href: "/approve-clearance-office", icon: HomeIcon, current: true },
   {
     name: "Clearances",
-    href: "/add-requirement",
+    href: "/add-office-requirement",
     icon: DocumentDuplicateIcon,
     current: false,
   },
