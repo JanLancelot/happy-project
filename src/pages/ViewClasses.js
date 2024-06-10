@@ -13,32 +13,19 @@ function ViewClasses() {
     const fetchClasses = async () => {
       if (currentUser) {
         try {
-          const teachingQuery = query(
-            collection(db, "classes"),
-            where("subjects", "array-contains-any", [
-              { teacherUid: currentUser.uid },
-            ])
-          );
-          const teachingSnapshot = await getDocs(teachingQuery);
-          setTeachingClasses(
-            teachingSnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }))
-          );
-          console.log("User Uid!: ", currentUser.uid);
+          const allClassesSnapshot = await getDocs(collection(db, "classes"));
 
-          const advisoryQuery = query(
-            collection(db, "classes"),
-            where("adviserUid", "==", currentUser.uid)
-          );
-          const advisorySnapshot = await getDocs(advisoryQuery);
-          setAdvisoryClasses(
-            advisorySnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }))
-          );
+          const teachingClasses = allClassesSnapshot.docs.filter(classDoc => {
+            const subjects = classDoc.data().subjects || [];
+            return subjects.some(subject => subject.teacherUid === currentUser.uid);
+          });
+          setTeachingClasses(teachingClasses.map(doc => ({ id: doc.id, ...doc.data() })));
+
+          const advisoryClasses = allClassesSnapshot.docs.filter(classDoc => {
+            return classDoc.data().adviserUid === currentUser.uid;
+          });
+          setAdvisoryClasses(advisoryClasses.map(doc => ({ id: doc.id, ...doc.data() })));
+
         } catch (error) {
           console.error("Error fetching classes:", error);
         }
