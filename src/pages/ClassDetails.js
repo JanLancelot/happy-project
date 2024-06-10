@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, query, where, doc } from "firebase/firestore";
+import { collection, getDocs, getDoc, query, where, doc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import SidebarFaculty from "../components/SidebarFaculty";
@@ -9,7 +9,7 @@ import { useParams } from "react-router-dom";
 
 function ClassDetails() {
   const { currentUser } = useAuth();
-  const { classId } = useParams();
+  const { sectionName } = useParams();
   const [classData, setClassData] = useState(null);
   const [students, setStudents] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -18,14 +18,18 @@ function ClassDetails() {
 
   useEffect(() => {
     const fetchClassData = async () => {
-      if (!classId) return;
-
+      if (!sectionName) return;
+  
       try {
-        const classDocRef = doc(db, "classes", classId);
-        const classDocSnapshot = await getDocs(classDocRef);
-
-        if (!classDocSnapshot.empty) {
-          const data = classDocSnapshot.docs[0].data();
+        const classQuery = query(
+          collection(db, "classes"),
+          where("sectionName", "==", sectionName)
+        );
+        const classQuerySnapshot = await getDocs(classQuery);
+  
+        if (!classQuerySnapshot.empty) {
+          const classDoc = classQuerySnapshot.docs[0];
+          const data = classDoc.data();
           setClassData(data);
           setSelectedSubject(
             data.subjects.find((s) => s.teacherUid === currentUser.uid)
@@ -36,9 +40,9 @@ function ClassDetails() {
         console.error("Error fetching class data: ", error);
       }
     };
-
+  
     fetchClassData();
-  }, [classId, currentUser.uid]);
+  }, [sectionName, currentUser.uid]);
 
   useEffect(() => {
     const fetchStudents = async () => {

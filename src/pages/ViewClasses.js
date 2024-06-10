@@ -58,7 +58,7 @@ function ViewClasses() {
                   <td className="border px-4 py-2">{classItem.educationLevel}</td>
                   <td className="border px-4 py-2">{classItem.gradeLevel}</td>
                   <td className="border px-4 py-2">
-                    <Link to={`/class-details/${classItem.id}`}>
+                    <Link to={`/class-details/${classItem.sectionName}`}>
                       {classItem.sectionName}
                     </Link>
                   </td>
