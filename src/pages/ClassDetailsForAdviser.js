@@ -6,9 +6,11 @@ import {
   query,
   where,
   doc,
+  updateDoc,
+  arrayUnion,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { useAuth } from "../components/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import SidebarFaculty from "../components/SidebarFaculty";
 import { useParams } from "react-router-dom";
 import { PieChart, Pie, Cell, Legend } from "recharts";
@@ -20,6 +22,7 @@ import {
   faAngleDown,
   faAngleUp,
 } from "@fortawesome/free-solid-svg-icons";
+import Modal from "../components/Modal";
 
 function ClassDetailsForAdviser() {
   const { currentUser } = useAuth();
@@ -28,6 +31,10 @@ function ClassDetailsForAdviser() {
   const [students, setStudents] = useState([]);
   const [expandedStudent, setExpandedStudent] = useState(null);
   const componentRef = useRef(null);
+  const [isRequirementModalOpen, setIsRequirementModalOpen] = useState(false);
+  const [newRequirementName, setNewRequirementName] = useState("");
+  const [newRequirementDescription, setNewRequirementDescription] =
+    useState("");
 
   useEffect(() => {
     const fetchClassData = async () => {
@@ -107,6 +114,50 @@ function ClassDetailsForAdviser() {
     setExpandedStudent((prev) => (prev === studentId ? null : studentId));
   };
 
+  const openAddRequirementModal = () => {
+    setIsRequirementModalOpen(true);
+  };
+
+  const closeAddRequirementModal = () => {
+    setIsRequirementModalOpen(false);
+    setNewRequirementName("");
+    setNewRequirementDescription("");
+  };
+
+  const handleAddRequirement = async () => {
+    try {
+      const classDocRef = doc(db, "classes", classId);
+      await updateDoc(classDocRef, {
+        [`requirements.Class Adviser`]: arrayUnion({
+          name: newRequirementName,
+          description: newRequirementDescription,
+          teacherUid: currentUser.uid,
+        }),
+      });
+
+      setClassData((prevData) => ({
+        ...prevData,
+        requirements: {
+          ...prevData.requirements,
+          "Class Adviser": [
+            ...(prevData.requirements["Class Adviser"] || []),
+            {
+              name: newRequirementName,
+              description: newRequirementDescription,
+              teacherUid: currentUser.uid,
+            },
+          ],
+        },
+      }));
+
+      closeAddRequirementModal();
+      alert("Requirement added successfully!");
+    } catch (error) {
+      console.error("Error adding requirement:", error);
+      alert("Error adding requirement. Please try again later.");
+    }
+  };
+
   if (!classData) {
     return <div>Loading class details...</div>;
   }
@@ -127,6 +178,15 @@ function ClassDetailsForAdviser() {
             )}
             content={() => componentRef.current}
           />
+        </div>
+
+        <div className="mb-4">
+          <button
+            onClick={openAddRequirementModal}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Add Adviser Requirement
+          </button>
         </div>
 
         {students.length === 0 ? (
@@ -235,6 +295,58 @@ function ClassDetailsForAdviser() {
             <Legend />
           </PieChart>
         </div>
+        {/* Modal for Adding Requirement */}
+        <Modal
+          isOpen={isRequirementModalOpen}
+          onClose={closeAddRequirementModal}
+        >
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Add Requirement</h3>
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="requirementName"
+              >
+                Requirement Name:
+              </label>
+              <input
+                type="text"
+                id="requirementName"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                value={newRequirementName}
+                onChange={(e) => setNewRequirementName(e.target.value)}
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="requirementDescription"
+              >
+                Description:
+              </label>
+              <textarea
+                id="requirementDescription"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                value={newRequirementDescription}
+                onChange={(e) => setNewRequirementDescription(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={closeAddRequirementModal}
+                className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddRequirement}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </SidebarFaculty>
   );
