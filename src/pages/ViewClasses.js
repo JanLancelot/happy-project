@@ -11,42 +11,41 @@ function ViewClasses() {
 
   useEffect(() => {
     const fetchClasses = async () => {
-      if (!currentUser) return;
+      if (currentUser) {
+        try {
+          const teachingQuery = query(
+            collection(db, "classes"),
+            where("subjects", "array-contains-any", [
+              { teacherUid: currentUser.uid },
+            ])
+          );
+          const teachingSnapshot = await getDocs(teachingQuery);
+          setTeachingClasses(
+            teachingSnapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }))
+          );
 
-      try {
-        const teachingQuery = query(
-          collection(db, "classes"),
-          where("subjects", "array-contains-any", [
-            { teacherUid: currentUser.uid },
-          ])
-        );
-        const teachingSnapshot = await getDocs(teachingQuery);
-        setTeachingClasses(
-          teachingSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-        );
-
-        const advisoryQuery = query(
-          collection(db, "classes"),
-          where("adviserUid", "==", currentUser.uid)
-        );
-        const advisorySnapshot = await getDocs(advisoryQuery);
-        setAdvisoryClasses(
-          advisorySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-        );
-      } catch (error) {
-        console.error("Error fetching classes:", error);
+          const advisoryQuery = query(
+            collection(db, "classes"),
+            where("adviserUid", "==", currentUser.uid)
+          );
+          const advisorySnapshot = await getDocs(advisoryQuery);
+          setAdvisoryClasses(
+            advisorySnapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }))
+          );
+        } catch (error) {
+          console.error("Error fetching classes:", error);
+        }
       }
     };
 
     fetchClasses();
   }, [currentUser]);
-  console.log("Current User: ", currentUser.uid);
 
   return (
     <SidebarFaculty>
@@ -65,9 +64,7 @@ function ViewClasses() {
                   <th className="py-2 border-b border-gray-200">
                     Education Level
                   </th>
-                  <th className="py-2 border-b border-gray-200">
-                    Grade Level
-                  </th>
+                  <th className="py-2 border-b border-gray-200">Grade Level</th>
                   <th className="py-2 border-b border-gray-200">
                     Section Name
                   </th>
@@ -80,9 +77,7 @@ function ViewClasses() {
                     <td className="border px-4 py-2">
                       {classItem.educationLevel}
                     </td>
-                    <td className="border px-4 py-2">
-                      {classItem.gradeLevel}
-                    </td>
+                    <td className="border px-4 py-2">{classItem.gradeLevel}</td>
                     <td className="border px-4 py-2">
                       {classItem.sectionName}
                     </td>
@@ -113,9 +108,7 @@ function ViewClasses() {
                   <th className="py-2 border-b border-gray-200">
                     Education Level
                   </th>
-                  <th className="py-2 border-b border-gray-200">
-                    Grade Level
-                  </th>
+                  <th className="py-2 border-b border-gray-200">Grade Level</th>
                   <th className="py-2 border-b border-gray-200">
                     Section Name
                   </th>
@@ -127,9 +120,7 @@ function ViewClasses() {
                     <td className="border px-4 py-2">
                       {classItem.educationLevel}
                     </td>
-                    <td className="border px-4 py-2">
-                      {classItem.gradeLevel}
-                    </td>
+                    <td className="border px-4 py-2">{classItem.gradeLevel}</td>
                     <td className="border px-4 py-2">
                       {classItem.sectionName}
                     </td>
