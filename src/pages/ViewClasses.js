@@ -127,7 +127,7 @@ function ViewClasses() {
                       {classItem.gradeLevel}
                     </td>
                     <td className="border px-4 py-2">
-                      <Link to={`/class-details/${classItem.id}`}>
+                      <Link to={`/class-details-adviser/${classItem.id}`}>
                         {classItem.sectionName}
                       </Link>
                     </td>
