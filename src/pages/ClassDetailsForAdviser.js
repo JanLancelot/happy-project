@@ -179,8 +179,9 @@ function ClassDetailsForAdviser() {
                             </tr>
                           </thead>
                           <tbody>
-                            {Object.entries(student.clearance).map(
-                              ([subject, isCleared]) => (
+                            {Object.entries(student.clearance)
+                              .sort(([a], [b]) => a.localeCompare(b))
+                              .map(([subject, isCleared]) => (
                                 <tr key={subject}>
                                   <td className="border px-4 py-2">
                                     {subject}
@@ -199,8 +200,7 @@ function ClassDetailsForAdviser() {
                                     )}
                                   </td>
                                 </tr>
-                              )
-                            )}
+                              ))}
                           </tbody>
                         </table>
                       </td>
