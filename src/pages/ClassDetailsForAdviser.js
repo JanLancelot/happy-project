@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { collection, getDoc, getDocs, query, where, doc } from "firebase/firestore";
+import {
+  collection,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  doc,
+} from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import SidebarFaculty from "../components/SidebarFaculty";
@@ -19,18 +26,18 @@ function ClassDetailsForAdviser() {
   const { classId } = useParams();
   const [classData, setClassData] = useState(null);
   const [students, setStudents] = useState([]);
-  const [expandedStudent, setExpandedStudent] = useState(null); 
+  const [expandedStudent, setExpandedStudent] = useState(null);
   const componentRef = useRef(null);
 
   useEffect(() => {
     const fetchClassData = async () => {
       if (!classId) return;
-  
+
       try {
         const classDocRef = doc(db, "classes", classId);
         const classDocSnapshot = await getDoc(classDocRef);
-  
-        if (classDocSnapshot.exists()) { 
+
+        if (classDocSnapshot.exists()) {
           const data = classDocSnapshot.data();
           setClassData(data);
         }
@@ -38,7 +45,7 @@ function ClassDetailsForAdviser() {
         console.error("Error fetching class data: ", error);
       }
     };
-  
+
     fetchClassData();
   }, [classId]);
 
@@ -149,32 +156,53 @@ function ClassDetailsForAdviser() {
                     </td>
                     <td className="border px-4 py-2 text-center">
                       <FontAwesomeIcon
-                        icon={expandedStudent === student.uid ? faAngleUp : faAngleDown}
+                        icon={
+                          expandedStudent === student.uid
+                            ? faAngleUp
+                            : faAngleDown
+                        }
                       />
                     </td>
                   </tr>
                   {expandedStudent === student.uid && (
                     <tr className="bg-gray-100">
                       <td colSpan={3} className="border px-4 py-2">
-                        <h4 className="font-medium mb-2">Clearances:</h4>
-                        <ul className="list-disc list-inside">
-                          {Object.entries(student.clearance).map(([subject, isCleared]) => (
-                            <li key={subject} className="flex items-center">
-                              <span className="mr-2">{subject}:</span>
-                              {isCleared ? (
-                                <FontAwesomeIcon
-                                  icon={faCheckCircle}
-                                  className="text-green-500"
-                                />
-                              ) : (
-                                <FontAwesomeIcon
-                                  icon={faTimesCircle}
-                                  className="text-red-500"
-                                />
-                              )}
-                            </li>
-                          ))}
-                        </ul>
+                        <table className="min-w-full">
+                          <thead>
+                            <tr>
+                              <th className="py-2 border-b border-gray-200">
+                                Subject
+                              </th>
+                              <th className="py-2 border-b border-gray-200 text-center">
+                                Status
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.entries(student.clearance).map(
+                              ([subject, isCleared]) => (
+                                <tr key={subject}>
+                                  <td className="border px-4 py-2">
+                                    {subject}
+                                  </td>
+                                  <td className="border px-4 py-2 text-center">
+                                    {isCleared ? (
+                                      <FontAwesomeIcon
+                                        icon={faCheckCircle}
+                                        className="text-green-500"
+                                      />
+                                    ) : (
+                                      <FontAwesomeIcon
+                                        icon={faTimesCircle}
+                                        className="text-red-500"
+                                      />
+                                    )}
+                                  </td>
+                                </tr>
+                              )
+                            )}
+                          </tbody>
+                        </table>
                       </td>
                     </tr>
                   )}
@@ -185,9 +213,7 @@ function ClassDetailsForAdviser() {
         )}
 
         <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-2">
-            Clearance Completion
-          </h3>
+          <h3 className="text-xl font-semibold mb-2">Clearance Completion</h3>
           <PieChart width={400} height={300}>
             <Pie
               data={chartData}
