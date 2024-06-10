@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import SidebarFaculty from "../components/SidebarOffice";
+import SidebarFaculty from "../components/SidebarFaculty";
 import Modal from "../components/Modal";
 
 function ApproveClearanceTeachers() {
