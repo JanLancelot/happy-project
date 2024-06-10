@@ -26,7 +26,7 @@ const auth = getAuth();
 const db = getFirestore();
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
+  { name: "Dashboard", href: "/approve-clearance-faculty", icon: HomeIcon, current: true },
   {
     name: "Clearances",
     href: "/add-requirement",
