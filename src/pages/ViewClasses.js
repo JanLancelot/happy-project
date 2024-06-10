@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import Sidebar from "../components/Sidebar";
+import SidebarFaculty from "../components/SidebarOffice";
 
 function ViewClasses() {
   const { currentUser } = useAuth();
@@ -48,7 +48,7 @@ function ViewClasses() {
   }, [currentUser]);
 
   return (
-    <Sidebar>
+    <SidebarFaculty>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Your Classes</h2>
 
@@ -139,7 +139,7 @@ function ViewClasses() {
           )}
         </div>
       </div>
-    </Sidebar>
+    </SidebarFaculty>
   );
 }
 
