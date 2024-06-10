@@ -3,29 +3,26 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import SidebarFaculty from "../components/SidebarFaculty";
-import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 function ViewClasses() {
   const { currentUser } = useAuth();
   const [teachingClasses, setTeachingClasses] = useState([]);
   const [advisoryClasses, setAdvisoryClasses] = useState([]);
+  const history = useHistory();
 
   useEffect(() => {
     const fetchClasses = async () => {
       if (currentUser) {
         try {
-          const allClassesSnapshot = await getDocs(
-            collection(db, "classes")
-          );
+          const allClassesSnapshot = await getDocs(collection(db, "classes"));
 
-          const teachingClasses = allClassesSnapshot.docs.filter(
-            (classDoc) => {
-              const subjects = classDoc.data().subjects || [];
-              return subjects.some(
-                (subject) => subject.teacherUid === currentUser.uid
-              );
-            }
-          );
+          const teachingClasses = allClassesSnapshot.docs.filter((classDoc) => {
+            const subjects = classDoc.data().subjects || [];
+            return subjects.some(
+              (subject) => subject.teacherUid === currentUser.uid
+            );
+          });
           setTeachingClasses(
             teachingClasses.map((doc) => ({
               id: doc.id,
@@ -33,11 +30,9 @@ function ViewClasses() {
             }))
           );
 
-          const advisoryClasses = allClassesSnapshot.docs.filter(
-            (classDoc) => {
-              return classDoc.data().adviserUid === currentUser.uid;
-            }
-          );
+          const advisoryClasses = allClassesSnapshot.docs.filter((classDoc) => {
+            return classDoc.data().adviserUid === currentUser.uid;
+          });
           setAdvisoryClasses(
             advisoryClasses.map((doc) => ({
               id: doc.id,
@@ -53,6 +48,10 @@ function ViewClasses() {
     fetchClasses();
   }, [currentUser]);
 
+  const handleRowClick = (path) => {
+    history.push(path);
+  };
+
   return (
     <SidebarFaculty>
       <div className="container mx-auto p-4">
@@ -67,30 +66,26 @@ function ViewClasses() {
               <thead>
                 <tr>
                   <th className="py-2 border-b border-gray-200">
+                    Section Name
+                  </th>
+                  <th className="py-2 border-b border-gray-200">
                     Education Level
                   </th>
                   <th className="py-2 border-b border-gray-200">
                     Grade Level
                   </th>
-                  <th className="py-2 border-b border-gray-200">
-                    Section Name
-                  </th>
                 </tr>
               </thead>
               <tbody>
                 {teachingClasses.map((classItem) => (
-                  <tr key={classItem.id}>
-                    <td className="border px-4 py-2">
-                      {classItem.educationLevel}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {classItem.gradeLevel}
-                    </td>
-                    <td className="border px-4 py-2">
-                      <Link to={`/class-details/${classItem.id}`}>
-                        {classItem.sectionName}
-                      </Link>
-                    </td>
+                  <tr
+                    key={classItem.id}
+                    onClick={() => handleRowClick(`/class-details/${classItem.id}`)}
+                    className="cursor-pointer hover:bg-gray-100"
+                  >
+                    <td className="border px-4 py-2">{classItem.sectionName}</td>
+                    <td className="border px-4 py-2">{classItem.educationLevel}</td>
+                    <td className="border px-4 py-2">{classItem.gradeLevel}</td>
                   </tr>
                 ))}
               </tbody>
@@ -107,30 +102,26 @@ function ViewClasses() {
               <thead>
                 <tr>
                   <th className="py-2 border-b border-gray-200">
+                    Section Name
+                  </th>
+                  <th className="py-2 border-b border-gray-200">
                     Education Level
                   </th>
                   <th className="py-2 border-b border-gray-200">
                     Grade Level
                   </th>
-                  <th className="py-2 border-b border-gray-200">
-                    Section Name
-                  </th>
                 </tr>
               </thead>
               <tbody>
                 {advisoryClasses.map((classItem) => (
-                  <tr key={classItem.id}>
-                    <td className="border px-4 py-2">
-                      {classItem.educationLevel}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {classItem.gradeLevel}
-                    </td>
-                    <td className="border px-4 py-2">
-                      <Link to={`/class-details-adviser/${classItem.id}`}>
-                        {classItem.sectionName}
-                      </Link>
-                    </td>
+                  <tr
+                    key={classItem.id}
+                    onClick={() => handleRowClick(`/class-details-adviser/${classItem.id}`)}
+                    className="cursor-pointer hover:bg-gray-100"
+                  >
+                    <td className="border px-4 py-2">{classItem.sectionName}</td>
+                    <td className="border px-4 py-2">{classItem.educationLevel}</td>
+                    <td className="border px-4 py-2">{classItem.gradeLevel}</td>
                   </tr>
                 ))}
               </tbody>
