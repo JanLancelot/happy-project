@@ -18,7 +18,6 @@ function ViewClasses() {
             collection(db, "classes")
           );
 
-          // Filter teaching classes 
           const teachingClasses = allClassesSnapshot.docs.filter(
             (classDoc) => {
               const subjects = classDoc.data().subjects || [];
@@ -34,7 +33,6 @@ function ViewClasses() {
             }))
           );
 
-          // Filter advisory classes
           const advisoryClasses = allClassesSnapshot.docs.filter(
             (classDoc) => {
               return classDoc.data().adviserUid === currentUser.uid;
@@ -60,7 +58,6 @@ function ViewClasses() {
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Your Classes</h2>
 
-        {/* Teaching Classes Table */}
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-2">Teaching</h3>
           {teachingClasses.length === 0 ? (
@@ -69,32 +66,38 @@ function ViewClasses() {
             <table className="min-w-full bg-white border border-gray-200">
               <thead>
                 <tr>
-                  <th className="py-2 border-b border-gray-200">Section Name</th> 
-                  <th className="py-2 border-b border-gray-200">Education Level</th>
-                  <th className="py-2 border-b border-gray-200">Grade Level</th>
+                  <th className="py-2 border-b border-gray-200">
+                    Education Level
+                  </th>
+                  <th className="py-2 border-b border-gray-200">
+                    Grade Level
+                  </th>
+                  <th className="py-2 border-b border-gray-200">
+                    Section Name
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {teachingClasses.map((classItem) => (
-                  // Make the entire row a Link
-                  <Link
-                    to={`/class-details/${classItem.id}`}
-                    key={classItem.id}
-                    className="hover:bg-gray-100"
-                  >
-                    <tr className="cursor-pointer">
-                      <td className="border px-4 py-2">{classItem.sectionName}</td>
-                      <td className="border px-4 py-2">{classItem.educationLevel}</td>
-                      <td className="border px-4 py-2">{classItem.gradeLevel}</td>
-                    </tr>
-                  </Link>
+                  <tr key={classItem.id}>
+                    <td className="border px-4 py-2">
+                      {classItem.educationLevel}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {classItem.gradeLevel}
+                    </td>
+                    <td className="border px-4 py-2">
+                      <Link to={`/class-details/${classItem.id}`}>
+                        {classItem.sectionName}
+                      </Link>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
           )}
         </div>
 
-        {/* Advisory Classes Table */}
         <div>
           <h3 className="text-xl font-semibold mb-2">Advisory</h3>
           {advisoryClasses.length === 0 ? (
@@ -103,25 +106,32 @@ function ViewClasses() {
             <table className="min-w-full bg-white border border-gray-200">
               <thead>
                 <tr>
-                  <th className="py-2 border-b border-gray-200">Section Name</th>
-                  <th className="py-2 border-b border-gray-200">Education Level</th>
-                  <th className="py-2 border-b border-gray-200">Grade Level</th>
+                  <th className="py-2 border-b border-gray-200">
+                    Education Level
+                  </th>
+                  <th className="py-2 border-b border-gray-200">
+                    Grade Level
+                  </th>
+                  <th className="py-2 border-b border-gray-200">
+                    Section Name
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {advisoryClasses.map((classItem) => (
-                  // Make the entire row a Link
-                  <Link
-                    to={`/class-details-adviser/${classItem.id}`}
-                    key={classItem.id}
-                    className="hover:bg-gray-100"
-                  >
-                    <tr className="cursor-pointer">
-                      <td className="border px-4 py-2">{classItem.sectionName}</td>
-                      <td className="border px-4 py-2">{classItem.educationLevel}</td>
-                      <td className="border px-4 py-2">{classItem.gradeLevel}</td>
-                    </tr>
-                  </Link>
+                  <tr key={classItem.id}>
+                    <td className="border px-4 py-2">
+                      {classItem.educationLevel}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {classItem.gradeLevel}
+                    </td>
+                    <td className="border px-4 py-2">
+                      <Link to={`/class-details-adviser/${classItem.id}`}>
+                        {classItem.sectionName}
+                      </Link>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
