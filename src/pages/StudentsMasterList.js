@@ -21,6 +21,8 @@ import {
   Column,
 } from "@react-email/components";
 import { Resend } from "resend";
+import Email from "../components/Email";
+import { sendReminderEmail } from "../api/emails/route";
 
 function StudentsMasterList() {
   const [students, setStudents] = useState([]);
@@ -101,48 +103,13 @@ function StudentsMasterList() {
     setExpandedStudent((prev) => (prev === studentId ? null : studentId));
   };
 
-  const handleSendReminder = async (student) => {
+  const handleSendReminder = (student) => {
     const incompleteClearances = Object.entries(student.clearance)
       .filter(([subject, isCleared]) => !isCleared)
       .map(([subject]) => subject);
-  
-    const emailHtml = `
-      <div>
-        <p>Dear ${student.fullName},</p>
-        <p>This is a reminder that you have incomplete clearances for the following:</p>
-        <ul>
-          ${incompleteClearances.map(subject => `<li>${subject}</li>`).join('')}
-        </ul>
-        <p>Please submit your requirements as soon as possible to complete your clearance process.</p>
-        <p>Thank you,</p>
-        <p>The School Administration</p>
-      </div>
-    `;
-  
-    try {
-      const response = await fetch('http://localhost:5000/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: student.email,
-          subject: 'Incomplete Clearances Reminder',
-          html: emailHtml
-        })
-      });
-  
-      if (response.ok) {
-        alert(`Reminder email sent to ${student.fullName}`);
-      } else {
-        alert('Failed to send email. Please try again later.');
-      }
-    } catch (error) {
-      console.error('Error sending email:', error);
-      alert('Failed to send email. Please try again later.');
-    }
+
+      sendReminderEmail(student.email, student, incompleteClearances);
   };
-  
 
   return (
     <SidebarSuper>
