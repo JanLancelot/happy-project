@@ -105,7 +105,7 @@ function StudentsMasterList() {
     const incompleteClearances = Object.entries(student.clearance)
       .filter(([subject, isCleared]) => !isCleared)
       .map(([subject]) => subject);
-
+  
     const emailHtml = `
       <div>
         <p>Dear ${student.fullName},</p>
@@ -118,22 +118,31 @@ function StudentsMasterList() {
         <p>The School Administration</p>
       </div>
     `;
-
-    const resend = new Resend("re_JTRC86g3_JXRMy4eRC1k8Dv41mqAk6EzH");
-
+  
     try {
-      await resend.emails.send({
-        from: "admin@school.com", 
-        to: student.email, 
-        subject: "Incomplete Clearances Reminder",
-        html: emailHtml,
+      const response = await fetch('http://localhost:5000/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: student.email,
+          subject: 'Incomplete Clearances Reminder',
+          html: emailHtml
+        })
       });
-      alert(`Reminder email sent to ${student.fullName}`);
+  
+      if (response.ok) {
+        alert(`Reminder email sent to ${student.fullName}`);
+      } else {
+        alert('Failed to send email. Please try again later.');
+      }
     } catch (error) {
-      console.error("Error sending email:", error);
-      alert("Failed to send email. Please try again later.");
+      console.error('Error sending email:', error);
+      alert('Failed to send email. Please try again later.');
     }
   };
+  
 
   return (
     <SidebarSuper>
