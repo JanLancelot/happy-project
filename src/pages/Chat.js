@@ -8,7 +8,7 @@ import {
   query,
   orderBy,
   where,
-  serverTimestamp
+  serverTimestamp,
 } from "firebase/firestore";
 import { useAuth } from "../components/AuthContext";
 import SidebarStudent from "../components/SidebarStudent";
@@ -28,12 +28,10 @@ function Chat() {
         const messagesRef = collection(db, "chats");
         const q = query(
           messagesRef,
-          where(
-            "participants",
-            "array-contains",
-            currentUser.uid
-          ),
-          where("participants", "array-contains", recipientId),
+          where("participants", "in", [
+            [currentUser.uid, recipientId],
+            [recipientId, currentUser.uid],
+          ]),
           orderBy("timestamp", "asc")
         );
 

@@ -328,11 +328,9 @@ const StudentClearance = () => {
                               (requirement, index) => (
                                 <div className="">
                                   <strong>{requirement.name}:</strong>{" "}
-                                  {requirement.description}
+                                  {requirement.description} 
                                   <button
-                                    onClick={() =>
-                                      handleInquiry(requirement)
-                                    }
+                                    onClick={() => handleInquiry(requirement)}
                                   >
                                     <FontAwesomeIcon
                                       icon={faCommentDots}
@@ -499,22 +497,20 @@ const StudentClearance = () => {
                             <ul className="list-disc list-inside">
                               {getOfficeRequirementsForSubject(office).map(
                                 (requirement, index) => (
-                                  <li key={index}>
-                                    <div className="">
-                                      <strong>{requirement.name}:</strong>{" "}
-                                      {requirement.description}
-                                      <button
-                                        onClick={() =>
-                                          handleInquiryOffice(requirement)
-                                        }
-                                      >
-                                        <FontAwesomeIcon
-                                          icon={faCommentDots}
-                                          className="text-blue-500"
-                                        />
-                                      </button>
-                                    </div>
-                                  </li>
+                                  <div className="">
+                                    <strong>{requirement.name}:</strong>{" "}
+                                    {requirement.description} 
+                                    <button
+                                      onClick={() =>
+                                        handleInquiryOffice(requirement)
+                                      }
+                                    >
+                                      <FontAwesomeIcon
+                                        icon={faCommentDots}
+                                        className="text-blue-500"
+                                      />
+                                    </button>
+                                  </div>
                                 )
                               )}
                             </ul>
