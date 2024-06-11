@@ -52,6 +52,7 @@ const navigation = [
   },
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
   { name: "Audit Trail", href: "/audit-log", icon: ClockIcon, current: false },
+  { name: "Student Master List", href: "/student-master-list", icon: AcademicCapIcon, current: false },
 ];
 
 const teams = [

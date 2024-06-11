@@ -20,6 +20,7 @@ import ViewClasses from "./pages/ViewClasses";
 import ClassDetails from "./pages/ClassDetails";
 import ClassDetailsForAdviser from "./pages/ClassDetailsForAdviser";
 import AuditLogs from "./pages/AuditLogs";
+import StudentsMasterList from "./pages/StudentsMasterList";
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
@@ -40,7 +41,8 @@ const router = createBrowserRouter([
   { path: "/view-classes", element: <ViewClasses />},
   { path: "/class-details/:classId", element: <ClassDetails />},
   { path: "/class-details-adviser/:classId", element: <ClassDetailsForAdviser />},
-  { path: "/audit-log", element: <AuditLogs />}
+  { path: "/audit-log", element: <AuditLogs />},
+  { path: "/student-master-list", element: <StudentsMasterList />}
 ]);
 
 function App() {

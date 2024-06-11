@@ -34,6 +34,7 @@ const navigation = [
     current: false,
   },
   { name: "Classes", href: "/view-classes", icon: UserGroupIcon, current: false},
+  { name: "Student Master List", href: "/student-master-list", icon: AcademicCapIcon, current: false },
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
 ];
 
