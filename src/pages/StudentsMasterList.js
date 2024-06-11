@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import SidebarSuper from "../components/SidebarSuper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -101,60 +101,39 @@ function StudentsMasterList() {
     setExpandedStudent((prev) => (prev === studentId ? null : studentId));
   };
 
-  const handleSendReminder = (student) => {
+  const handleSendReminder = async (student) => {
     const incompleteClearances = Object.entries(student.clearance)
       .filter(([subject, isCleared]) => !isCleared)
       .map(([subject]) => subject);
 
-    const Email = () => {
-      return (
-        <Container>
-          <Body>
-            <Section>
-              <Text>Dear {student.fullName},</Text>
-            </Section>
-            <Section>
-              <Text>
-                This is a reminder that you have incomplete clearances for the
-                following:
-              </Text>
-            </Section>
-            <Section>
-              {incompleteClearances.map((subject) => (
-                <Row key={subject}>
-                  <Column>
-                    <Text>- {subject}</Text>
-                  </Column>
-                </Row>
-              ))}
-            </Section>
-            <Section>
-              <Text>
-                Please submit your requirements as soon as possible to complete
-                your clearance process.
-              </Text>
-            </Section>
-            <Section>
-              <Text>Thank you,</Text>
-            </Section>
-            <Section>
-              <Text>The School Administration</Text>
-            </Section>
-          </Body>
-        </Container>
-      );
-    };
+    const emailHtml = `
+      <div>
+        <p>Dear ${student.fullName},</p>
+        <p>This is a reminder that you have incomplete clearances for the following:</p>
+        <ul>
+          ${incompleteClearances.map(subject => `<li>${subject}</li>`).join('')}
+        </ul>
+        <p>Please submit your requirements as soon as possible to complete your clearance process.</p>
+        <p>Thank you,</p>
+        <p>The School Administration</p>
+      </div>
+    `;
 
-    const resend = new Resend("re_LE8NSRC4_LezyfPShJVXkgMZX5h7NVri8");
+    const resend = new Resend("re_JTRC86g3_JXRMy4eRC1k8Dv41mqAk6EzH");
 
-    resend.emails.send({
-      from: "admin@gmail.com",
-      to: student.email,
-      subject: "Clearance Reminder",
-      react: Email,
-    });
+    try {
+      await resend.emails.send({
+        from: "admin@school.com", 
+        to: student.email, 
+        subject: "Incomplete Clearances Reminder",
+        html: emailHtml,
+      });
+      alert(`Reminder email sent to ${student.fullName}`);
+    } catch (error) {
+      console.error("Error sending email:", error);
+      alert("Failed to send email. Please try again later.");
+    }
   };
-  console.log("Test");
 
   return (
     <SidebarSuper>
