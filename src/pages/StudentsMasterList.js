@@ -12,7 +12,14 @@ import {
   faPrint,
 } from "@fortawesome/free-solid-svg-icons";
 import ReactToPrint from "react-to-print";
-import { Body, Box, Text, Container, UnorderedList, UnorderedListItem } from "@react-email/components";
+import {
+  Body,
+  Section,
+  Text,
+  Container,
+  UnorderedList,
+  UnorderedListItem,
+} from "@react-email/components";
 import { Resend } from "resend";
 
 function StudentsMasterList() {
@@ -103,16 +110,16 @@ function StudentsMasterList() {
       return (
         <Container>
           <Body>
-            <Box>
+            <Section>
               <Text>Dear {student.fullName},</Text>
-            </Box>
-            <Box>
+            </Section>
+            <Section>
               <Text>
                 This is a reminder that you have incomplete clearances for the
                 following:
               </Text>
-            </Box>
-            <Box>
+            </Section>
+            <Section>
               <UnorderedList>
                 {incompleteClearances.map((subject) => (
                   <UnorderedListItem key={subject}>
@@ -120,19 +127,19 @@ function StudentsMasterList() {
                   </UnorderedListItem>
                 ))}
               </UnorderedList>
-            </Box>
-            <Box>
+            </Section>
+            <Section>
               <Text>
                 Please submit your requirements as soon as possible to complete
                 your clearance process.
               </Text>
-            </Box>
-            <Box>
+            </Section>
+            <Section>
               <Text>Thank you,</Text>
-            </Box>
-            <Box>
+            </Section>
+            <Section>
               <Text>The School Administration</Text>
-            </Box>
+            </Section>
           </Body>
         </Container>
       );
