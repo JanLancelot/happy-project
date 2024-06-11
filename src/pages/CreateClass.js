@@ -17,6 +17,8 @@ function CreateClass() {
   const [gradeLevel, setGradeLevel] = useState("");
   const [sectionName, setSectionName] = useState("");
   const [adviser, setAdviser] = useState("");
+  const [department, setDepartment] = useState("");
+  const [course, setCourse] = useState("");
   const [subjects, setSubjects] = useState([
     { subject: "", teacher: "", teacherUid: "" },
   ]);
@@ -38,10 +40,13 @@ function CreateClass() {
 
     const fetchStudents = async () => {
       const studentsSnapshot = await getDocs(collection(db, "students"));
-      const studentsData = studentsSnapshot.docs.map((doc) => ({
-        value: doc.id,
-        label: doc.data().fullName,
-      }));
+      const studentsData = studentsSnapshot.docs
+        .map((doc) => ({
+          value: doc.id,
+          label: doc.data().fullName,
+          section: doc.data().section,
+        }))
+        .filter((student) => !student.section); // Exclude students who already have a section
       setAllStudentOptions(studentsData);
     };
 
@@ -60,8 +65,10 @@ function CreateClass() {
         educationLevel,
         gradeLevel,
         sectionName,
-        adviser,
-        adviserUid,
+        adviser: educationLevel === "college" ? null : adviser, 
+        adviserUid: educationLevel === "college" ? null : adviserUid, 
+        department: educationLevel === "college" ? department : null,
+        course: educationLevel === "college" ? course : null,
         subjects,
       });
 
@@ -213,24 +220,52 @@ function CreateClass() {
             />
           </div>
 
-          <div>
-            <label className="block text-gray-700">Adviser</label>
-            <select
-              value={adviser}
-              onChange={(e) => setAdviser(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-            >
-              <option value="" disabled>
-                Select an adviser
-              </option>
-              {teachers.map((teacher) => (
-                <option key={teacher.uid} value={teacher.name}>
-                  {teacher.name}
+          {educationLevel === "college" && (
+            <div>
+              <label className="block text-gray-700">Department</label>
+              <input
+                type="text"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                required
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+              />
+            </div>
+          )}
+
+          {educationLevel === "college" && (
+            <div>
+              <label className="block text-gray-700">Course</label>
+              <input
+                type="text"
+                value={course}
+                onChange={(e) => setCourse(e.target.value)}
+                required
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+              />
+            </div>
+          )}
+
+          {educationLevel !== "college" && (
+            <div>
+              <label className="block text-gray-700">Adviser</label>
+              <select
+                value={adviser}
+                onChange={(e) => setAdviser(e.target.value)}
+                required
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+              >
+                <option value="" disabled>
+                  Select an adviser
                 </option>
-              ))}
-            </select>
-          </div>
+                {teachers.map((teacher) => (
+                  <option key={teacher.uid} value={teacher.name}>
+                    {teacher.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {educationLevel !== "college" && (
             <div>
