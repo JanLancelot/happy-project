@@ -44,7 +44,6 @@ function StudentsMasterList() {
         setStudents(studentsData);
         setOriginalStudents(studentsData);
 
-        // Get unique sections and education levels
         const uniqueSections = [
           ...new Set(studentsData.map((student) => student.section)),
         ];
@@ -62,7 +61,6 @@ function StudentsMasterList() {
   }, []);
 
   useEffect(() => {
-    // Apply filtering and search
     let filteredStudents = [...originalStudents];
 
     if (educationLevelFilter !== "all") {
@@ -101,9 +99,7 @@ function StudentsMasterList() {
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Students Master List</h2>
 
-        {/* Filtering and Search */}
         <div className="mb-4 flex space-x-4">
-          {/* Education Level Filter */}
           <div>
             <label
               htmlFor="educationLevelFilter"
@@ -126,7 +122,6 @@ function StudentsMasterList() {
             </select>
           </div>
 
-          {/* Section Filter */}
           <div>
             <label htmlFor="sectionFilter" className="block text-gray-700 mb-1">
               Filter by Section:
@@ -146,7 +141,6 @@ function StudentsMasterList() {
             </select>
           </div>
 
-          {/* Search Input */}
           <div>
             <label htmlFor="searchQuery" className="block text-gray-700 mb-1">
               Search by Name:
@@ -161,12 +155,14 @@ function StudentsMasterList() {
           </div>
         </div>
 
-        {/* Students Table */}
+     {/* Students Table */}
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr>
               <th className="py-2 border-b border-gray-200">Name</th>
+              <th className="py-2 border-b border-gray-200">Email</th> 
               <th className="py-2 border-b border-gray-200">Section</th>
+              <th className="py-2 border-b border-gray-200">Grade Level</th> 
               <th className="py-2 border-b border-gray-200">
                 Education Level
               </th>
@@ -185,10 +181,10 @@ function StudentsMasterList() {
                   className="cursor-pointer hover:bg-gray-100"
                 >
                   <td className="border px-4 py-2">{student.fullName}</td>
+                  <td className="border px-4 py-2">{student.email}</td> 
                   <td className="border px-4 py-2">{student.section}</td>
-                  <td className="border px-4 py-2">
-                    {student.educationLevel}
-                  </td>
+                  <td className="border px-4 py-2">{student.gradeLevel}</td> 
+                  <td className="border px-4 py-2">{student.educationLevel}</td>
                   <td className="border px-4 py-2 text-center">
                     {student.completionPercentage}%
                   </td>
@@ -203,7 +199,6 @@ function StudentsMasterList() {
                   </td>
                 </tr>
 
-                {/* Expandable Row (Table for Clearances) */}
                 {expandedStudent === student.uid && (
                   <tr className="bg-gray-100">
                     <td colSpan={5} className="border px-4 py-2">
