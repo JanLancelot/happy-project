@@ -250,7 +250,7 @@ const StudentClearance = () => {
   const getOfficeRequirementsForSubject = (office) => {
     if (office === "Office of The Dean" || office === "Student Council") {
       return officeRequirements.filter(
-        (req) => req.office === office && req.course === studentData.course
+        (req) => req.office === office && req.department === studentData.department
       );
     } else {
       return officeRequirements.filter((req) => req.office === office);

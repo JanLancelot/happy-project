@@ -9,7 +9,7 @@ function CreateUser() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
-  const [course, setCourse] = useState("");
+  const [department, setDepartment] = useState("");
   const [educationLevel, setEducationLevel] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ function CreateUser() {
       !role ||
       (educationLevel === "college" &&
         (role === "Office of The Dean" || role === "Student Council") &&
-        !course)
+        !department)
     ) {
       alert("Please fill in all required fields.");
       return;
@@ -61,16 +61,16 @@ function CreateUser() {
         uid: user.uid,
         email: email,
         role: role,
-        course:
+        department:
           role === "Office of The Dean" || role === "Student Council"
-            ? course
+            ? department
             : null,
         educationLevel: educationLevel,
         isLocked: false,
       });
 
       alert("User created successfully!");
-      navigate("/user-management");
+      navigate("/user-management"); 
     } catch (error) {
       console.error("Error creating user: ", error);
       alert("Error creating user. Please try again.");
@@ -146,11 +146,11 @@ function CreateUser() {
           {educationLevel === "college" &&
             (role === "Office of The Dean" || role === "Student Council") && (
               <div>
-                <label className="block text-gray-700">Course:</label>
+                <label className="block text-gray-700">Department:</label>
                 <input
                   type="text"
-                  value={course}
-                  onChange={(e) => setCourse(e.target.value)}
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
                   required
                   className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                 />

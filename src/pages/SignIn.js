@@ -45,6 +45,13 @@ const SignIn = () => {
             case "characterRenewalOfficer":
             case "finance":
             case "registrarBasicEd":
+            case "College Library":
+            case "Guidance Office":
+            case "Office of The Dean":
+            case "Office of the Finance Director":
+            case "Office of the Registrar":
+            case "Property Custodian":
+            case "Student Council":
             case "directorPrincipal":
               navigate("/add-office-requirement");
               break;

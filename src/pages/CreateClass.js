@@ -46,7 +46,7 @@ function CreateClass() {
           label: doc.data().fullName,
           section: doc.data().section,
         }))
-        .filter((student) => !student.section); // Exclude students who already have a section
+        .filter((student) => !student.section);
       setAllStudentOptions(studentsData);
     };
 
@@ -81,6 +81,7 @@ function CreateClass() {
 
         await updateDoc(studentDocRef, {
           section: sectionName,
+          department: educationLevel === "college" ? department : null,
         });
 
         const clearance = {};
