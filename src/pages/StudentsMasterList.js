@@ -201,7 +201,7 @@ function StudentsMasterList() {
 
                 {expandedStudent === student.uid && (
                   <tr className="bg-gray-100">
-                    <td colSpan={5} className="border px-4 py-2">
+                    <td colSpan={7} className="border px-4 py-2">
                       <table className="min-w-full">
                         <thead>
                           <tr>
