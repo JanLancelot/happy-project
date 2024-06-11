@@ -18,8 +18,10 @@ import {
   faCheckCircle,
   faTimesCircle,
   faExclamationCircle,
+  faCommentDots,
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../components/Modal";
+import { useNavigate } from "react-router-dom";
 
 const SPECIAL_SUBJECTS = [
   "Librarian",
@@ -47,6 +49,7 @@ const StudentClearance = () => {
   const [clearanceRequests, setClearanceRequests] = useState({});
   const [isResubmitModalOpen, setIsResubmitModalOpen] = useState(false);
   const [subjectToResubmit, setSubjectToResubmit] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -250,11 +253,19 @@ const StudentClearance = () => {
   const getOfficeRequirementsForSubject = (office) => {
     if (office === "Office of The Dean" || office === "Student Council") {
       return officeRequirements.filter(
-        (req) => req.office === office && req.department === studentData.department
+        (req) =>
+          req.office === office && req.department === studentData.department
       );
     } else {
       return officeRequirements.filter((req) => req.office === office);
     }
+  };
+  const handleInquiry = (requirement) => {
+    navigate(`/chat/${requirement.teacherUid}`);
+  };
+
+  const handleInquiryOffice = (requirement) => {
+    navigate(`/chat/${requirement.addedBy}`);
   };
 
   return (
@@ -315,10 +326,20 @@ const StudentClearance = () => {
                           <ul className="list-disc list-inside">
                             {(classRequirements[subject] || []).map(
                               (requirement, index) => (
-                                <li key={index}>
+                                <div className="flex items-center justify-between">
                                   <strong>{requirement.name}:</strong>{" "}
                                   {requirement.description}
-                                </li>
+                                  <button
+                                    onClick={() =>
+                                      handleInquiry(requirement)
+                                    }
+                                  >
+                                    <FontAwesomeIcon
+                                      icon={faCommentDots}
+                                      className="text-blue-500"
+                                    />
+                                  </button>
+                                </div>
                               )
                             )}
                           </ul>
@@ -479,8 +500,20 @@ const StudentClearance = () => {
                               {getOfficeRequirementsForSubject(office).map(
                                 (requirement, index) => (
                                   <li key={index}>
-                                    <strong>{requirement.name}:</strong>{" "}
-                                    {requirement.description}
+                                    <div className="flex items-center justify-between">
+                                      <strong>{requirement.name}:</strong>{" "}
+                                      {requirement.description}
+                                      <button
+                                        onClick={() =>
+                                          handleInquiryOffice(requirement)
+                                        }
+                                      >
+                                        <FontAwesomeIcon
+                                          icon={faCommentDots}
+                                          className="text-blue-500"
+                                        />
+                                      </button>
+                                    </div>
                                   </li>
                                 )
                               )}
