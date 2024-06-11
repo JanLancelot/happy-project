@@ -8,7 +8,12 @@ import {
   faTimesCircle,
   faAngleDown,
   faAngleUp,
+  faEnvelope,
+  faPrint
 } from "@fortawesome/free-solid-svg-icons";
+import ReactToPrint from "react-to-print";
+import { Email, Item, Span, A, renderEmail } from "react-email";
+import { Resend } from "resend";
 
 function StudentsMasterList() {
   const [students, setStudents] = useState([]);
@@ -19,6 +24,7 @@ function StudentsMasterList() {
   const [sectionFilter, setSectionFilter] = useState("all");
   const [availableSections, setAvailableSections] = useState([]);
   const [availableEducationLevels, setAvailableEducationLevels] = useState([]);
+  const componentRef = useRef(null);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -86,6 +92,64 @@ function StudentsMasterList() {
 
   const handleStudentClick = (studentId) => {
     setExpandedStudent((prev) => (prev === studentId ? null : studentId));
+  };
+
+  const handleSendReminder = (student) => {
+    const incompleteClearances = Object.entries(student.clearance)
+      .filter(([subject, isCleared]) => !isCleared)
+      .map(([subject]) => subject);
+
+    const emailHtml = renderEmail(
+      <Email>
+        <Item>
+          <Span>Dear {student.fullName},</Span>
+        </Item>
+        <Item>
+          <Span>
+            This is a reminder that you have incomplete clearances for the
+            following:
+          </Span>
+        </Item>
+        <Item>
+          <ul>
+            {incompleteClearances.map((subject) => (
+              <li key={subject}>
+                <Span>{subject}</Span>
+              </li>
+            ))}
+          </ul>
+        </Item>
+        <Item>
+          <Span>
+            Please submit your requirements as soon as possible to complete your
+            clearance process.
+          </Span>
+        </Item>
+        <Item>
+          <Span>
+            You can access the clearance system here:{" "}
+            <A href="YOUR_CLEARANCE_SYSTEM_URL">YOUR_CLEARANCE_SYSTEM_URL</A>
+          </Span>
+        </Item>
+        <Item>
+          <Span>Thank you,</Span>
+        </Item>
+        <Item>
+          <Span>The School Administration</Span>
+        </Item>
+      </Email>
+    );
+
+    console.log("Sending email:", emailHtml);
+
+    const resend = new Resend("re_LE8NSRC4_LezyfPShJVXkgMZX5h7NVri8");
+
+    resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: "tejada.jocelyn.28@gmail.com",
+      subject: "Hello World",
+      react: emailHtml
+    });
   };
 
   return (
@@ -230,6 +294,26 @@ function StudentsMasterList() {
                         </tbody>
                       </table>
                     </td>
+                    <td className="border px-4 py-2 text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      {expandedStudent === student.uid && (
+                        <ReactToPrint
+                          trigger={() => (
+                            <button className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600">
+                              <FontAwesomeIcon icon={faPrint} />
+                            </button>
+                          )}
+                          content={() => componentRef.current}
+                        />
+                      )}
+                      <button
+                        onClick={() => handleSendReminder(student)}
+                        className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      >
+                        <FontAwesomeIcon icon={faEnvelope} />
+                      </button>
+                    </div>
+                  </td> 
                   </tr>
                 )}
               </React.Fragment>
