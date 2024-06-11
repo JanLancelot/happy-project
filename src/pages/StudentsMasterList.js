@@ -148,9 +148,9 @@ function StudentsMasterList() {
     const resend = new Resend("re_LE8NSRC4_LezyfPShJVXkgMZX5h7NVri8");
 
     resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: "tejada.jocelyn.28@gmail.com",
-      subject: "Hello World",
+      from: "admin@gmail.com",
+      to: student.email,
+      subject: "Clearance Reminder",
       react: Email,
     });
   };
