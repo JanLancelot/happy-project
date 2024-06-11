@@ -22,6 +22,7 @@ function AddOfficeRequirement() {
   const [officeName, setOfficeName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [userCourse, setUserCourse] = useState(null);
 
   useEffect(() => {
     const fetchEducationLevels = async () => {
@@ -53,6 +54,7 @@ function AddOfficeRequirement() {
         const userDoc = await getDocs(userQuery);
         const userData = userDoc.docs[0].data();
         const userRole = userData.role;
+        setUserCourse(userData.course || null); 
 
         switch (userRole) {
           case "librarian":
@@ -109,8 +111,6 @@ function AddOfficeRequirement() {
 
     setIsConfirmModalOpen(true);
   };
-
-  // const confirmAddRequirement = async () => {
   //   setIsConfirmModalOpen(false);
   //   setIsAdding(true);
 
@@ -171,6 +171,7 @@ function AddOfficeRequirement() {
         name: requirementName,
         description: requirementDescription,
         addedBy: currentUser.uid,
+        course: userCourse,
       });
 
       setSelectedEducationLevels([]);

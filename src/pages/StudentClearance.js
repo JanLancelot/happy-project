@@ -247,14 +247,22 @@ const StudentClearance = () => {
     SPECIAL_SUBJECTS.includes(subject)
   );
 
-  console.log("Office Requirements: ", officeRequirements);
+  const getOfficeRequirementsForSubject = (office) => {
+    if (office === "Office of The Dean" || office === "Student Council") {
+      return officeRequirements.filter(
+        (req) => req.office === office && req.course === studentData.course
+      );
+    } else {
+      return officeRequirements.filter((req) => req.office === office);
+    }
+  };
 
   return (
     <SidebarStudent>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Student Clearance</h2>
 
-        {/* Regular Subjects Table */}
+        {/* Regular Subjects Table (conditionally rendered) */}
         {studentData?.educationLevel !== "college" && (
           <table className="min-w-full bg-white border border-gray-200">
             <thead>
@@ -463,23 +471,19 @@ const StudentClearance = () => {
 
                     {/* Expandable Section for Office Requirements & Request */}
                     {selectedSubject === office &&
-                      officeRequirements.some(
-                        (requirement) => requirement.office === office
-                      ) && (
+                      getOfficeRequirementsForSubject(office).length > 0 && (
                         <tr className="bg-gray-100">
                           <td colSpan={3} className="border px-4 py-2">
                             {/* Office Requirements List */}
                             <ul className="list-disc list-inside">
-                              {officeRequirements
-                                .filter(
-                                  (requirement) => requirement.office === office
-                                )
-                                .map((requirement, index) => (
+                              {getOfficeRequirementsForSubject(office).map(
+                                (requirement, index) => (
                                   <li key={index}>
                                     <strong>{requirement.name}:</strong>{" "}
                                     {requirement.description}
                                   </li>
-                                ))}
+                                )
+                              )}
                             </ul>
 
                             {/* Request/Resubmit Clearance Section */}
