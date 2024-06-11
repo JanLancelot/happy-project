@@ -27,6 +27,13 @@ const SPECIAL_SUBJECTS = [
   "Director/Principal",
   "Basic Education Registrar",
   "Character Renewal Office",
+  "College Library",
+  "Guidance Office",
+  "Office of The Dean",
+  "Office of the Finance Director",
+  "Office of the Registrar",
+  "Property Custodian",
+  "Student Council"
 ];
 
 const StudentClearance = () => {

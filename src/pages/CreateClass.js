@@ -104,7 +104,7 @@ function CreateClass() {
             "Finance",
             "Basic Education Registrar",
             "Class Adviser",
-            "Director/Principal",
+            "Director/Principal"
           ];
 
           additionalClearances.forEach((role) => {
