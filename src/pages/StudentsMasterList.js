@@ -151,6 +151,8 @@ function StudentsMasterList() {
       react: emailHtml
     });
   };
+  console.log("Test");
+  
 
   return (
     <SidebarSuper>
