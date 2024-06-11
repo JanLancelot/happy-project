@@ -26,7 +26,6 @@ const SPECIAL_SUBJECTS = [
   "Finance",
   "Director/Principal",
   "Basic Education Registrar",
-  "Class Adviser",
   "Character Renewal Office",
 ];
 

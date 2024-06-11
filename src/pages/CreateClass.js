@@ -76,23 +76,34 @@ function CreateClass() {
           section: sectionName,
         });
 
-        const clearance = subjects.reduce((acc, subject) => {
-          acc[subject.subject] = false;
-          return acc;
-        }, {});
+        const clearance = {};
 
-        const additionalClearances = [
-          "Librarian",
-          "Character Renewal Office",
-          "Finance",
-          "Basic Education Registrar",
-          "Class Adviser",
-          "Director/Principal",
-        ];
+        if (educationLevel === "college") {
+          clearance["Guidance Office"] = false;
+          clearance["Office of The Dean"] = false;
+          clearance["Student Council"] = false;
+          clearance["Property Custodian"] = false;
+          clearance["College Library"] = false;
+          clearance["Office of the Registrar"] = false;
+          clearance["Office of the Finance Director"] = false;
+        } else {
+          subjects.forEach((subject) => {
+            clearance[subject.subject] = false;
+          });
 
-        additionalClearances.forEach((role) => {
-          clearance[role] = false;
-        });
+          const additionalClearances = [
+            "Librarian",
+            "Character Renewal Office",
+            "Finance",
+            "Basic Education Registrar",
+            "Class Adviser",
+            "Director/Principal",
+          ];
+
+          additionalClearances.forEach((role) => {
+            clearance[role] = false;
+          });
+        }
 
         await updateDoc(studentDocRef, {
           clearance,
@@ -170,6 +181,7 @@ function CreateClass() {
               <option value="college">College</option>
             </select>
           </div>
+
           <div>
             <label className="block text-gray-700">Grade Level</label>
             <select
@@ -189,6 +201,7 @@ function CreateClass() {
               ))}
             </select>
           </div>
+
           <div>
             <label className="block text-gray-700">Section Name</label>
             <input
@@ -199,6 +212,7 @@ function CreateClass() {
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             />
           </div>
+
           <div>
             <label className="block text-gray-700">Adviser</label>
             <select
@@ -218,52 +232,56 @@ function CreateClass() {
             </select>
           </div>
 
-          <div>
-            <label className="block text-gray-700">Subjects</label>
-            {subjects.map((subject, index) => (
-              <div key={index} className="flex space-x-2 mb-2">
-                <input
-                  type="text"
-                  placeholder="Subject Name"
-                  value={subject.subject}
-                  onChange={(e) =>
-                    handleSubjectChange(index, "subject", e.target.value)
-                  }
-                  required
-                  className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-                />
-                <select
-                  value={subject.teacherUid}
-                  onChange={(e) => handleTeacherChange(index, e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-                >
-                  <option value="" disabled>
-                    Select a teacher
-                  </option>
-                  {teachers.map((teacher) => (
-                    <option key={teacher.uid} value={teacher.uid}>
-                      {teacher.name}
+          {educationLevel !== "college" && (
+            <div>
+              <label className="block text-gray-700">Subjects</label>
+              {subjects.map((subject, index) => (
+                <div key={index} className="flex space-x-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="Subject Name"
+                    value={subject.subject}
+                    onChange={(e) =>
+                      handleSubjectChange(index, "subject", e.target.value)
+                    }
+                    required
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                  />
+                  <select
+                    value={subject.teacherUid}
+                    onChange={(e) =>
+                      handleTeacherChange(index, e.target.value)
+                    }
+                    required
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                  >
+                    <option value="" disabled>
+                      Select a teacher
                     </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  onClick={() => removeSubject(index)}
-                  className="bg-red-500 text-white p-2 rounded hover:bg-red-700"
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={addSubject}
-              className="bg-green-500 text-white p-2 rounded hover:bg-green-700"
-            >
-              Add Subject
-            </button>
-          </div>
+                    {teachers.map((teacher) => (
+                      <option key={teacher.uid} value={teacher.uid}>
+                        {teacher.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => removeSubject(index)}
+                    className="bg-red-500 text-white p-2 rounded hover:bg-red-700"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addSubject}
+                className="bg-green-500 text-white p-2 rounded hover:bg-green-700"
+              >
+                Add Subject
+              </button>
+            </div>
+          )}
 
           <div>
             <label className="block text-gray-700 mb-2">Students</label>
