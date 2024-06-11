@@ -56,7 +56,7 @@ function AddOfficeRequirement() {
 
         switch (userRole) {
           case "librarian":
-            setOfficeName("Librarian");
+            setOfficeName("Librarian"); 
             break;
           case "finance":
             setOfficeName("Finance");
@@ -67,8 +67,29 @@ function AddOfficeRequirement() {
           case "characterRenewalOfficer":
             setOfficeName("Character Renewal Office");
             break;
+          case "College Library":
+            setOfficeName("College Library");
+            break;
+          case "Guidance Office":
+            setOfficeName("Guidance Office");
+            break;
+          case "Office of The Dean":
+            setOfficeName("Office of The Dean");
+            break;
+          case "Office of the Finance Director":
+            setOfficeName("Office of the Finance Director");
+            break;
+          case "Office of the Registrar":
+            setOfficeName("Office of the Registrar");
+            break;
+          case "Property Custodian":
+            setOfficeName("Property Custodian");
+            break;
+          case "Student Council":
+            setOfficeName("Student Council");
+            break;
           default:
-            setOfficeName("Unknown Office");
+            setOfficeName("Unknown Office"); 
         }
       } catch (error) {
         console.error("Error fetching user role:", error);

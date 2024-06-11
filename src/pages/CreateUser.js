@@ -9,7 +9,7 @@ function CreateUser() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
-  const [department, setDepartment] = useState("");
+  const [course, setCourse] = useState("");
   const [educationLevel, setEducationLevel] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -35,7 +35,14 @@ function CreateUser() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !password || !role || (educationLevel === "college" && (role === "Office of The Dean" || role === "Student Council") && !department)) {
+    if (
+      !email ||
+      !password ||
+      !role ||
+      (educationLevel === "college" &&
+        (role === "Office of The Dean" || role === "Student Council") &&
+        !course)
+    ) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -54,7 +61,10 @@ function CreateUser() {
         uid: user.uid,
         email: email,
         role: role,
-        department: (role === "Office of The Dean" || role === "Student Council") ? department : null, // Add department if applicable
+        course:
+          role === "Office of The Dean" || role === "Student Council"
+            ? course
+            : null,
         educationLevel: educationLevel,
         isLocked: false,
       });
@@ -119,40 +129,39 @@ function CreateUser() {
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             >
               <option value="">Select Role</option>
-              {educationLevel === "college" ? (
-                collegeRoles.map((collegeRole) => (
-                  <option key={collegeRole} value={collegeRole}>
-                    {collegeRole}
-                  </option>
-                ))
-              ) : (
-                otherRoles.map((otherRole) => (
-                  <option key={otherRole} value={otherRole}>
-                    {otherRole}
-                  </option>
-                ))
-              )}
+              {educationLevel === "college"
+                ? collegeRoles.map((collegeRole) => (
+                    <option key={collegeRole} value={collegeRole}>
+                      {collegeRole}
+                    </option>
+                  ))
+                : otherRoles.map((otherRole) => (
+                    <option key={otherRole} value={otherRole}>
+                      {otherRole}
+                    </option>
+                  ))}
             </select>
           </div>
 
-          {(educationLevel === "college" && (role === "Office of The Dean" || role === "Student Council")) && (
-            <div>
-              <label className="block text-gray-700">Department:</label>
-              <input
-                type="text"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                required
-                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-              />
-            </div>
-          )}
+          {educationLevel === "college" &&
+            (role === "Office of The Dean" || role === "Student Council") && (
+              <div>
+                <label className="block text-gray-700">Course:</label>
+                <input
+                  type="text"
+                  value={course}
+                  onChange={(e) => setCourse(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                />
+              </div>
+            )}
           <button
             type="submit"
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
             disabled={isLoading}
           >
-            {isLoading ? "Creating..." : "Create User"} 
+            {isLoading ? "Creating..." : "Create User"}
           </button>
         </form>
       </div>
