@@ -3,24 +3,44 @@ import { collection, addDoc } from "firebase/firestore";
 import { db, auth } from "../firebaseConfig";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import SidebarSuper from "../components/SidebarSuper"; 
+import SidebarSuper from "../components/SidebarSuper";
 
 function CreateUser() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
+  const [department, setDepartment] = useState("");
+  const [educationLevel, setEducationLevel] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const collegeRoles = [
+    "College Library",
+    "Guidance Office",
+    "Office of The Dean",
+    "Office of the Finance Director",
+    "Office of the Registrar",
+    "Property Custodian",
+    "Student Council",
+  ];
+
+  const otherRoles = [
+    "librarian",
+    "characterRenewalOfficer",
+    "finance",
+    "registrarBasicEd",
+    "directorPrincipal",
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !password || !role) {
-      alert("Please fill in all fields.");
+    if (!email || !password || !role || (educationLevel === "college" && (role === "Office of The Dean" || role === "Student Council") && !department)) {
+      alert("Please fill in all required fields.");
       return;
     }
 
-    setIsLoading(true); 
+    setIsLoading(true);
 
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -34,11 +54,13 @@ function CreateUser() {
         uid: user.uid,
         email: email,
         role: role,
-        isLocked: false, 
+        department: (role === "Office of The Dean" || role === "Student Council") ? department : null, // Add department if applicable
+        educationLevel: educationLevel,
+        isLocked: false,
       });
 
       alert("User created successfully!");
-      navigate("/user-management"); 
+      navigate("/user-management");
     } catch (error) {
       console.error("Error creating user: ", error);
       alert("Error creating user. Please try again.");
@@ -73,6 +95,22 @@ function CreateUser() {
             />
           </div>
           <div>
+            <label className="block text-gray-700">Education Level:</label>
+            <select
+              value={educationLevel}
+              onChange={(e) => setEducationLevel(e.target.value)}
+              required
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            >
+              <option value="">Select Education Level</option>
+              <option value="elementary">Elementary</option>
+              <option value="junior high school">Junior High School</option>
+              <option value="senior high school">Senior High School</option>
+              <option value="college">College</option>
+            </select>
+          </div>
+
+          <div>
             <label className="block text-gray-700">Role:</label>
             <select
               value={role}
@@ -81,13 +119,34 @@ function CreateUser() {
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             >
               <option value="">Select Role</option>
-              <option value="librarian">Librarian</option>
-              <option value="characterRenewalOfficer">Character Renewal Officer</option>
-              <option value="finance">Finance</option>
-              <option value="registrarBasicEd">Basic Education Registrar</option>
-              <option value="directorPrincipal">Director/Principal</option>
+              {educationLevel === "college" ? (
+                collegeRoles.map((collegeRole) => (
+                  <option key={collegeRole} value={collegeRole}>
+                    {collegeRole}
+                  </option>
+                ))
+              ) : (
+                otherRoles.map((otherRole) => (
+                  <option key={otherRole} value={otherRole}>
+                    {otherRole}
+                  </option>
+                ))
+              )}
             </select>
           </div>
+
+          {(educationLevel === "college" && (role === "Office of The Dean" || role === "Student Council")) && (
+            <div>
+              <label className="block text-gray-700">Department:</label>
+              <input
+                type="text"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                required
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+              />
+            </div>
+          )}
           <button
             type="submit"
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
