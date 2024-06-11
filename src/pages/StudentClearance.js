@@ -326,7 +326,7 @@ const StudentClearance = () => {
                           <ul className="list-disc list-inside">
                             {(classRequirements[subject] || []).map(
                               (requirement, index) => (
-                                <div className="flex items-center justify-between">
+                                <div className="">
                                   <strong>{requirement.name}:</strong>{" "}
                                   {requirement.description}
                                   <button
@@ -500,7 +500,7 @@ const StudentClearance = () => {
                               {getOfficeRequirementsForSubject(office).map(
                                 (requirement, index) => (
                                   <li key={index}>
-                                    <div className="flex items-center justify-between">
+                                    <div className="">
                                       <strong>{requirement.name}:</strong>{" "}
                                       {requirement.description}
                                       <button
