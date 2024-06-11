@@ -17,8 +17,8 @@ import {
   Section,
   Text,
   Container,
-  UnorderedList,
-  UnorderedListItem,
+  Row,
+  Column,
 } from "@react-email/components";
 import { Resend } from "resend";
 
@@ -120,13 +120,13 @@ function StudentsMasterList() {
               </Text>
             </Section>
             <Section>
-              <UnorderedList>
-                {incompleteClearances.map((subject) => (
-                  <UnorderedListItem key={subject}>
-                    <Text>{subject}</Text>
-                  </UnorderedListItem>
-                ))}
-              </UnorderedList>
+              {incompleteClearances.map((subject) => (
+                <Row key={subject}>
+                  <Column>
+                    <Text>- {subject}</Text>
+                  </Column>
+                </Row>
+              ))}
             </Section>
             <Section>
               <Text>
