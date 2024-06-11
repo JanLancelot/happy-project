@@ -10,6 +10,8 @@ import {
   getDocs,
   doc,
   updateDoc,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 const SignIn = () => {
@@ -56,7 +58,7 @@ const SignIn = () => {
               navigate("/add-office-requirement");
               break;
             default:
-              navigate("/dashboard");
+              navigate("/dashboard"); 
           }
         } else {
           console.error("No such document!");
@@ -88,6 +90,8 @@ const SignIn = () => {
 
     await signInWithEmailAndPassword(email, password);
 
+    const auditLogsRef = collection(db, "auditLogs");
+
     if (error) {
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
@@ -108,12 +112,26 @@ const SignIn = () => {
           });
           setLocalError("Invalid email or password.");
         }
+
+        await addDoc(auditLogsRef, {
+          timestamp: serverTimestamp(),
+          userId: userDoc.id,
+          actionType: "login_failed",
+          email: email,
+        });
       }
     } else {
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         await updateDoc(doc(db, "users", userDoc.id), {
           failedSignInAttempts: 0,
+        });
+
+        await addDoc(auditLogsRef, {
+          timestamp: serverTimestamp(),
+          userId: userDoc.id,
+          actionType: "login_success",
+          email: email,
         });
       }
     }

@@ -12,6 +12,7 @@ import {
   UserGroupIcon,
   CogIcon,
   LockClosedIcon,
+  ClockIcon
 } from "@heroicons/react/24/outline";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
@@ -50,6 +51,7 @@ const navigation = [
     current: false,
   },
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
+  { name: "Audit Trail", href: "/audit-log", icon: ClockIcon, current: false },
 ];
 
 const teams = [

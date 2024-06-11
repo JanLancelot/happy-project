@@ -19,6 +19,7 @@ import ApproveClearanceOffice from "./pages/ApproveClearanceOffice";
 import ViewClasses from "./pages/ViewClasses";
 import ClassDetails from "./pages/ClassDetails";
 import ClassDetailsForAdviser from "./pages/ClassDetailsForAdviser";
+import AuditLogs from "./pages/AuditLogs";
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
@@ -38,7 +39,8 @@ const router = createBrowserRouter([
   { path: "/approve-clearance-office", element: <ApproveClearanceOffice />},
   { path: "/view-classes", element: <ViewClasses />},
   { path: "/class-details/:classId", element: <ClassDetails />},
-  { path: "/class-details-adviser/:classId", element: <ClassDetailsForAdviser />}
+  { path: "/class-details-adviser/:classId", element: <ClassDetailsForAdviser />},
+  { path: "/audit-log", element: <AuditLogs />}
 ]);
 
 function App() {
