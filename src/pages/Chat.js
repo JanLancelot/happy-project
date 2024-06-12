@@ -32,6 +32,7 @@ function Chat() {
   const [isUploading, setIsUploading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeMessageId, setActiveMessageId] = useState(null);
+  const [messageReactions, setMessageReactions] = useState({});
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
