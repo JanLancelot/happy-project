@@ -18,6 +18,8 @@ function Chat() {
   const { currentUser } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -41,11 +43,14 @@ function Chat() {
             ...doc.data(),
           }));
           setMessages(messagesData);
+          setLoading(false);
         });
 
         return () => unsubscribe();
       } catch (error) {
         console.error("Error fetching messages:", error);
+        setError("Failed to load messages.");
+        setLoading(false);
       }
     };
 
@@ -79,22 +84,50 @@ function Chat() {
     <SidebarStudent>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Chat</h2>
-
-        <div className="bg-gray-100 p-4 rounded-lg h-96 overflow-y-auto">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`mb-2 p-3 rounded ${
-                message.senderId === currentUser.uid
-                  ? "bg-blue-500 text-white self-end"
-                  : "bg-gray-300 self-start"
-              }`}
-            >
-              {message.text}
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+        
+        {loading ? (
+          <div className="flex items-center justify-center h-96">
+            <div className="loader"></div>
+          </div>
+        ) : error ? (
+          <div className="text-red-500">{error}</div>
+        ) : (
+          <div className="bg-gray-100 p-4 rounded-lg h-96 overflow-y-auto">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex items-end mb-2 ${
+                  message.senderId === currentUser.uid ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`flex items-center space-x-2 ${
+                    message.senderId === currentUser.uid ? "flex-row-reverse" : ""
+                  }`}
+                >
+                  <img
+                    src={`https://avatars.dicebear.com/api/initials/${message.senderId}.svg`}
+                    alt="avatar"
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <div
+                    className={`p-3 rounded-lg ${
+                      message.senderId === currentUser.uid
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-300"
+                    }`}
+                  >
+                    <p>{message.text}</p>
+                    <span className="text-xs text-gray-600">
+                      {message.timestamp?.toDate().toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
 
         <form onSubmit={handleSendMessage} className="mt-4 flex">
           <input
