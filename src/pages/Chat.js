@@ -45,7 +45,7 @@ function Chat() {
           where("participants", "in", [
             [currentUser.uid, recipientId],
             [recipientId, currentUser.uid],
-          ]),
+          ]), 
           orderBy("timestamp", "asc")
         );
 
@@ -144,7 +144,7 @@ function Chat() {
   };
 
   const getAvatarUrl = (userId) => {
-    return `https://avatars.dicebear.com/api/initials/${userId}.svg`;
+    return `https://avatars.dicebear.com/api/initials/${userId}.svg`; 
   };
 
   const handleClickOutside = (event) => {
@@ -247,14 +247,15 @@ function Chat() {
                         )}
                     </div>
 
+                    {/* Emoji Picker */}
                     {showEmojiPicker && activeMessageId === message.id && (
                       <div
-                        ref={emojiPickerRef}
+                        ref={emojiPickerRef} 
                         className={`absolute ${
                           message.senderId === currentUser.uid
-                            ? "bottom-8 left-0"
-                            : "bottom-8 right-0"
-                        } z-10`}
+                            ? "bottom-8 left-0" 
+                            : "bottom-8 right-0" 
+                        } z-10`} 
                       >
                         <Picker
                           data={data}
@@ -266,10 +267,11 @@ function Chat() {
                       </div>
                     )}
 
+                    {/* Reactions and Reaction Button */}
                     <div
                       className={`flex mt-2 ${
                         message.senderId === currentUser.uid
-                          ? "justify-end"
+                          ? "justify-end" 
                           : ""
                       }`}
                     >
@@ -288,7 +290,7 @@ function Chat() {
                         }}
                         className="ml-2"
                       >
-                        😃
+                        😃 
                       </button>
                     </div>
                   </div>
@@ -301,10 +303,10 @@ function Chat() {
                     />
                   )}
                 </div>
-                </React.Fragment>
+              </React.Fragment>
             );
           })}
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} /> 
         </div>
 
         <form onSubmit={handleSendMessage} className="mt-4 flex flex-col">
