@@ -185,37 +185,39 @@ function Chat() {
                     />
                   )}
 
-                  <div
-                    className={`relative p-3 rounded-lg ${
-                      message.senderId === currentUser.uid
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-300"
-                    }`}
-                  >
-                    {message.text}
+                  <div className="relative max-w-lg p-3 rounded-lg bg-gray-300">
+                    <div
+                      className={`${
+                        message.senderId === currentUser.uid
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-300"
+                      } p-3 rounded-lg`}
+                    >
+                      {message.text}
 
-                    {message.fileURL && (
-                      <a
-                        href={message.fileURL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block mt-2 text-blue-500 underline"
-                      >
-                        View Attachment
-                      </a>
-                    )}
-
-                    <span className="block text-xs text-gray-500 mt-1">
-                      {moment(message.timestamp.toDate()).format("hh:mm A")}
-                    </span>
-
-                    {message.senderId === currentUser.uid &&
-                      message.read && (
-                        <FontAwesomeIcon
-                          icon={faCheckCircle}
-                          className="absolute bottom-1 right-2 text-blue-300"
-                        />
+                      {message.fileURL && (
+                        <a
+                          href={message.fileURL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block mt-2 text-blue-500 underline"
+                        >
+                          View Attachment
+                        </a>
                       )}
+
+                      <span className="block text-xs text-gray-500 mt-1">
+                        {moment(message.timestamp.toDate()).format("hh:mm A")}
+                      </span>
+
+                      {message.senderId === currentUser.uid &&
+                        message.read && (
+                          <FontAwesomeIcon
+                            icon={faCheckCircle}
+                            className="absolute bottom-1 right-2 text-blue-300"
+                          />
+                        )}
+                    </div>
 
                     {showEmojiPicker && activeMessageId === message.id && (
                       <div className="absolute bottom-8 right-0 z-10">
@@ -229,24 +231,26 @@ function Chat() {
                       </div>
                     )}
 
+                    <div className="flex justify-end mt-2">
+                      <button
+                        onClick={() => {
+                          setShowEmojiPicker(!showEmojiPicker);
+                          setActiveMessageId(message.id);
+                        }}
+                        className="ml-2"
+                      >
+                        😃
+                      </button>
+                    </div>
+
                     {message.reactions &&
                       Object.entries(message.reactions).map(
                         ([emoji, count]) => (
-                          <span key={emoji} className="ml-2">
+                          <span key={emoji} className="block text-center">
                             {emoji} {count}
                           </span>
                         )
                       )}
-
-                    <button
-                      onClick={() => {
-                        setShowEmojiPicker(!showEmojiPicker);
-                        setActiveMessageId(message.id);
-                      }}
-                      className="absolute bottom-1 left-2"
-                    >
-                      ➕
-                    </button>
                   </div>
 
                   {message.senderId === currentUser.uid && (
@@ -263,12 +267,7 @@ function Chat() {
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSendMessage} className="mt-4 flex">
-          <input
-            type="file" 
-            onChange={handleFileChange} 
-            className="mr-2" 
-          />
+        <form onSubmit={handleSendMessage} className="mt-4 flex flex-col">
           <input
             type="text"
             value={newMessage}
@@ -280,11 +279,16 @@ function Chat() {
                 handleSendMessage(e);
               }
             }}
-            className="flex-grow px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            className="px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+          />
+          <input
+            type="file" 
+            onChange={handleFileChange} 
+            className="mt-2" 
           />
           <button
             type="submit"
-            className="ml-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
             disabled={isUploading}
           >
             {isUploading ? "Sending..." : "Send"}
