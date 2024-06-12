@@ -202,7 +202,7 @@ function Chat() {
                     />
                   )}
 
-                  <div className="relative max-w-lg p-3 ">
+                  <div className="relative max-w-lg p-3">
                     <div
                       className={`${
                         message.senderId === currentUser.uid
@@ -217,7 +217,11 @@ function Chat() {
                           href={message.fileURL}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block mt-2 text-blue-500 underline"
+                          className={`block mt-2 underline ${
+                            message.senderId === currentUser.uid
+                              ? "text-white"
+                              : "text-blue-500"
+                          }`}
                         >
                           View Attachment
                         </a>
