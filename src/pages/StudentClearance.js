@@ -18,10 +18,8 @@ import {
   faCheckCircle,
   faTimesCircle,
   faExclamationCircle,
-  faCommentDots,
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../components/Modal";
-import { useNavigate } from "react-router-dom";
 
 const SPECIAL_SUBJECTS = [
   "Librarian",
@@ -49,7 +47,11 @@ const StudentClearance = () => {
   const [clearanceRequests, setClearanceRequests] = useState({});
   const [isResubmitModalOpen, setIsResubmitModalOpen] = useState(false);
   const [subjectToResubmit, setSubjectToResubmit] = useState(null);
-  const navigate = useNavigate();
+  const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
+  const [inquiryRecipient, setInquiryRecipient] = useState(null);
+  const [inquirySubject, setInquirySubject] = useState(null);
+  const [inquiryMessage, setInquiryMessage] = useState("");
+  const [inquiryFiles, setInquiryFiles] = useState([]);
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -260,12 +262,59 @@ const StudentClearance = () => {
       return officeRequirements.filter((req) => req.office === office);
     }
   };
-  const handleInquiry = (requirement) => {
-    navigate(`/chat/${requirement.teacherUid}`);
+
+  const handleSendInquiry = async () => {
+    try {
+      const inquiryFileURLs = [];
+      for (const file of inquiryFiles) {
+        const storageRef = ref(
+          storage,
+          `inquiries/${currentUser.uid}/${inquirySubject}/${file.name}`
+        );
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+        inquiryFileURLs.push(downloadURL);
+      }
+
+      const inquiriesRef = collection(db, "inquiries");
+      await addDoc(inquiriesRef, {
+        studentId: currentUser.uid,
+        recipientId: inquiryRecipient,
+        subject: inquirySubject,
+        message: inquiryMessage,
+        fileURLs: inquiryFileURLs,
+        timestamp: serverTimestamp(),
+      });
+
+      alert("Inquiry sent successfully!");
+      setInquiryModalOpen(false);
+      setInquiryRecipient(null);
+      setInquirySubject(null);
+      setInquiryMessage("");
+      setInquiryFiles([]);
+    } catch (error) {
+      console.error("Error sending inquiry:", error);
+      alert("Error sending inquiry. Please try again later.");
+    }
   };
 
-  const handleInquiryOffice = (requirement) => {
-    navigate(`/chat/${requirement.addedBy}`);
+  const handleOpenInquiryModal = (subject, recipientId) => {
+    setSelectedSubject(subject);
+    setInquiryRecipient(recipientId);
+    setInquirySubject(subject);
+    setInquiryModalOpen(true);
+  };
+
+  const handleCloseInquiryModal = () => {
+    setInquiryModalOpen(false);
+    setInquiryRecipient(null);
+    setInquirySubject(null);
+    setInquiryMessage("");
+    setInquiryFiles([]);
+  };
+
+  const handleInquiryFileChange = (e) => {
+    setInquiryFiles(Array.from(e.target.files));
   };
 
   return (
@@ -326,22 +375,24 @@ const StudentClearance = () => {
                           <ul className="list-disc list-inside">
                             {(classRequirements[subject] || []).map(
                               (requirement, index) => (
-                                <div className="">
+                                <li key={index}>
                                   <strong>{requirement.name}:</strong>{" "}
-                                  {requirement.description} 
-                                  <button
-                                    onClick={() => handleInquiry(requirement)}
-                                  >
-                                    <FontAwesomeIcon
-                                      icon={faCommentDots}
-                                      className="text-blue-500"
-                                    />
-                                  </button>
-                                </div>
+                                  {requirement.description}
+                                </li>
                               )
                             )}
                           </ul>
-
+                          <button
+                            onClick={() =>
+                              handleOpenInquiryModal(
+                                subject,
+                                classRequirements[subject][0].teacherUid
+                              )
+                            }
+                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                          >
+                            Send Inquiry
+                          </button>
                           <div className="mt-4">
                             {clearanceRequests[subject] ? (
                               <div>
@@ -497,25 +548,25 @@ const StudentClearance = () => {
                             <ul className="list-disc list-inside">
                               {getOfficeRequirementsForSubject(office).map(
                                 (requirement, index) => (
-                                  <div className="">
+                                  <li key={index}>
                                     <strong>{requirement.name}:</strong>{" "}
-                                    {requirement.description} 
-                                    <button
-                                      onClick={() =>
-                                        handleInquiryOffice(requirement)
-                                      }
-                                    >
-                                      <FontAwesomeIcon
-                                        icon={faCommentDots}
-                                        className="text-blue-500"
-                                      />
-                                    </button>
-                                  </div>
+                                    {requirement.description}
+                                  </li>
                                 )
                               )}
                             </ul>
-
-                            {/* Request/Resubmit Clearance Section */}
+                            <button
+                              onClick={() =>
+                                handleOpenInquiryModal(
+                                  office,
+                                  getOfficeRequirementsForSubject(office)[0]
+                                    .addedBy
+                                )
+                              }
+                              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            >
+                              Send Inquiry
+                            </button>
                             <div className="mt-4">
                               {clearanceRequests[office] ? (
                                 <div>
@@ -613,33 +664,76 @@ const StudentClearance = () => {
             </table>
           </div>
         )}
-      </div>
-      <Modal isOpen={isResubmitModalOpen} onClose={closeResubmitModal}>
-        <div className="p-6">
-          <h3 className="text-lg font-semibold mb-4">
-            Resubmit Clearance Request
-          </h3>
-          <p>
-            Are you sure you want to resubmit your clearance request for{" "}
-            <strong>{subjectToResubmit}</strong>? This will delete your previous
-            request.
-          </p>
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={closeResubmitModal}
-              className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => handleResubmitClearance(subjectToResubmit)}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Resubmit
-            </button>
+
+        {/* Inquiry Modal */}
+        <Modal isOpen={inquiryModalOpen} onClose={handleCloseInquiryModal}>
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Send Inquiry</h3>
+            <p className="mb-2">
+              To: <strong>{inquirySubject}</strong>
+            </p>
+            <textarea
+              value={inquiryMessage}
+              onChange={(e) => setInquiryMessage(e.target.value)}
+              placeholder="Type your message here..."
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            />
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Optional: Attach Files
+              </label>
+              <input
+                type="file"
+                multiple
+                onChange={handleInquiryFileChange}
+                className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+              />
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={handleCloseInquiryModal}
+                className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendInquiry}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Send
+              </button>
+            </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
+        <Modal isOpen={isResubmitModalOpen} onClose={closeResubmitModal}>
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4">
+              Resubmit Clearance Request
+            </h3>
+            <p>
+              Are you sure you want to resubmit your clearance request for{" "}
+              <strong>{subjectToResubmit}</strong>? This will delete your
+              previous request.
+            </p>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeResubmitModal}
+                className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleResubmitClearance(subjectToResubmit)}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Resubmit
+              </button>
+            </div>
+          </div>
+        </Modal>
+      </div>
     </SidebarStudent>
   );
 };
