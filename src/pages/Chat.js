@@ -12,14 +12,14 @@ import {
   updateDoc,
   doc,
 } from "firebase/firestore";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../components/AuthContext";
 import SidebarStudent from "../components/SidebarStudent";
 import moment from "moment";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 function Chat() {
   const { recipientId } = useParams();
@@ -173,19 +173,22 @@ function Chat() {
           {messages.map((message, index) => {
             const previousMessage = messages[index - 1];
             const showDateSeparator =
-              !previousMessage ||
-              !previousMessage.timestamp ||
-              !message.timestamp ||
-              !moment(message.timestamp.toDate()).isSame(
-                moment(previousMessage.timestamp.toDate()),
-                "day"
-              );
+              index === 0 ||
+              (previousMessage &&
+                message.timestamp &&
+                previousMessage.timestamp &&
+                !moment(message.timestamp.toDate()).isSame(
+                  moment(previousMessage.timestamp.toDate()),
+                  "day"
+                ));
 
             return (
               <React.Fragment key={message.id}>
                 {showDateSeparator && message.timestamp && (
                   <div className="text-center text-gray-500 text-sm mb-2">
-                    {moment(message.timestamp.toDate()).format("MMMM DD, YYYY")}
+                    {moment(message.timestamp.toDate()).format(
+                      "MMMM DD, YYYY"
+                    )}
                   </div>
                 )}
 
@@ -203,24 +206,6 @@ function Chat() {
                   )}
 
                   <div className="relative max-w-lg p-3">
-                    {showEmojiPicker && activeMessageId === message.id && (
-                      <div
-                        ref={emojiPickerRef}
-                        className={`absolute ${
-                          message.senderId === currentUser.uid
-                            ? "bottom-8 left-0"
-                            : "bottom-8 right-0"
-                        } z-10`}
-                      >
-                        <Picker
-                          data={data}
-                          onEmojiSelect={(emoji) =>
-                            addReaction(message.id, emoji.native)
-                          }
-                          showPreview={false}
-                        />
-                      </div>
-                    )}
                     <div
                       className={`${
                         message.senderId === currentUser.uid
@@ -247,40 +232,64 @@ function Chat() {
 
                       {message.timestamp && (
                         <span className="block text-xs text-gray-500 mt-1">
-                          {moment(message.timestamp.toDate()).format("hh:mm A")}
+                          {moment(message.timestamp.toDate()).format(
+                            "hh:mm A"
+                          )}
                         </span>
                       )}
 
-                      {message.senderId === currentUser.uid && message.read && (
-                        <FontAwesomeIcon
-                          icon={faCheckCircle}
-                          className="absolute bottom-1 right-2 text-blue-300"
-                        />
-                      )}
+                      {message.senderId === currentUser.uid &&
+                        message.read && (
+                          <FontAwesomeIcon
+                            icon={faCheckCircle}
+                            className="absolute bottom-1 right-2 text-blue-300"
+                          />
+                        )}
                     </div>
 
-                    <div className="flex mt-2">
+                    {showEmojiPicker && activeMessageId === message.id && (
+                      <div
+                        ref={emojiPickerRef} 
+                        className={`absolute ${
+                          message.senderId === currentUser.uid
+                            ? "bottom-8 left-0"
+                            : "bottom-8 right-0"
+                        } z-10`}
+                      >
+                        <Picker
+                          data={data}
+                          onEmojiSelect={(emoji) =>
+                            addReaction(message.id, emoji.native)
+                          }
+                          showPreview={false}
+                        />
+                      </div>
+                    )}
+
+                    <div
+                      className={`flex mt-2 ${
+                        message.senderId === currentUser.uid
+                          ? "justify-end"
+                          : ""
+                      }`}
+                    >
+                      {message.reactions &&
+                        Object.entries(message.reactions).map(
+                          ([emoji, count]) => (
+                            <span key={emoji} className="ml-2">
+                              {emoji} {count}
+                            </span>
+                          )
+                        )}
                       <button
                         onClick={() => {
                           setShowEmojiPicker(!showEmojiPicker);
                           setActiveMessageId(message.id);
                         }}
-                        className={`ml-2 ${
-                          message.senderId === currentUser.uid
-                            ? "order-first"
-                            : ""
-                        }`}
+                        className="ml-2"
                       >
                         😃
                       </button>
-                      {message.reactions &&
-                        Object.entries(message.reactions).map(
-                          ([emoji, count]) => (
-                            <span key={emoji} className="block text-center">
-                              {emoji} {count}
-                            </span>
-                          )
-                        )}
                     </div>
                   </div>
 
