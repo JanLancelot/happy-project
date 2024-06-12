@@ -172,13 +172,14 @@ function Chat() {
         <div className="bg-white p-4 rounded-lg h-96 shadow overflow-y-auto">
           {messages.map((message, index) => {
             const previousMessage = messages[index - 1];
-            const showDateSeparator = 
-            index === 0 || 
-            (previousMessage && 
-             !moment(message.timestamp.toDate()).isSame(
-               moment(previousMessage.timestamp.toDate()), 
-               "day"
-             ));
+            const showDateSeparator =
+              !previousMessage ||
+              !previousMessage.timestamp ||
+              !message.timestamp ||
+              !moment(message.timestamp.toDate()).isSame(
+                moment(previousMessage.timestamp.toDate()),
+                "day"
+              );
 
             return (
               <React.Fragment key={message.id}>
