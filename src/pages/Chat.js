@@ -203,6 +203,24 @@ function Chat() {
                   )}
 
                   <div className="relative max-w-lg p-3">
+                    {showEmojiPicker && activeMessageId === message.id && (
+                      <div
+                        ref={emojiPickerRef}
+                        className={`absolute ${
+                          message.senderId === currentUser.uid
+                            ? "bottom-8 left-0"
+                            : "bottom-8 right-0"
+                        } z-10`}
+                      >
+                        <Picker
+                          data={data}
+                          onEmojiSelect={(emoji) =>
+                            addReaction(message.id, emoji.native)
+                          }
+                          showPreview={false}
+                        />
+                      </div>
+                    )}
                     <div
                       className={`${
                         message.senderId === currentUser.uid
@@ -240,25 +258,6 @@ function Chat() {
                         />
                       )}
                     </div>
-
-                    {showEmojiPicker && activeMessageId === message.id && (
-                      <div
-                        ref={emojiPickerRef}
-                        className={`absolute ${
-                          message.senderId === currentUser.uid
-                            ? "bottom-8 left-0"
-                            : "bottom-8 right-0"
-                        } z-10`}
-                      >
-                        <Picker
-                          data={data}
-                          onEmojiSelect={(emoji) =>
-                            addReaction(message.id, emoji.native)
-                          }
-                          showPreview={false}
-                        />
-                      </div>
-                    )}
 
                     <div className="flex mt-2">
                       <button
