@@ -20,8 +20,8 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../components/AuthContext";
 import SidebarStudent from "../components/SidebarStudent";
 import moment from "moment";
-import data from '@emoji-mart/data'
-import Picker from '@emoji-mart/react'
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 
 function Chat() {
   const { recipientId } = useParams();
@@ -34,6 +34,7 @@ function Chat() {
   const [activeMessageId, setActiveMessageId] = useState(null);
   const [messageReactions, setMessageReactions] = useState({});
   const messagesEndRef = useRef(null);
+  const emojiPickerRef = useRef(null);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -149,6 +150,24 @@ function Chat() {
     return `https://avatars.dicebear.com/api/initials/${userId}.svg`; 
   };
 
+  const handleClickOutside = (event) => {
+    if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+      setShowEmojiPicker(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showEmojiPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmojiPicker]);
+
   return (
     <SidebarStudent>
       <div className="container mx-auto p-4">
@@ -220,7 +239,14 @@ function Chat() {
                     </div>
 
                     {showEmojiPicker && activeMessageId === message.id && (
-                      <div className="absolute bottom-8 right-0 z-10">
+                      <div
+                        className="absolute bottom-8"
+                        style={{
+                          right: message.senderId === currentUser.uid ? "auto" : "0",
+                          left: message.senderId === currentUser.uid ? "0" : "auto",
+                        }}
+                        ref={emojiPickerRef}
+                      >
                         <Picker
                           data={data}
                           onEmojiSelect={(emoji) =>
@@ -231,7 +257,7 @@ function Chat() {
                       </div>
                     )}
 
-                    <div className="flex justify-end mt-2">
+                    <div className={`absolute ${message.senderId === currentUser.uid ? "left-0" : "right-0"} bottom-0 mb-2`}>
                       <button
                         onClick={() => {
                           setShowEmojiPicker(!showEmojiPicker);
