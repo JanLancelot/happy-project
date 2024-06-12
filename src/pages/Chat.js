@@ -12,7 +12,9 @@ import {
   updateDoc,
   doc,
 } from "firebase/firestore";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheckCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../components/AuthContext";
@@ -29,7 +31,7 @@ function Chat() {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [messageReactions, setMessageReactions] = useState({});
+  const [activeMessageId, setActiveMessageId] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -75,7 +77,6 @@ function Chat() {
 
     fetchMessages();
   }, [currentUser, recipientId]);
-
 
   useEffect(() => {
     const isNearBottom =
@@ -152,7 +153,7 @@ function Chat() {
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Chat</h2>
 
-        <div className="bg-white shadow p-4 rounded-lg h-96 overflow-y-auto">
+        <div className="bg-white p-4 rounded-lg h-96 shadow overflow-y-auto">
           {messages.map((message, index) => {
             const previousMessage = messages[index - 1];
             const showDateSeparator =
@@ -215,8 +216,8 @@ function Chat() {
                         />
                       )}
 
-                    {showEmojiPicker && (
-                      <div className="absolute bottom-8 right-0">
+                    {showEmojiPicker && activeMessageId === message.id && (
+                      <div className="absolute bottom-8 right-0 z-10">
                         <Picker
                           data={data}
                           onEmojiSelect={(emoji) =>
@@ -237,7 +238,10 @@ function Chat() {
                       )}
 
                     <button
-                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      onClick={() => {
+                        setShowEmojiPicker(!showEmojiPicker);
+                        setActiveMessageId(message.id);
+                      }}
                       className="absolute bottom-1 left-2"
                     >
                       ➕
@@ -258,7 +262,7 @@ function Chat() {
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSendMessage} className="mt-4 flex items-center">
+        <form onSubmit={handleSendMessage} className="mt-4 flex">
           <input
             type="file" 
             onChange={handleFileChange} 
