@@ -183,7 +183,7 @@ function Chat() {
 
             return (
               <React.Fragment key={message.id}>
-                {showDateSeparator && (
+                {showDateSeparator && message.timestamp && (
                   <div className="text-center text-gray-500 text-sm mb-2">
                     {moment(message.timestamp.toDate()).format("MMMM DD, YYYY")}
                   </div>
