@@ -12,9 +12,7 @@ import {
   updateDoc,
   doc,
 } from "firebase/firestore";
-import {
-  faCheckCircle,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../components/AuthContext";
@@ -154,7 +152,7 @@ function Chat() {
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Chat</h2>
 
-        <div className="bg-gray-100 p-4 rounded-lg h-96 overflow-y-auto">
+        <div className="bg-white shadow p-4 rounded-lg h-96 overflow-y-auto">
           {messages.map((message, index) => {
             const previousMessage = messages[index - 1];
             const showDateSeparator =
@@ -260,7 +258,7 @@ function Chat() {
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSendMessage} className="mt-4 flex">
+        <form onSubmit={handleSendMessage} className="mt-4 flex items-center">
           <input
             type="file" 
             onChange={handleFileChange} 
