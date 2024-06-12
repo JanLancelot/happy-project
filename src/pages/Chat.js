@@ -249,7 +249,7 @@ function Chat() {
 
                     {showEmojiPicker && activeMessageId === message.id && (
                       <div
-                        ref={emojiPickerRef} 
+                        ref={emojiPickerRef}
                         className={`absolute ${
                           message.senderId === currentUser.uid
                             ? "bottom-8 left-0"
@@ -301,7 +301,7 @@ function Chat() {
                     />
                   )}
                 </div>
-              </React.Fragment>
+                </React.Fragment>
             );
           })}
           <div ref={messagesEndRef} />
