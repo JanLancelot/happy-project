@@ -20,8 +20,8 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../components/AuthContext";
 import SidebarStudent from "../components/SidebarStudent";
 import moment from "moment";
-import { Picker } from "emoji-mart";
-import "emoji-mart/css/emoji-mart.css";
+import data from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
 
 function Chat() {
   const { recipientId } = useParams();
@@ -220,7 +220,8 @@ function Chat() {
                     {showEmojiPicker && (
                       <div className="absolute bottom-8 right-0">
                         <Picker
-                          onSelect={(emoji) =>
+                          data={data}
+                          onEmojiSelect={(emoji) =>
                             addReaction(message.id, emoji.native)
                           }
                           showPreview={false}
