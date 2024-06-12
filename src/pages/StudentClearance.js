@@ -322,7 +322,6 @@ const StudentClearance = () => {
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Student Clearance</h2>
 
-        {/* Regular Subjects Table (conditionally rendered) */}
         {studentData?.educationLevel !== "college" && (
           <table className="min-w-full bg-white border border-gray-200">
             <thead>
@@ -367,12 +366,10 @@ const StudentClearance = () => {
                     </td>
                   </tr>
 
-                  {/* Expandable section for regular subject requirements */}
                   {selectedSubject === subject &&
                     classRequirements[subject] && (
                       <tr className="bg-gray-100">
                         <td colSpan={3} className="border px-4 py-2">
-                          {/* Requirements List */}
                           <div className="mb-4">
                             <h4 className="text-md font-semibold">
                               Requirements:
@@ -389,7 +386,6 @@ const StudentClearance = () => {
                             </ul>
                           </div>
 
-                          {/* Clearance Request Status and Actions */}
                           {clearanceRequests[subject] ? (
                             <div className="mb-4">
                               <div
@@ -416,7 +412,6 @@ const StudentClearance = () => {
                                 </span>
                               </div>
 
-                              {/* Show submitted files if any */}
                               {clearanceRequests[subject].fileURLs &&
                                 clearanceRequests[subject].fileURLs.length >
                                   0 && (
@@ -443,7 +438,6 @@ const StudentClearance = () => {
                                   </div>
                                 )}
 
-                              {/* Resubmit Button (only if not approved) */}
                               {clearanceRequests[subject].status !==
                                 "approved" && (
                                 <button
@@ -481,7 +475,6 @@ const StudentClearance = () => {
                             </div>
                           )}
 
-                          {/* Send Inquiry Button (Regular Subject) */}
                           <button
                             onClick={() =>
                               handleOpenInquiryModal(
@@ -502,7 +495,6 @@ const StudentClearance = () => {
           </table>
         )}
 
-        {/* Office Requirements Table */}
         {specialSubjects.length > 0 && (
           <div className="mt-8">
             <h3 className="text-xl font-semibold mb-4">Office Requirements</h3>
@@ -552,12 +544,10 @@ const StudentClearance = () => {
                       </td>
                     </tr>
 
-                    {/* Expandable Section for Office Requirements & Request */}
                     {selectedSubject === office &&
                       getOfficeRequirementsForSubject(office).length > 0 && (
                         <tr className="bg-gray-100">
                           <td colSpan={3} className="border px-4 py-2">
-                            {/* Requirements List */}
                             <div className="mb-4">
                               <h4 className="text-md font-semibold">
                                 Requirements:
@@ -574,7 +564,6 @@ const StudentClearance = () => {
                               </ul>
                             </div>
 
-                            {/* Clearance Request Status and Actions */}
                             {clearanceRequests[office] ? (
                               <div className="mb-4">
                                 <div
@@ -601,7 +590,6 @@ const StudentClearance = () => {
                                   </span>
                                 </div>
 
-                                {/* Show submitted files if any */}
                                 {clearanceRequests[office].fileURLs &&
                                   clearanceRequests[office].fileURLs.length >
                                     0 && (
@@ -628,7 +616,6 @@ const StudentClearance = () => {
                                     </div>
                                   )}
 
-                                {/* Resubmit Button (only if not approved) */}
                                 {clearanceRequests[office].status !==
                                   "approved" && (
                                   <button
@@ -688,7 +675,6 @@ const StudentClearance = () => {
           </div>
         )}
 
-        {/* Inquiry Modal */}
         <Modal isOpen={inquiryModalOpen} onClose={handleCloseInquiryModal}>
           <div className="p-6">
             <h3 className="text-lg font-semibold mb-4">Send Inquiry</h3>
