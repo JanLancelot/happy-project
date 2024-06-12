@@ -12,16 +12,14 @@ import {
   updateDoc,
   doc,
 } from "firebase/firestore";
-import {
-  faCheckCircle,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../components/AuthContext";
 import SidebarStudent from "../components/SidebarStudent";
 import moment from "moment";
-import data from '@emoji-mart/data'
-import Picker from '@emoji-mart/react'
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 
 function Chat() {
   const { recipientId } = useParams();
@@ -34,6 +32,7 @@ function Chat() {
   const [activeMessageId, setActiveMessageId] = useState(null);
   const [messageReactions, setMessageReactions] = useState({});
   const messagesEndRef = useRef(null);
+  const emojiPickerRef = useRef(null);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -58,8 +57,7 @@ function Chat() {
           setMessages(messagesData);
 
           const unreadMessages = messagesData.filter(
-            (msg) =>
-              msg.recipientId === currentUser.uid && !msg.read
+            (msg) => msg.recipientId === currentUser.uid && !msg.read
           );
           if (unreadMessages.length > 0) {
             const batch = db.batch();
@@ -70,7 +68,7 @@ function Chat() {
           }
         });
 
-        return () => unsubscribe(); 
+        return () => unsubscribe();
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
@@ -97,9 +95,9 @@ function Chat() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (newMessage.trim() === "" && !file) return; 
+    if (newMessage.trim() === "" && !file) return;
 
-    setIsUploading(true); 
+    setIsUploading(true);
 
     try {
       let fileURL = null;
@@ -117,7 +115,7 @@ function Chat() {
         senderId: currentUser.uid,
         recipientId: recipientId,
         text: newMessage,
-        fileURL: fileURL, 
+        fileURL: fileURL,
         timestamp: serverTimestamp(),
         participants: [currentUser.uid, recipientId],
         read: false,
@@ -127,7 +125,7 @@ function Chat() {
     } catch (error) {
       console.error("Error sending message: ", error);
     } finally {
-      setIsUploading(false); 
+      setIsUploading(false);
     }
   };
 
@@ -136,7 +134,7 @@ function Chat() {
       const messageRef = doc(db, "chats", messageId);
       await updateDoc(messageRef, {
         reactions: {
-          ...messageReactions[messageId], 
+          ...messageReactions[messageId],
           [emoji]: (messageReactions[messageId]?.[emoji] || 0) + 1,
         },
       });
@@ -146,8 +144,25 @@ function Chat() {
   };
 
   const getAvatarUrl = (userId) => {
-    return `https://avatars.dicebear.com/api/initials/${userId}.svg`; 
+    return `https://avatars.dicebear.com/api/initials/${userId}.svg`;
   };
+
+  const handleClickOutside = (event) => {
+    if (
+      emojiPickerRef.current &&
+      !emojiPickerRef.current.contains(event.target)
+    ) {
+      setShowEmojiPicker(false);
+      setActiveMessageId(null);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <SidebarStudent>
@@ -179,7 +194,7 @@ function Chat() {
                 >
                   {message.senderId !== currentUser.uid && (
                     <img
-                      src={getAvatarUrl(message.senderId)} 
+                      src={getAvatarUrl(message.senderId)}
                       alt="Avatar"
                       className="w-8 h-8 rounded-full mr-2"
                     />
@@ -210,17 +225,23 @@ function Chat() {
                         {moment(message.timestamp.toDate()).format("hh:mm A")}
                       </span>
 
-                      {message.senderId === currentUser.uid &&
-                        message.read && (
-                          <FontAwesomeIcon
-                            icon={faCheckCircle}
-                            className="absolute bottom-1 right-2 text-blue-300"
-                          />
-                        )}
+                      {message.senderId === currentUser.uid && message.read && (
+                        <FontAwesomeIcon
+                          icon={faCheckCircle}
+                          className="absolute bottom-1 right-2 text-blue-300"
+                        />
+                      )}
                     </div>
 
                     {showEmojiPicker && activeMessageId === message.id && (
-                      <div className="absolute bottom-8 right-0 z-10">
+                      <div
+                        ref={emojiPickerRef}
+                        className={`absolute ${
+                          message.senderId === currentUser.uid
+                            ? "bottom-8 left-0"
+                            : "bottom-8 right-0"
+                        } z-10`}
+                      >
                         <Picker
                           data={data}
                           onEmojiSelect={(emoji) =>
@@ -231,13 +252,17 @@ function Chat() {
                       </div>
                     )}
 
-                    <div className="flex justify-end mt-2">
+                    <div className="flex mt-2">
                       <button
                         onClick={() => {
                           setShowEmojiPicker(!showEmojiPicker);
                           setActiveMessageId(message.id);
                         }}
-                        className="ml-2"
+                        className={`ml-2 ${
+                          message.senderId === currentUser.uid
+                            ? "order-first"
+                            : ""
+                        }`}
                       >
                         😃
                       </button>
@@ -255,7 +280,7 @@ function Chat() {
 
                   {message.senderId === currentUser.uid && (
                     <img
-                      src={getAvatarUrl(message.senderId)} 
+                      src={getAvatarUrl(message.senderId)}
                       alt="Avatar"
                       className="w-8 h-8 rounded-full ml-2"
                     />
@@ -281,11 +306,7 @@ function Chat() {
             }}
             className="px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
           />
-          <input
-            type="file" 
-            onChange={handleFileChange} 
-            className="mt-2" 
-          />
+          <input type="file" onChange={handleFileChange} className="mt-2" />
           <button
             type="submit"
             className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
