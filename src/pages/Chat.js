@@ -221,9 +221,11 @@ function Chat() {
                         </a>
                       )}
 
-                      <span className="block text-xs text-gray-500 mt-1">
-                        {moment(message.timestamp.toDate()).format("hh:mm A")}
-                      </span>
+                      {message.timestamp && (
+                        <span className="block text-xs text-gray-500 mt-1">
+                          {moment(message.timestamp.toDate()).format("hh:mm A")}
+                        </span>
+                      )}
 
                       {message.senderId === currentUser.uid && message.read && (
                         <FontAwesomeIcon
@@ -266,16 +268,15 @@ function Chat() {
                       >
                         😃
                       </button>
+                      {message.reactions &&
+                        Object.entries(message.reactions).map(
+                          ([emoji, count]) => (
+                            <span key={emoji} className="block text-center">
+                              {emoji} {count}
+                            </span>
+                          )
+                        )}
                     </div>
-
-                    {message.reactions &&
-                      Object.entries(message.reactions).map(
-                        ([emoji, count]) => (
-                          <span key={emoji} className="block text-center">
-                            {emoji} {count}
-                          </span>
-                        )
-                      )}
                   </div>
 
                   {message.senderId === currentUser.uid && (
