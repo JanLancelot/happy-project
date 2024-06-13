@@ -21,10 +21,19 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 function ViewMessages() {
   const { currentUser } = useAuth();
   const [messages, setMessages] = useState([]);
+  const [originalMessages, setOriginalMessages] = useState([]);
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [messageIdToDelete, setMessageIdToDelete] = useState(null);
+  const [sortField, setSortField] = useState("timestamp");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [filterEducationLevel, setFilterEducationLevel] = useState("all");
+  const [filterGradeLevel, setFilterGradeLevel] = useState("all");
+  const [filterSection, setFilterSection] = useState("all");
+  const [availableEducationLevels, setAvailableEducationLevels] = useState([]);
+  const [availableGradeLevels, setAvailableGradeLevels] = useState([]);
+  const [availableSections, setAvailableSections] = useState([]);
 
   // Reply Modal states
   const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
@@ -38,15 +47,11 @@ function ViewMessages() {
 
       try {
         const messagesRef = collection(db, "inquiries");
-        let q = query(
+        const q = query(
           messagesRef,
           where("recipientId", "==", currentUser.uid),
           orderBy("timestamp", "desc")
         );
-
-        if (filterStatus !== "all") {
-          q = query(q, where("read", "==", filterStatus === "read"));
-        }
 
         const messagesSnapshot = await getDocs(q);
 
@@ -87,13 +92,95 @@ function ViewMessages() {
         );
 
         setMessages(messagesData);
+        setOriginalMessages(messagesData);
+
+        const uniqueEducationLevels = [
+          ...new Set(messagesData.map((msg) => msg.educationLevel)),
+        ];
+        const uniqueGradeLevels = [
+          ...new Set(messagesData.map((msg) => msg.gradeLevel)),
+        ];
+        const uniqueSections = [
+          ...new Set(messagesData.map((msg) => msg.section)),
+        ];
+
+        setAvailableEducationLevels(uniqueEducationLevels);
+        setAvailableGradeLevels(uniqueGradeLevels);
+        setAvailableSections(uniqueSections);
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
     };
 
     fetchMessages();
-  }, [currentUser, filterStatus]);
+  }, [currentUser]);
+
+  useEffect(() => {
+    let filteredMessages = [...originalMessages];
+
+    if (filterStatus !== "all") {
+      filteredMessages = filteredMessages.filter(
+        (msg) => msg.read === (filterStatus === "read")
+      );
+    }
+    if (filterEducationLevel !== "all") {
+      filteredMessages = filteredMessages.filter(
+        (msg) => msg.educationLevel === filterEducationLevel
+      );
+    }
+    if (filterGradeLevel !== "all") {
+      filteredMessages = filteredMessages.filter(
+        (msg) => msg.gradeLevel === filterGradeLevel
+      );
+    }
+    if (filterSection !== "all") {
+      filteredMessages = filteredMessages.filter(
+        (msg) => msg.section === filterSection
+      );
+    }
+
+    if (sortField) {
+      filteredMessages.sort((a, b) => {
+        const valueA = a[sortField];
+        const valueB = b[sortField];
+
+        if (typeof valueA === "string") {
+          return sortOrder === "asc"
+            ? valueA.localeCompare(valueB)
+            : valueB.localeCompare(valueA);
+        } else {
+          return sortOrder === "asc" ? valueA - valueB : valueB - valueA;
+        }
+      });
+    }
+
+    if (searchQuery) {
+      filteredMessages = filteredMessages.filter((message) => {
+        const fullName = message.fullName
+          ? message.fullName.toLowerCase()
+          : "";
+        const messageContent = message.message
+          ? message.message.toLowerCase()
+          : "";
+
+        return (
+          fullName.includes(searchQuery.toLowerCase()) ||
+          messageContent.includes(searchQuery.toLowerCase())
+        );
+      });
+    }
+
+    setMessages(filteredMessages);
+  }, [
+    filterStatus,
+    searchQuery,
+    sortField,
+    sortOrder,
+    filterEducationLevel,
+    filterGradeLevel,
+    filterSection,
+    originalMessages,
+  ]);
 
   const handleMarkAsRead = async (messageId) => {
     try {
@@ -198,7 +285,7 @@ function ViewMessages() {
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Your Messages</h2>
 
-        <div className="mb-4 flex space-x-4">
+        <div className="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label htmlFor="filterStatus" className="block text-gray-700 mb-1">
               Filter by Status:
@@ -216,16 +303,116 @@ function ViewMessages() {
           </div>
 
           <div>
-            <label htmlFor="searchQuery" className="block text-gray-700 mb-1">
-              Search:
+            <label
+              htmlFor="filterEducationLevel"
+              className="block text-gray-700 mb-1"
+            >
+              Filter by Education Level:
             </label>
-            <input
-              type="text"
-              id="searchQuery"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+            <select
+              id="filterEducationLevel"
+              value={filterEducationLevel}
+              onChange={(e) => setFilterEducationLevel(e.target.value)}
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-            />
+            >
+              <option value="all">All Education Levels</option>
+              {availableEducationLevels.map((level) => (
+                <option key={level} value={level}>
+                  {level}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="filterGradeLevel"
+              className="block text-gray-700 mb-1"
+            >
+              Filter by Grade Level:
+            </label>
+            <select
+              id="filterGradeLevel"
+              value={filterGradeLevel}
+              onChange={(e) => setFilterGradeLevel(e.target.value)}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            >
+              <option value="all">All Grade Levels</option>
+              {availableGradeLevels.map((level) => (
+                <option key={level} value={level}>
+                  {level}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="filterSection"
+              className="block text-gray-700 mb-1"
+            >
+              Filter by Section:
+            </label>
+            <select
+              id="filterSection"
+              value={filterSection}
+              onChange={(e) => setFilterSection(e.target.value)}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            >
+              <option value="all">All Sections</option>
+              {availableSections.map((section) => (
+                <option key={section} value={section}>
+                  {section}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="searchQuery" className="block text-gray-700 mb-1">
+            Search:
+          </label>
+          <input
+            type="text"
+            id="searchQuery"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+          />
+        </div>
+
+        <div className="mb-4 flex space-x-4">
+          <div>
+            <label htmlFor="sortField" className="block text-gray-700 mb-1">
+              Sort by:
+            </label>
+            <select
+              id="sortField"
+              value={sortField}
+              onChange={(e) => setSortField(e.target.value)}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            >
+              <option value="timestamp">Date</option>
+              <option value="fullName">Name</option>
+              <option value="educationLevel">Education Level</option>
+              <option value="gradeLevel">Grade Level</option>
+              <option value="section">Section</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="sortOrder" className="block text-gray-700 mb-1">
+              Order:
+            </label>
+            <select
+              id="sortOrder"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            >
+              <option value="desc">Descending</option>
+              <option value="asc">Ascending</option>
+            </select>
           </div>
         </div>
 
@@ -233,87 +420,73 @@ function ViewMessages() {
           <p>You have no messages.</p>
         ) : (
           <ul className="space-y-4">
-            {messages
-              .filter((message) => {
-                const fullName = message.fullName
-                  ? message.fullName.toLowerCase()
-                  : "";
-                const messageContent = message.message
-                  ? message.message.toLowerCase()
-                  : "";
-
-                return (
-                  fullName.includes(searchQuery.toLowerCase()) ||
-                  messageContent.includes(searchQuery.toLowerCase())
-                );
-              })
-              .map((message) => (
-                <li
-                  key={message.id}
-                  className={`bg-white p-4 rounded-md shadow ${
-                    !message.read ? "border border-blue-500" : ""
-                  }`}
-                  onClick={() => handleMarkAsRead(message.id)}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <span className="font-medium">{message.fullName}</span>
-                      <p className="text-gray-600 text-sm">
-                        {message.educationLevel}, {message.gradeLevel} -{" "}
-                        {message.section}
-                      </p>
-                    </div>
-                    <span className="text-gray-500 text-sm">
-                      {moment(message.timestamp.toDate()).format(
-                        "YYYY-MM-DD HH:mm:ss"
-                      )}
-                    </span>
+            {messages.map((message) => (
+              <li
+                key={message.id}
+                className={`bg-white p-4 rounded-md shadow ${
+                  !message.read ? "border border-blue-500" : ""
+                }`}
+                onClick={() => handleMarkAsRead(message.id)}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <span className="font-medium">{message.fullName}</span>
+                    <p className="text-gray-600 text-sm">
+                      {message.educationLevel}, {message.gradeLevel} -{" "}
+                      {message.section}
+                    </p>
                   </div>
+                  <span className="text-gray-500 text-sm">
+                    {moment(message.timestamp.toDate()).format(
+                      "YYYY-MM-DD HH:mm:ss"
+                    )}
+                  </span>
+                </div>
 
-                  <p className="mb-4">{message.message}</p>
+                <p className="mb-4">{message.message}</p>
 
-                  {message.fileURLs && message.fileURLs.length > 0 && (
-                    <div>
-                      <p className="font-medium">Attached Files:</p>
-                      <ul className="list-disc list-inside">
-                        {message.fileURLs.map((url, index) => (
-                          <li key={index}>
-                            <a
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-500 hover:underline"
-                            >
-                              File {index + 1}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className="mt-4 flex">
-                    <button
-                      onClick={() => handleMarkAsRead(message.id)}
-                      className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 mr-2"
-                    >
-                      Mark as Read
-                    </button>
-                    <button
-                      onClick={() => openDeleteModal(message.id)}
-                      className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 mr-2"
-                    >
-                      Delete
-                    </button>
-                    <button
-                      onClick={() => openReplyModal(message)}
-                      className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                      Reply
-                    </button>
+                {message.fileURLs && message.fileURLs.length > 0 && (
+                  <div>
+                    <p className="font-medium">Attached Files:</p>
+                    <ul className="list-disc list-inside">
+                      {message.fileURLs.map((url, index) => (
+                        <li key={index}>
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline"
+                          >
+                            File {index + 1}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </li>
-              ))}
+                )}
+
+                <div className="mt-4 flex">
+                  <button
+                    onClick={() => handleMarkAsRead(message.id)}
+                    className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 mr-2"
+                  >
+                    Mark as Read
+                  </button>
+                  <button
+                    onClick={() => openDeleteModal(message.id)}
+                    className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 mr-2"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => openReplyModal(message)}
+                    className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Reply
+                  </button>
+                </div>
+              </li>
+            ))}
           </ul>
         )}
 
