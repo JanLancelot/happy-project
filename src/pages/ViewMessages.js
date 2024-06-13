@@ -13,12 +13,15 @@ import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import Sidebar from "../components/Sidebar";
 import moment from "moment";
+import Modal from "../components/Modal";
 
 function ViewMessages() {
   const { currentUser } = useAuth();
   const [messages, setMessages] = useState([]);
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [messageIdToDelete, setMessageIdToDelete] = useState(null);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -66,18 +69,27 @@ function ViewMessages() {
     }
   };
 
-  const handleDeleteMessage = async (messageId) => {
-    if (!confirm("Are you sure you want to delete this message?")) {
-      return;
-    }
+  const openDeleteModal = (messageId) => {
+    setMessageIdToDelete(messageId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setMessageIdToDelete(null);
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleDeleteMessage = async () => {
+    if (!messageIdToDelete) return;
 
     try {
-      await deleteDoc(doc(db, "inquiries", messageId));
+      await deleteDoc(doc(db, "inquiries", messageIdToDelete));
 
       setMessages((prevMessages) =>
-        prevMessages.filter((msg) => msg.id !== messageId)
+        prevMessages.filter((msg) => msg.id !== messageIdToDelete)
       );
 
+      closeDeleteModal();
       alert("Message deleted successfully!");
     } catch (error) {
       console.error("Error deleting message:", error);
@@ -185,7 +197,7 @@ function ViewMessages() {
                         Mark as Read
                       </button>
                       <button
-                        onClick={() => handleDeleteMessage(message.id)}
+                        onClick={() => openDeleteModal(message.id)}
                         className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                       >
                         Delete
@@ -196,6 +208,27 @@ function ViewMessages() {
               ))}
           </ul>
         )}
+
+        <Modal isOpen={isDeleteModalOpen} onClose={closeDeleteModal}>
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
+            <p>Are you sure you want to delete this message?</p>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeDeleteModal}
+                className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteMessage}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </Sidebar>
   );
