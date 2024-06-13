@@ -141,13 +141,16 @@ function ViewMessages() {
           <ul className="space-y-4">
             {messages
               .filter((message) => {
+                const studentName = message.studentName
+                  ? message.studentName.toLowerCase()
+                  : "";
+                const messageContent = message.message
+                  ? message.message.toLowerCase()
+                  : "";
+
                 return (
-                  message.studentName
-                    .toLowerCase()
-                    .includes(searchQuery.toLowerCase()) ||
-                  message.message
-                    .toLowerCase()
-                    .includes(searchQuery.toLowerCase())
+                  studentName.includes(searchQuery.toLowerCase()) ||
+                  messageContent.includes(searchQuery.toLowerCase())
                 );
               })
               .map((message) => (
