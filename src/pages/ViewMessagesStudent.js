@@ -89,7 +89,7 @@ function ViewMessagesStudent() {
       const inquiriesRef = collection(db, "inquiries");
       await addDoc(inquiriesRef, {
         studentId: currentUser.uid,
-        recipientId: replyTo.recipientId, 
+        recipientId: replyTo.studentId, 
         subject: `Re: ${replyTo.subject}`,
         message: replyMessage,
         timestamp: serverTimestamp(),
