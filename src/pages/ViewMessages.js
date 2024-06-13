@@ -29,6 +29,7 @@ function ViewMessages() {
 
       try {
         const messagesRef = collection(db, "inquiries");
+        console.log("currentUser.uid", currentUser.uid);
         let q = query(
           messagesRef,
           where("recipientId", "==", currentUser.uid),
