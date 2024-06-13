@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/Sidebar"; 
 import moment from "moment";
 import Modal from "../components/Modal";
 
@@ -54,14 +54,25 @@ function ViewMessages() {
             const studentSnapshot = await getDocs(studentQuery);
 
             let fullName = "";
+            let educationLevel = "";
+            let gradeLevel = "";
+            let section = "";
+
             if (!studentSnapshot.empty) {
-              fullName = studentSnapshot.docs[0].data().fullName;
+              const studentData = studentSnapshot.docs[0].data();
+              fullName = studentData.fullName;
+              educationLevel = studentData.educationLevel;
+              gradeLevel = studentData.gradeLevel;
+              section = studentData.section;
             }
 
             return {
               id: doc.id,
               ...messageData,
-              fullName: fullName,
+              fullName,
+              educationLevel,
+              gradeLevel,
+              section,
             };
           })
         );
@@ -181,16 +192,21 @@ function ViewMessages() {
                   }`}
                   onClick={() => handleMarkAsRead(message.id)}
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-medium">
-                      From: {message.fullName} ({message.studentId})
-                    </span>
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <span className="font-medium">{message.fullName}</span>
+                      <p className="text-gray-600 text-sm">
+                        {message.educationLevel}, {message.gradeLevel} -{" "}
+                        {message.section}
+                      </p>
+                    </div>
                     <span className="text-gray-500 text-sm">
                       {moment(message.timestamp.toDate()).format(
                         "YYYY-MM-DD HH:mm:ss"
                       )}
                     </span>
                   </div>
+
                   <p className="mb-4">{message.message}</p>
 
                   {message.fileURLs && message.fileURLs.length > 0 && (
