@@ -24,7 +24,6 @@ function ViewMessagesStudent() {
   const [replyTo, setReplyTo] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [replyIdToDelete, setReplyIdToDelete] = useState(null);
-  const [replies, setReplies] = useState([]);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -129,9 +128,18 @@ function ViewMessagesStudent() {
     try {
       await deleteDoc(doc(db, "inquiries", replyIdToDelete));
 
-      setReplies((prevReplies) =>
-        prevReplies.filter((reply) => reply.id !== replyIdToDelete)
-      );
+      setMessages((prevMessages) => {
+        const updatedMessages = { ...prevMessages };
+        for (const sender in updatedMessages) {
+          updatedMessages[sender] = updatedMessages[sender].filter(
+            (reply) => reply.id !== replyIdToDelete
+          );
+          if (updatedMessages[sender].length === 0) {
+            delete updatedMessages[sender];
+          }
+        }
+        return updatedMessages;
+      });
 
       closeDeleteModal();
       alert("Reply deleted successfully!");
@@ -143,33 +151,30 @@ function ViewMessagesStudent() {
 
   return (
     <SidebarStudent>
-      <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">
-          Replies to Your Inquiries
-        </h2>
+      <div className="container mx-auto p-6">
+        <h2 className="text-3xl font-semibold mb-6">Replies to Your Inquiries</h2>
 
         {Object.keys(messages).length === 0 ? (
-          <p>You have no replies yet.</p>
+          <p className="text-gray-500">You have no replies yet.</p>
         ) : (
           Object.entries(messages).map(([senderEmail, messages]) => (
-            <div key={senderEmail} className="mb-6">
-              <h3 className="font-medium text-lg mb-2">{senderEmail}</h3>
-              <ul className="space-y-2">
+            <div key={senderEmail} className="mb-8">
+              <h3 className="font-medium text-xl mb-4">{senderEmail}</h3>
+              <ul className="space-y-4">
                 {messages.map((reply) => (
-                  <li key={reply.id} className="bg-white p-4 rounded-md shadow">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium">
+                  <li key={reply.id} className="bg-white p-6 rounded-md shadow-md">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-medium text-lg">
                         Subject: {reply.subject}
                       </span>
-                      <span className="text-gray-500 text-sm">
+                      <span className="text-gray-400 text-sm">
                         {moment(reply.timestamp.toDate()).format(
                           "YYYY-MM-DD HH:mm:ss"
                         )}
                       </span>
                     </div>
-                    <p className="mb-4">{reply.message}</p>
+                    <p className="text-gray-700 mb-4">{reply.message}</p>
 
-                    {/* Display attached files, if any */}
                     {reply.fileURLs && reply.fileURLs.length > 0 && (
                       <div>
                         <p className="font-medium">Attached Files:</p>
@@ -190,17 +195,16 @@ function ViewMessagesStudent() {
                       </div>
                     )}
 
-                    {/* Reply/Delete Buttons */}
-                    <div className="mt-4 flex">
+                    <div className="mt-6 flex space-x-4">
                       <button
                         onClick={() => openReplyModal(reply)}
-                        className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2"
+                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                       >
                         Reply
                       </button>
                       <button
                         onClick={() => openDeleteModal(reply.id)}
-                        className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                        className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
                       >
                         Delete
                       </button>
@@ -212,10 +216,9 @@ function ViewMessagesStudent() {
           ))
         )}
 
-        {/* Reply Modal */}
         <Modal isOpen={isReplyModalOpen} onClose={closeReplyModal}>
           <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Reply to Message</h3>
+            <h3 className="text-xl font-semibold mb-4">Reply to Message</h3>
             <p className="mb-2">
               To: <strong>{replyTo?.senderEmail}</strong>
             </p>
@@ -226,18 +229,18 @@ function ViewMessagesStudent() {
               value={replyMessage}
               onChange={(e) => setReplyMessage(e.target.value)}
               placeholder="Type your reply here..."
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+              className="w-full p-3 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
             />
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-end space-x-4">
               <button
                 onClick={closeReplyModal}
-                className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                className="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSendReply}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
               >
                 Send Reply
               </button>
@@ -245,21 +248,20 @@ function ViewMessagesStudent() {
           </div>
         </Modal>
 
-        {/* Delete Confirmation Modal */}
         <Modal isOpen={isDeleteModalOpen} onClose={closeDeleteModal}>
           <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
+            <h3 className="text-xl font-semibold mb-4">Confirm Delete</h3>
             <p>Are you sure you want to delete this reply?</p>
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-end space-x-4">
               <button
                 onClick={closeDeleteModal}
-                className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                className="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteReply}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
               >
                 Delete
               </button>
