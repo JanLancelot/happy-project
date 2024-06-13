@@ -8,12 +8,15 @@ import {
   updateDoc,
   doc,
   deleteDoc,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { db, storage } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import Sidebar from "../components/Sidebar"; 
+import Sidebar from "../components/Sidebar";
 import moment from "moment";
 import Modal from "../components/Modal";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 function ViewMessages() {
   const { currentUser } = useAuth();
@@ -22,6 +25,12 @@ function ViewMessages() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [messageIdToDelete, setMessageIdToDelete] = useState(null);
+
+  // Reply Modal states
+  const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
+  const [replyMessage, setReplyMessage] = useState("");
+  const [replyTo, setReplyTo] = useState(null);
+  const [replyFiles, setReplyFiles] = useState([]);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -127,6 +136,60 @@ function ViewMessages() {
     } catch (error) {
       console.error("Error deleting message:", error);
       alert("Error deleting message. Please try again later.");
+    }
+  };
+
+  const openReplyModal = (message) => {
+    setReplyTo(message);
+    setReplyMessage("");
+    setReplyFiles([]);
+    setIsReplyModalOpen(true);
+  };
+
+  const closeReplyModal = () => {
+    setIsReplyModalOpen(false);
+    setReplyTo(null);
+    setReplyMessage("");
+    setReplyFiles([]);
+  };
+
+  const handleReplyFileChange = (e) => {
+    setReplyFiles(Array.from(e.target.files));
+  };
+
+  const handleSendReply = async () => {
+    if (!replyTo || !replyMessage) return;
+
+    try {
+      const replyFileURLs = [];
+      if (replyFiles.length > 0) {
+        for (const file of replyFiles) {
+          const storageRef = ref(
+            storage,
+            `replies/${currentUser.uid}/${replyTo.id}/${file.name}`
+          );
+          await uploadBytes(storageRef, file);
+          const downloadURL = await getDownloadURL(storageRef);
+          replyFileURLs.push(downloadURL);
+        }
+      }
+
+      const inquiriesRef = collection(db, "inquiries");
+      await addDoc(inquiriesRef, {
+        studentId: currentUser.uid,
+        recipientId: replyTo.studentId,
+        subject: `Re: ${replyTo.subject}`,
+        message: replyMessage,
+        fileURLs: replyFileURLs,
+        timestamp: serverTimestamp(),
+        read: false,
+      });
+
+      closeReplyModal();
+      alert("Reply sent successfully!");
+    } catch (error) {
+      console.error("Error sending reply:", error);
+      alert("Error sending reply. Please try again.");
     }
   };
 
@@ -238,9 +301,15 @@ function ViewMessages() {
                     </button>
                     <button
                       onClick={() => openDeleteModal(message.id)}
-                      className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                      className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 mr-2"
                     >
                       Delete
+                    </button>
+                    <button
+                      onClick={() => openReplyModal(message)}
+                      className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Reply
                     </button>
                   </div>
                 </li>
@@ -264,6 +333,54 @@ function ViewMessages() {
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </Modal>
+
+        <Modal isOpen={isReplyModalOpen} onClose={closeReplyModal}>
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Reply to Message</h3>
+            <p className="mb-2">
+              To:{" "}
+              <strong>
+                {replyTo?.fullName} ({replyTo?.studentId})
+              </strong>
+            </p>
+            <p className="mb-2">
+              Subject: <strong>Re: {replyTo?.subject}</strong>
+            </p>
+            <textarea
+              value={replyMessage}
+              onChange={(e) => setReplyMessage(e.target.value)}
+              placeholder="Type your reply here..."
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            />
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Optional: Attach Files
+              </label>
+              <input
+                type="file"
+                multiple
+                onChange={handleReplyFileChange}
+                className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+              />
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeReplyModal}
+                className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendReply}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Send Reply
               </button>
             </div>
           </div>
