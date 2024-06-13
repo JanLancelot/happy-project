@@ -29,7 +29,6 @@ function ViewMessages() {
 
       try {
         const messagesRef = collection(db, "inquiries");
-        console.log("currentUser.uid", currentUser.uid);
         let q = query(
           messagesRef,
           where("recipientId", "==", currentUser.uid),
@@ -41,11 +40,32 @@ function ViewMessages() {
         }
 
         const messagesSnapshot = await getDocs(q);
-        console.log(messagesSnapshot);
-        const messagesData = messagesSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+
+        const messagesData = await Promise.all(
+          messagesSnapshot.docs.map(async (doc) => {
+            const messageData = doc.data();
+            const studentId = messageData.studentId;
+
+            const studentsRef = collection(db, "students");
+            const studentQuery = query(
+              studentsRef,
+              where("uid", "==", studentId)
+            );
+            const studentSnapshot = await getDocs(studentQuery);
+
+            let fullName = "";
+            if (!studentSnapshot.empty) {
+              fullName = studentSnapshot.docs[0].data().fullName;
+            }
+
+            return {
+              id: doc.id,
+              ...messageData,
+              fullName: fullName,
+            };
+          })
+        );
+
         setMessages(messagesData);
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -141,15 +161,15 @@ function ViewMessages() {
           <ul className="space-y-4">
             {messages
               .filter((message) => {
-                const studentName = message.studentName
-                  ? message.studentName.toLowerCase()
+                const fullName = message.fullName
+                  ? message.fullName.toLowerCase()
                   : "";
                 const messageContent = message.message
                   ? message.message.toLowerCase()
                   : "";
 
                 return (
-                  studentName.includes(searchQuery.toLowerCase()) ||
+                  fullName.includes(searchQuery.toLowerCase()) ||
                   messageContent.includes(searchQuery.toLowerCase())
                 );
               })
@@ -163,7 +183,7 @@ function ViewMessages() {
                 >
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-medium">
-                      From: {message.studentName} ({message.studentId})
+                      From: {message.fullName} ({message.studentId})
                     </span>
                     <span className="text-gray-500 text-sm">
                       {moment(message.timestamp.toDate()).format(
@@ -193,22 +213,20 @@ function ViewMessages() {
                     </div>
                   )}
 
-                  {!message.read && (
-                    <div className="mt-4 flex">
-                      <button
-                        onClick={() => handleMarkAsRead(message.id)}
-                        className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 mr-2"
-                      >
-                        Mark as Read
-                      </button>
-                      <button
-                        onClick={() => openDeleteModal(message.id)}
-                        className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
+                  <div className="mt-4 flex">
+                    <button
+                      onClick={() => handleMarkAsRead(message.id)}
+                      className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 mr-2"
+                    >
+                      Mark as Read
+                    </button>
+                    <button
+                      onClick={() => openDeleteModal(message.id)}
+                      className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </li>
               ))}
           </ul>
