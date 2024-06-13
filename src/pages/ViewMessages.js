@@ -41,6 +41,7 @@ function ViewMessages() {
         }
 
         const messagesSnapshot = await getDocs(q);
+        console.log(messagesSnapshot);
         const messagesData = messagesSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
