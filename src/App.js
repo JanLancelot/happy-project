@@ -23,6 +23,7 @@ import AuditLogs from "./pages/AuditLogs";
 import StudentsMasterList from "./pages/StudentsMasterList";
 import Chat from "./pages/Chat";
 import ViewMessages from "./pages/ViewMessages";
+import ViewMessagesStudent from "./pages/ViewMessagesStudent"
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
@@ -46,7 +47,8 @@ const router = createBrowserRouter([
   { path: "/audit-log", element: <AuditLogs />},
   { path: "/student-master-list", element: <StudentsMasterList />},
   { path: "/chat/:recipientId", element: <Chat />},
-  { path: "/view-messages", element: <ViewMessages />}
+  { path: "/view-messages", element: <ViewMessages />},
+  { path: "/view-messages-student", element: <ViewMessagesStudent />}
 ]);
 
 function App() {

@@ -35,7 +35,6 @@ function ViewMessages() {
   const [availableGradeLevels, setAvailableGradeLevels] = useState([]);
   const [availableSections, setAvailableSections] = useState([]);
 
-  // Reply Modal states
   const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
   const [replyMessage, setReplyMessage] = useState("");
   const [replyTo, setReplyTo] = useState(null);
