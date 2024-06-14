@@ -24,6 +24,7 @@ import StudentsMasterList from "./pages/StudentsMasterList";
 import Chat from "./pages/Chat";
 import ViewMessages from "./pages/ViewMessages";
 import ViewMessagesStudent from "./pages/ViewMessagesStudent"
+import DisciplinaryRecords from "./pages/DisciplinaryRecords";
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
@@ -48,7 +49,8 @@ const router = createBrowserRouter([
   { path: "/student-master-list", element: <StudentsMasterList />},
   { path: "/chat/:recipientId", element: <Chat />},
   { path: "/view-messages", element: <ViewMessages />},
-  { path: "/view-messages-student", element: <ViewMessagesStudent />}
+  { path: "/view-messages-student", element: <ViewMessagesStudent />},
+  { path: "/disciplinary-records", element: <DisciplinaryRecords />}
 ]);
 
 function App() {
