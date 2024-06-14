@@ -12,7 +12,8 @@ import {
   UserGroupIcon,
   CogIcon,
   ClockIcon,
-  LockClosedIcon
+  LockClosedIcon,
+  InboxIcon
 } from "@heroicons/react/24/outline";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
@@ -41,8 +42,6 @@ const navigation = [
     icon: AcademicCapIcon,
     current: false,
   },
-  { name: "Tuition Payments", href: "#", icon: CreditCardIcon, current: false },
-  { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
   { name: "Classes", href: "/classes", icon: UserGroupIcon, current: false },
   {
     name: "User Management",
@@ -53,6 +52,7 @@ const navigation = [
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
   { name: "Audit Trail", href: "/audit-log", icon: ClockIcon, current: false },
   { name: "Student Master List", href: "/student-master-list", icon: AcademicCapIcon, current: false },
+  { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
 ];
 
 const teams = [

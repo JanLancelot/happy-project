@@ -6,10 +6,7 @@ import {
   XMarkIcon,
   HomeIcon,
   DocumentDuplicateIcon,
-  AcademicCapIcon,
-  CreditCardIcon,
-  ChartBarIcon,
-  UserGroupIcon,
+  InboxIcon,
   CogIcon,
 } from "@heroicons/react/24/outline";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -33,6 +30,7 @@ const navigation = [
     icon: DocumentDuplicateIcon,
     current: true,
   },
+  { name: "Inbox", href: "/view-messages-student", icon: InboxIcon, current: false },
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
 ];
 

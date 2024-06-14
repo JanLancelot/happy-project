@@ -7,10 +7,9 @@ import {
   HomeIcon,
   DocumentDuplicateIcon,
   AcademicCapIcon,
-  CreditCardIcon,
-  ChartBarIcon,
   UserGroupIcon,
   CogIcon,
+  InboxIcon
 } from "@heroicons/react/24/outline";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
@@ -34,6 +33,7 @@ const navigation = [
     current: false,
   },
   { name: "Classes", href: "/view-classes", icon: UserGroupIcon, current: false},
+  { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
   { name: "Student Master List", href: "/student-master-list", icon: AcademicCapIcon, current: false },
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
 ];
