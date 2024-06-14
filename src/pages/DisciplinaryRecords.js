@@ -13,22 +13,30 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import Sidebar from "../components/Sidebar"; 
+import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
-import moment from "moment"
+import moment from "moment";
+import Select from "react-select";
 
 function DisciplinaryRecords() {
   const { currentUser } = useAuth();
   const [records, setRecords] = useState([]);
-  const [isAddRecordModalOpen, setIsAddRecordModalOpen] = useState(false);
   const [originalRecords, setOriginalRecords] = useState([]);
+  const [isAddRecordModalOpen, setIsAddRecordModalOpen] = useState(false);
+
+  const [studentOptions, setStudentOptions] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [witnessOptions, setWitnessOptions] = useState([]);
+  const [selectedWitnesses, setSelectedWitnesses] = useState([]);
+
   const [newRecord, setNewRecord] = useState({
     studentId: "",
+    studentSection: "",
     date: "",
     offense: "",
     description: "",
     location: "",
-    witnesses: "",
+    witnesses: [],
     evidence: null,
   });
 
@@ -63,7 +71,6 @@ function DisciplinaryRecords() {
               fullName = studentSnapshot.docs[0].data().fullName;
             }
 
-            // Add evidence download URL if evidence file exists
             let evidenceURL = null;
             if (recordData.evidence) {
               const evidenceRef = ref(storage, recordData.evidence);
@@ -94,6 +101,33 @@ function DisciplinaryRecords() {
     fetchRecords();
   }, [filterOffense]);
 
+  useEffect(() => {
+    const fetchStudentsAndTeachers = async () => {
+      try {
+        const studentsSnapshot = await getDocs(collection(db, "students"));
+        const studentsData = studentsSnapshot.docs.map((doc) => ({
+          value: doc.id,
+          label: doc.data().fullName,
+          section: doc.data().section,
+        }));
+        setStudentOptions(studentsData);
+
+        const teachersSnapshot = await getDocs(collection(db, "teachers"));
+        const teachersData = teachersSnapshot.docs.map((doc) => ({
+          value: doc.id,
+          label: doc.data().name,
+          type: "teacher",
+        }));
+
+        setWitnessOptions([...teachersData, ...studentsData]);
+      } catch (error) {
+        console.error("Error fetching students/teachers: ", error);
+      }
+    };
+
+    fetchStudentsAndTeachers();
+  }, []);
+
   const handleAddRecord = async () => {
     try {
       let evidenceFileURL = null;
@@ -105,12 +139,17 @@ function DisciplinaryRecords() {
         await uploadBytes(storageRef, newRecord.evidence);
         evidenceFileURL = await getDownloadURL(storageRef);
       }
+      const witnesses = selectedWitnesses.map((witness) => ({
+        id: witness.value,
+        type: witness.type || "student",
+      }));
 
       await addDoc(collection(db, "disciplinaryRecords"), {
         ...newRecord,
-        evidence: evidenceFileURL, 
+        witnesses: witnesses,
+        evidence: evidenceFileURL,
         timestamp: serverTimestamp(),
-        createdBy: currentUser.uid, 
+        createdBy: currentUser.uid,
       });
 
       setIsAddRecordModalOpen(false);
@@ -149,12 +188,27 @@ function DisciplinaryRecords() {
     return offenseMatch && searchMatch;
   });
 
+  const handleStudentChange = (selectedOption) => {
+    setSelectedStudent(selectedOption);
+    setNewRecord({
+      ...newRecord,
+      studentId: selectedOption ? selectedOption.value : "",
+      studentSection: selectedOption ? selectedOption.section : "",
+    });
+  };
+
+  const handleWitnessChange = (selectedOptions) => {
+    setSelectedWitnesses(selectedOptions);
+    setNewRecord({
+      ...newRecord,
+      witnesses: selectedOptions.map((option) => option.value),
+    });
+  };
+
   return (
     <Sidebar>
       <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">
-          Disciplinary Records
-        </h2>
+        <h2 className="text-2xl font-semibold mb-4">Disciplinary Records</h2>
 
         <button
           onClick={() => setIsAddRecordModalOpen(true)}
@@ -203,9 +257,7 @@ function DisciplinaryRecords() {
               <th className="py-2 border-b border-gray-200">Name</th>
               <th className="py-2 border-b border-gray-200">Date</th>
               <th className="py-2 border-b border-gray-200">Offense</th>
-              <th className="py-2 border-b border-gray-200">
-                Description
-              </th>
+              <th className="py-2 border-b border-gray-200">Description</th>
               <th className="py-2 border-b border-gray-200">Evidence</th>
             </tr>
           </thead>
@@ -218,9 +270,7 @@ function DisciplinaryRecords() {
                   {moment(record.date.toDate()).format("YYYY-MM-DD")}
                 </td>
                 <td className="border px-4 py-2">{record.offense}</td>
-                <td className="border px-4 py-2">
-                  {record.description}
-                </td>
+                <td className="border px-4 py-2">{record.description}</td>
                 <td className="border px-4 py-2">
                   {record.evidenceURL ? (
                     <a
@@ -250,21 +300,15 @@ function DisciplinaryRecords() {
             </h3>
             <form className="space-y-4">
               <div>
-                <label
-                  htmlFor="studentId"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
+                <label className="block text-gray-700 text-sm font-bold mb-2">
                   Student ID:
                 </label>
-                <input
-                  type="text"
-                  id="studentId"
-                  value={newRecord.studentId}
-                  onChange={(e) =>
-                    setNewRecord({ ...newRecord, studentId: e.target.value })
-                  }
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
+                <Select
+                  value={selectedStudent}
+                  onChange={handleStudentChange}
+                  options={studentOptions}
+                  className="basic-single"
+                  classNamePrefix="select"
                 />
               </div>
 
@@ -305,7 +349,9 @@ function DisciplinaryRecords() {
                 >
                   <option value="">Select Offense</option>
                   <option value="Tardiness">Tardiness</option>
-                  <option value="Dress Code Violation"> Dress Code Violation
+                  <option value="Dress Code Violation">
+                    {" "}
+                    Dress Code Violation
                   </option>
                 </select>
               </div>
@@ -350,20 +396,16 @@ function DisciplinaryRecords() {
               </div>
 
               <div>
-                <label
-                  htmlFor="witnesses"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
+                <label className="block text-gray-700 text-sm font-bold mb-2">
                   Witnesses:
                 </label>
-                <input
-                  type="text"
-                  id="witnesses"
-                  value={newRecord.witnesses}
-                  onChange={(e) =>
-                    setNewRecord({ ...newRecord, witnesses: e.target.value })
-                  }
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                <Select
+                  isMulti
+                  value={selectedWitnesses}
+                  onChange={handleWitnessChange}
+                  options={witnessOptions}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
                 />
               </div>
 
