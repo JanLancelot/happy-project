@@ -108,7 +108,6 @@ function DisciplinaryRecords() {
               evidenceURL = await getDownloadURL(evidenceRef);
             }
 
-            // Handle date conversion
             let date = recordData.date;
             if (date && date.toDate) {
               date = date.toDate();
