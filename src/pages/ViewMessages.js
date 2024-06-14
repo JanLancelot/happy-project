@@ -14,6 +14,9 @@ import {
 import { db, storage } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import Sidebar from "../components/Sidebar";
+import SidebarFaculty from "../components/SidebarFaculty";
+import SidebarOffice from "../components/SidebarOffice";
+import SidebarSuper from "../components/SidebarSuper";
 import moment from "moment";
 import Modal from "../components/Modal";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -34,6 +37,8 @@ function ViewMessages() {
   const [availableEducationLevels, setAvailableEducationLevels] = useState([]);
   const [availableGradeLevels, setAvailableGradeLevels] = useState([]);
   const [availableSections, setAvailableSections] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); 
+  const [userRole, setUserRole] = useState(null); 
 
   const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
   const [replyMessage, setReplyMessage] = useState("");
@@ -41,8 +46,32 @@ function ViewMessages() {
   const [replyFiles, setReplyFiles] = useState([]);
 
   useEffect(() => {
+    const fetchUserData = async () => {
+      if (currentUser) {
+        try {
+          const usersRef = collection(db, "users");
+          const userQuery = query(
+            usersRef,
+            where("uid", "==", currentUser.uid)
+          );
+          const userDocSnapshot = await getDocs(userQuery);
+
+          if (!userDocSnapshot.empty) {
+            setUserRole(userDocSnapshot.docs[0].data().role);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [currentUser]);
+
+  useEffect(() => {
     const fetchMessages = async () => {
       if (!currentUser) return;
+      setIsLoading(true);
 
       try {
         const messagesRef = collection(db, "inquiries");
@@ -108,11 +137,13 @@ function ViewMessages() {
         setAvailableSections(uniqueSections);
       } catch (error) {
         console.error("Error fetching messages:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchMessages();
-  }, [currentUser]);
+  }, [currentUser, filterStatus]);
 
   useEffect(() => {
     let filteredMessages = [...originalMessages];
@@ -155,9 +186,7 @@ function ViewMessages() {
 
     if (searchQuery) {
       filteredMessages = filteredMessages.filter((message) => {
-        const fullName = message.fullName
-          ? message.fullName.toLowerCase()
-          : "";
+        const fullName = message.fullName ? message.fullName.toLowerCase() : "";
         const messageContent = message.message
           ? message.message.toLowerCase()
           : "";
@@ -279,8 +308,41 @@ function ViewMessages() {
     }
   };
 
+  const getSidebarComponent = () => {
+    switch (userRole) {
+      case "faculty":
+        return <SidebarFaculty />;
+      case "super-admin":
+        return <SidebarSuper />;
+      case "librarian":
+      case "characterRenewalOfficer":
+      case "finance":
+      case "registrarBasicEd":
+      case "College Library":
+      case "Guidance Office":
+      case "Office of The Dean":
+      case "Office of the Finance Director":
+      case "Office of the Registrar":
+      case "Property Custodian":
+      case "Student Council":
+      case "directorPrincipal":
+        return <SidebarOffice />;
+      default:
+        return <Sidebar />;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-100">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
+      </div>
+    );
+  }
+
   return (
-    <Sidebar>
+    <div>
+      {getSidebarComponent()}{" "}
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Your Messages</h2>
 
@@ -346,10 +408,7 @@ function ViewMessages() {
           </div>
 
           <div>
-            <label
-              htmlFor="filterSection"
-              className="block text-gray-700 mb-1"
-            >
+            <label htmlFor="filterSection" className="block text-gray-700 mb-1">
               Filter by Section:
             </label>
             <select
@@ -558,7 +617,7 @@ function ViewMessages() {
           </div>
         </Modal>
       </div>
-    </Sidebar>
+    </div>
   );
 }
 

@@ -36,7 +36,6 @@ const navigation = [
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
 ];
 
-
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
