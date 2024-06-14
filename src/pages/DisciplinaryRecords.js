@@ -7,6 +7,7 @@ import {
   where,
   orderBy,
   doc,
+  getDoc,
   updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
@@ -17,6 +18,8 @@ import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
 import moment from "moment";
 import Select from "react-select";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 
 function DisciplinaryRecords() {
   const { currentUser } = useAuth();
@@ -28,10 +31,12 @@ function DisciplinaryRecords() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [witnessOptions, setWitnessOptions] = useState([]);
   const [selectedWitnesses, setSelectedWitnesses] = useState([]);
+  const [expandedRecordId, setExpandedRecordId] = useState(null);
 
   const [newRecord, setNewRecord] = useState({
     studentId: "",
     studentSection: "",
+    studentFullName: "",
     date: "",
     offense: "",
     description: "",
@@ -43,6 +48,37 @@ function DisciplinaryRecords() {
   const [filterOffense, setFilterOffense] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [availableOffenses, setAvailableOffenses] = useState([]);
+
+  useEffect(() => {
+    const fetchStudentsAndTeachers = async () => {
+      try {
+        const studentsSnapshot = await getDocs(collection(db, "students"));
+        const studentsData = studentsSnapshot.docs.map((doc) => ({
+          value: doc.id,
+          label: `${doc.data().fullName} - ${doc.data().gradeLevel} - ${
+            doc.data().section
+          }`,
+          fullName: doc.data().fullName,
+          section: doc.data().section,
+        }));
+        setStudentOptions(studentsData);
+
+        const teachersSnapshot = await getDocs(collection(db, "teachers"));
+        const teachersData = teachersSnapshot.docs.map((doc) => ({
+          value: doc.id,
+          label: doc.data().name,
+          fullName: doc.data().name,
+          type: "teacher",
+        }));
+
+        setWitnessOptions([...teachersData, ...studentsData]);
+      } catch (error) {
+        console.error("Error fetching students/teachers: ", error);
+      }
+    };
+
+    fetchStudentsAndTeachers();
+  }, []);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -86,8 +122,28 @@ function DisciplinaryRecords() {
           })
         );
 
-        setRecords(recordsData);
-        setOriginalRecords(recordsData);
+        const recordsWithWitnessNames = await Promise.all(
+          recordsData.map(async (record) => {
+            const witnessNames = await Promise.all(
+              record.witnesses.map(async (witness) => {
+                const collectionName =
+                  witness.type === "teacher" ? "teachers" : "students";
+                const witnessDoc = await getDoc(
+                  doc(db, collectionName, witness.id)
+                );
+                return witnessDoc.data().fullName;
+              })
+            );
+
+            return {
+              ...record,
+              witnessNames: witnessNames.join(", "),
+            };
+          })
+        );
+
+        setRecords(recordsWithWitnessNames);
+        setOriginalRecords(recordsWithWitnessNames);
 
         const uniqueOffenses = [
           ...new Set(recordsData.map((record) => record.offense)),
@@ -101,35 +157,8 @@ function DisciplinaryRecords() {
     fetchRecords();
   }, [filterOffense]);
 
-  useEffect(() => {
-    const fetchStudentsAndTeachers = async () => {
-      try {
-        const studentsSnapshot = await getDocs(collection(db, "students"));
-        const studentsData = studentsSnapshot.docs.map((doc) => ({
-          value: doc.id,
-          label: doc.data().fullName,
-          section: doc.data().section,
-        }));
-        setStudentOptions(studentsData);
-
-        const teachersSnapshot = await getDocs(collection(db, "teachers"));
-        const teachersData = teachersSnapshot.docs.map((doc) => ({
-          value: doc.id,
-          label: doc.data().name,
-          type: "teacher",
-        }));
-
-        setWitnessOptions([...teachersData, ...studentsData]);
-      } catch (error) {
-        console.error("Error fetching students/teachers: ", error);
-      }
-    };
-
-    fetchStudentsAndTeachers();
-  }, []);
-
   const handleAddRecord = async (event) => {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
     try {
       let evidenceFileURL = null;
       if (newRecord.evidence) {
@@ -140,9 +169,11 @@ function DisciplinaryRecords() {
         await uploadBytes(storageRef, newRecord.evidence);
         evidenceFileURL = await getDownloadURL(storageRef);
       }
+
       const witnesses = selectedWitnesses.map((witness) => ({
         id: witness.value,
         type: witness.type || "student",
+        fullName: witness.fullName,
       }));
 
       await addDoc(collection(db, "disciplinaryRecords"), {
@@ -156,11 +187,13 @@ function DisciplinaryRecords() {
       setIsAddRecordModalOpen(false);
       setNewRecord({
         studentId: "",
+        studentSection: "",
+        studentFullName: "",
         date: "",
         offense: "",
         description: "",
         location: "",
-        witnesses: "",
+        witnesses: [],
         evidence: null,
       });
 
@@ -179,7 +212,7 @@ function DisciplinaryRecords() {
     setSearchQuery(e.target.value);
   };
 
-  const filteredRecords = records.filter((record) => {
+  const filteredRecords = originalRecords.filter((record) => {
     const offenseMatch =
       filterOffense === "all" || record.offense === filterOffense;
     const searchMatch =
@@ -194,22 +227,36 @@ function DisciplinaryRecords() {
     setNewRecord({
       ...newRecord,
       studentId: selectedOption ? selectedOption.value : "",
+      studentFullName: selectedOption ? selectedOption.fullName : "",
       studentSection: selectedOption ? selectedOption.section : "",
     });
   };
 
   const handleWitnessChange = (selectedOptions) => {
     setSelectedWitnesses(selectedOptions);
+
+    const witnessFullNames = selectedOptions.map((option) => ({
+      id: option.value,
+      type: option.type || "student",
+      fullName: option.fullName,
+    }));
+
     setNewRecord({
       ...newRecord,
-      witnesses: selectedOptions.map((option) => option.value),
+      witnesses: witnessFullNames,
     });
+  };
+
+  const handleExpandRow = (recordId) => {
+    setExpandedRecordId((prevId) => (prevId === recordId ? null : recordId));
   };
 
   return (
     <Sidebar>
       <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">Disciplinary Records</h2>
+        <h2 className="text-2xl font-semibold mb-4">
+          Disciplinary Records
+        </h2>
 
         <button
           onClick={() => setIsAddRecordModalOpen(true)}
@@ -220,7 +267,10 @@ function DisciplinaryRecords() {
 
         <div className="mb-4 flex space-x-4">
           <div>
-            <label htmlFor="filterOffense" className="block text-gray-700 mb-1">
+            <label
+              htmlFor="filterOffense"
+              className="block text-gray-700 mb-1"
+            >
               Filter by Offense:
             </label>
             <select
@@ -256,39 +306,87 @@ function DisciplinaryRecords() {
             <tr>
               <th className="py-2 border-b border-gray-200">Student ID</th>
               <th className="py-2 border-b border-gray-200">Name</th>
+              <th className="py-2 border-b border-gray-200">Section</th>
+              <th className="py-2 border-b border-gray-200">
+                Grade Level
+              </th>
               <th className="py-2 border-b border-gray-200">Date</th>
               <th className="py-2 border-b border-gray-200">Offense</th>
-              <th className="py-2 border-b border-gray-200">Description</th>
-              <th className="py-2 border-b border-gray-200">Evidence</th>
+              <th className="py-2 border-b border-gray-200"></th>
             </tr>
           </thead>
           <tbody>
             {filteredRecords.map((record) => (
-              <tr key={record.id}>
-                <td className="border px-4 py-2">{record.studentId}</td>
-                <td className="border px-4 py-2">{record.fullName}</td>
-                <td className="border px-4 py-2">
-                  {record.date instanceof Date
-                    ? moment(record.date).format("YYYY-MM-DD")
-                    : moment(new Date(record.date)).format("YYYY-MM-DD")}
-                </td>
-                <td className="border px-4 py-2">{record.offense}</td>
-                <td className="border px-4 py-2">{record.description}</td>
-                <td className="border px-4 py-2">
-                  {record.evidenceURL ? (
-                    <a
-                      href={record.evidenceURL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
-                    >
-                      View Evidence
-                    </a>
-                  ) : (
-                    "No Evidence"
-                  )}
-                </td>
-              </tr>
+              <React.Fragment key={record.id}>
+                <tr
+                  key={record.id}
+                  onClick={() => handleExpandRow(record.id)}
+                  className="cursor-pointer hover:bg-gray-100"
+                >
+                  <td className="border px-4 py-2">{record.studentId}</td>
+                  <td className="border px-4 py-2">{record.fullName}</td>
+                  <td className="border px-4 py-2">
+                    {record.studentSection}
+                  </td>
+                  <td className="border px-4 py-2">{record.gradeLevel}</td>
+                  <td className="border px-4 py-2">
+                    {moment(record.date.toDate()).format("YYYY-MM-DD")}
+                  </td>
+                  <td className="border px-4 py-2">{record.offense}</td>
+                  <td className="border px-4 py-2 text-center">
+                    <FontAwesomeIcon
+                      icon={
+                        expandedRecordId === record.id
+                          ? faAngleUp
+                          : faAngleDown
+                      }
+                    />
+                  </td>
+                </tr>
+
+                {/* Expandable Row for Details */}
+                {expandedRecordId === record.id && (
+                  <tr className="bg-gray-100">
+                    <td colSpan={7} className="border px-4 py-2">
+                      <div className="mb-2">
+                        <label className="block text-gray-700 text-sm font-bold">
+                          Description:
+                        </label>
+                        <p>{record.description}</p>
+                      </div>
+                      <div className="mb-2">
+                        <label className="block text-gray-700 text-sm font-bold">
+                          Location:
+                        </label>
+                        <p>{record.location || "N/A"}</p>
+                      </div>
+                      <div className="mb-2">
+                        <label className="block text-gray-700 text-sm font-bold">
+                          Witnesses:
+                        </label>
+                        <p>{record.witnessNames}</p>
+                      </div>
+                      <div>
+                        <label className="block text-gray-700 text-sm font-bold">
+                          Evidence:
+                        </label>
+                        {record.evidenceURL ? (
+                          <a
+                            href={record.evidenceURL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline"
+                          >
+                            View Evidence
+                          </a>
+                        ) : (
+                          "No Evidence"
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
