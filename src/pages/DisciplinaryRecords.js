@@ -128,7 +128,8 @@ function DisciplinaryRecords() {
     fetchStudentsAndTeachers();
   }, []);
 
-  const handleAddRecord = async () => {
+  const handleAddRecord = async (event) => {
+    event.preventDefault(); // Prevent default form submission
     try {
       let evidenceFileURL = null;
       if (newRecord.evidence) {
@@ -298,10 +299,10 @@ function DisciplinaryRecords() {
             <h3 className="text-lg font-semibold mb-4">
               Add Disciplinary Record
             </h3>
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleAddRecord}>
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Student ID:
+                  Student Name:
                 </label>
                 <Select
                   value={selectedStudent}
@@ -435,7 +436,7 @@ function DisciplinaryRecords() {
                   Cancel
                 </button>
                 <button
-                  onClick={handleAddRecord}
+                  type="submit"
                   className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
                   Add Record
