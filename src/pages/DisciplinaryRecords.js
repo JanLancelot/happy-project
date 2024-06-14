@@ -268,7 +268,9 @@ function DisciplinaryRecords() {
                 <td className="border px-4 py-2">{record.studentId}</td>
                 <td className="border px-4 py-2">{record.fullName}</td>
                 <td className="border px-4 py-2">
-                  {moment(record.date.toDate()).format("YYYY-MM-DD")}
+                  {record.date instanceof Date
+                    ? moment(record.date).format("YYYY-MM-DD")
+                    : moment(new Date(record.date)).format("YYYY-MM-DD")}
                 </td>
                 <td className="border px-4 py-2">{record.offense}</td>
                 <td className="border px-4 py-2">{record.description}</td>
