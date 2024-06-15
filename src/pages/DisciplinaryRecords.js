@@ -369,14 +369,18 @@ function DisciplinaryRecords() {
               record.witnesses.map(async (witness) => {
                 const collectionName =
                   witness.type === "teacher" ? "teachers" : "students";
-                const witnessDoc = await getDoc(doc(db, collectionName, witness.id));
+                const witnessDoc = await getDoc(
+                  doc(db, collectionName, witness.id)
+                );
                 const witnessData = witnessDoc.data();
                 const witnessName =
-                  witness.type === "teacher" ? witnessData.name : witnessData.fullName;
+                  witness.type === "teacher"
+                    ? witnessData.name
+                    : witnessData.fullName;
                 return witnessName;
               })
             );
-        
+
             return {
               ...record,
               witnessNames: witnessNames.join(", "),
@@ -565,45 +569,58 @@ function DisciplinaryRecords() {
           </div>
         </div>
 
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead>
+        <table className="min-w-full bg-white border border-gray-300 shadow-sm rounded-lg">
+          <thead className="bg-gray-200">
             <tr>
-              <th className="py-2 border-b border-gray-200">Student ID</th>
-              <th className="py-2 border-b border-gray-200">Name</th>
-              <th className="py-2 border-b border-gray-200">Section</th>
-              <th className="py-2 border-b border-gray-200">Grade Level</th>
-              <th className="py-2 border-b border-gray-200">Date</th>
-              <th className="py-2 border-b border-gray-200">Violations</th>
-              <th className="py-2 border-b border-gray-200">Sanctions</th>
-              <th className="py-2 border-b border-gray-200"></th>
+              <th className="py-3 px-4 border-b border-gray-300 text-left text-gray-700 font-semibold">
+                Name
+              </th>
+              <th className="py-3 px-4 border-b border-gray-300 text-left text-gray-700 font-semibold">
+                Section
+              </th>
+              <th className="py-3 px-4 border-b border-gray-300 text-left text-gray-700 font-semibold">
+                Grade Level
+              </th>
+              <th className="py-3 px-4 border-b border-gray-300 text-left text-gray-700 font-semibold">
+                Date
+              </th>
+              <th className="py-3 px-4 border-b border-gray-300 text-left text-gray-700 font-semibold">
+                Violations
+              </th>
+              <th className="py-3 px-4 border-b border-gray-300 text-left text-gray-700 font-semibold">
+                Sanctions
+              </th>
+              <th className="py-3 px-4 border-b border-gray-300"></th>
             </tr>
           </thead>
           <tbody>
             {filteredRecords.map((record) => (
               <React.Fragment key={record.id}>
                 <tr
-                  key={record.id}
                   onClick={() => handleExpandRow(record.id)}
-                  className="cursor-pointer hover:bg-gray-100"
+                  className="cursor-pointer hover:bg-gray-100 transition duration-150 ease-in-out"
                 >
-                  <td className="border px-4 py-2">{record.studentId}</td>
-                  <td className="border px-4 py-2">{record.studentFullName}</td>
-                  <td className="border px-4 py-2">{record.studentSection}</td>
-                  <td className="border px-4 py-2">
+                  <td className="border-t border-gray-300 px-4 py-3">
+                    {record.studentFullName}
+                  </td>
+                  <td className="border-t border-gray-300 px-4 py-3">
+                    {record.studentSection}
+                  </td>
+                  <td className="border-t border-gray-300 px-4 py-3">
                     {record.studentGradeLevel}
                   </td>
-                  <td className="border px-4 py-2">
+                  <td className="border-t border-gray-300 px-4 py-3">
                     {record.date instanceof Date
                       ? moment(record.date).format("YYYY-MM-DD")
                       : moment(new Date(record.date)).format("YYYY-MM-DD")}
                   </td>
-                  <td className="border px-4 py-2">
+                  <td className="border-t border-gray-300 px-4 py-3">
                     {record.violations.join(", ")}
                   </td>
-                  <td className="border px-4 py-2">
+                  <td className="border-t border-gray-300 px-4 py-3">
                     {record.sanctions.join(", ")}
                   </td>
-                  <td className="border px-4 py-2 text-center">
+                  <td className="border-t border-gray-300 px-4 py-3 text-center">
                     <FontAwesomeIcon
                       icon={
                         expandedRecordId === record.id ? faAngleUp : faAngleDown
@@ -613,22 +630,25 @@ function DisciplinaryRecords() {
                 </tr>
 
                 {expandedRecordId === record.id && (
-                  <tr className="bg-gray-100">
-                    <td colSpan={7} className="border px-4 py-2">
-                      <div className="mb-2">
-                        <label className="block text-gray-700 text-sm font-bold">
+                  <tr className="bg-gray-50">
+                    <td
+                      colSpan={6}
+                      className="border-t border-gray-300 px-4 py-3"
+                    >
+                      <div className="mb-3">
+                        <label className="block text-gray-600 text-sm font-semibold">
                           Location:
                         </label>
                         <p>{record.location || "N/A"}</p>
                       </div>
-                      <div className="mb-2">
-                        <label className="block text-gray-700 text-sm font-bold">
+                      <div className="mb-3">
+                        <label className="block text-gray-600 text-sm font-semibold">
                           Witnesses:
                         </label>
                         <p>{record.witnessNames}</p>
                       </div>
                       <div>
-                        <label className="block text-gray-700 text-sm font-bold">
+                        <label className="block text-gray-600 text-sm font-semibold">
                           Evidence:
                         </label>
                         {record.evidenceURL ? (
