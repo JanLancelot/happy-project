@@ -614,7 +614,7 @@ function DisciplinaryRecords() {
                 {expandedRecordId === record.id && (
                   <tr className="bg-gray-100">
                     <td colSpan={7} className="border px-4 py-2">
-                      <div className="mb-2">
+                      {/* <div className="mb-2">
                         <label className="block text-gray-700 text-sm font-bold">
                           Violations:
                         </label>
@@ -634,7 +634,7 @@ function DisciplinaryRecords() {
                             <li key={index}>{sanction}</li>
                           ))}
                         </ul>
-                      </div>
+                      </div> */}
                       <div className="mb-2">
                         <label className="block text-gray-700 text-sm font-bold">
                           Location:
