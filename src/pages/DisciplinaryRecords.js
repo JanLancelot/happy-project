@@ -573,7 +573,7 @@ function DisciplinaryRecords() {
               <th className="py-2 border-b border-gray-200">Grade Level</th>
               <th className="py-2 border-b border-gray-200">Date</th>
               <th className="py-2 border-b border-gray-200">Offense</th>
-              <th className="py-2 border-b border-gray-200">Violations</th> 
+              <th className="py-2 border-b border-gray-200">Violations</th>
               <th className="py-2 border-b border-gray-200">Sanctions</th>
               <th className="py-2 border-b border-gray-200"></th>
             </tr>
@@ -589,16 +589,20 @@ function DisciplinaryRecords() {
                   <td className="border px-4 py-2">{record.studentId}</td>
                   <td className="border px-4 py-2">{record.studentFullName}</td>
                   <td className="border px-4 py-2">{record.studentSection}</td>
-                  <td className="border px-4 py-2">{record.studentGradeLevel}</td>
                   <td className="border px-4 py-2">
-                    {moment(record.date.toDate()).format("YYYY-MM-DD")}
+                    {record.studentGradeLevel}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {record.date instanceof Date
+                      ? moment(record.date).format("YYYY-MM-DD")
+                      : moment(new Date(record.date)).format("YYYY-MM-DD")}
                   </td>
                   <td className="border px-4 py-2">{record.offense}</td>
                   <td className="border px-4 py-2">
-                    {record.violations.join(", ")} 
+                    {record.violations.join(", ")}
                   </td>
                   <td className="border px-4 py-2">
-                    {record.sanctions.join(", ")} 
+                    {record.sanctions.join(", ")}
                   </td>
                   <td className="border px-4 py-2 text-center">
                     <FontAwesomeIcon
@@ -611,7 +615,7 @@ function DisciplinaryRecords() {
 
                 {expandedRecordId === record.id && (
                   <tr className="bg-gray-100">
-                    <td colSpan={7} className="border px-4 py-2">                     
+                    <td colSpan={7} className="border px-4 py-2">
                       <div className="mb-2">
                         <label className="block text-gray-700 text-sm font-bold">
                           Location:
