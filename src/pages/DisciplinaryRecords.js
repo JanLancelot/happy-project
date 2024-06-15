@@ -322,7 +322,7 @@ function DisciplinaryRecords() {
                   <td className="border px-4 py-2">{record.studentId}</td>
                   <td className="border px-4 py-2">{record.studentFullName}</td>
                   <td className="border px-4 py-2">{record.studentSection}</td>
-                  <td className="border px-4 py-2">{record.gradeLevel}</td>
+                  <td className="border px-4 py-2">{record.studentGradeLevel}</td>
                   <td className="border px-4 py-2">
                     {record.date instanceof Date
                       ? moment(record.date).format("YYYY-MM-DD")
