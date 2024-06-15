@@ -276,7 +276,7 @@ function DisciplinaryRecords() {
     studentGradeLevel: "",
     date: "",
     offense: "",
-    sanction: "",
+    description: "",
     location: "",
     witnesses: [],
     evidence: null,
@@ -399,29 +399,25 @@ function DisciplinaryRecords() {
   }, [filterOffense]);
 
   const getApplicableSanctions = () => {
-    if (!selectedViolations) {
-      return []; 
-    }
+    const selectedViolationClasses = selectedViolations.map((violation) =>
+      violation.value.split(" (")[1].replace(")", "")
+    );
+    const uniqueClasses = [...new Set(selectedViolationClasses)];
 
-    const violationClass = selectedViolations.value.split(" (")[1].replace(")", "");
+    let applicableSanctions = [];
+    uniqueClasses.forEach((classKey) => {
+      applicableSanctions = [...applicableSanctions, ...SANCTIONS[classKey]];
+    });
 
-    return SANCTIONS[violationClass] || []; 
+    return applicableSanctions;
   };
 
-  const handleViolationChange = (selectedOption) => {
-    setSelectedViolations(selectedOption);
-    setNewRecord({
-      ...newRecord,
-      offense: selectedOption ? selectedOption.value : "",
-    });
+  const handleViolationChange = (selectedOptions) => {
+    setSelectedViolations(selectedOptions);
   };
 
-  const handleSanctionChange = (selectedOption) => {
-    setSelectedSanctions(selectedOption);
-    setNewRecord({
-      ...newRecord,
-      sanction: selectedOption ? selectedOption.value : "",
-    });
+  const handleSanctionChange = (selectedOptions) => {
+    setSelectedSanctions(selectedOptions);
   };
 
   const handleAddRecord = async (event) => {
@@ -445,6 +441,8 @@ function DisciplinaryRecords() {
 
       await addDoc(collection(db, "disciplinaryRecords"), {
         ...newRecord,
+        violations: selectedViolations.map((violation) => violation.value),
+        sanctions: selectedSanctions.map((sanction) => sanction.value),
         witnesses: witnesses,
         evidence: evidenceFileURL,
         timestamp: serverTimestamp(),
@@ -462,8 +460,8 @@ function DisciplinaryRecords() {
         location: "",
         witnesses: [],
         evidence: null,
-        violations: "",
-        sanctions: "",
+        violations: [],
+        sanctions: [],
       });
 
       alert("Disciplinary record added successfully!");
@@ -569,6 +567,7 @@ function DisciplinaryRecords() {
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr>
+              <th className="py-2 border-b border-gray-200">Student ID</th>
               <th className="py-2 border-b border-gray-200">Name</th>
               <th className="py-2 border-b border-gray-200">Section</th>
               <th className="py-2 border-b border-gray-200">Grade Level</th>
@@ -586,6 +585,7 @@ function DisciplinaryRecords() {
                   onClick={() => handleExpandRow(record.id)}
                   className="cursor-pointer hover:bg-gray-100"
                 >
+                  <td className="border px-4 py-2">{record.studentId}</td>
                   <td className="border px-4 py-2">{record.studentFullName}</td>
                   <td className="border px-4 py-2">{record.studentSection}</td>
                   <td className="border px-4 py-2">
@@ -596,8 +596,7 @@ function DisciplinaryRecords() {
                       ? moment(record.date).format("YYYY-MM-DD")
                       : moment(new Date(record.date)).format("YYYY-MM-DD")}
                   </td>
-                  <td className="border px-4 py-2">{record.offense}</td> 
-                  <td className="border px-4 py-2">{record.sanction}</td>
+                  <td className="border px-4 py-2">{record.offense}</td>
                   <td className="border px-4 py-2 text-center">
                     <FontAwesomeIcon
                       icon={
@@ -610,7 +609,7 @@ function DisciplinaryRecords() {
                 {expandedRecordId === record.id && (
                   <tr className="bg-gray-100">
                     <td colSpan={7} className="border px-4 py-2">
-                      {/* <div className="mb-2">
+                      <div className="mb-2">
                         <label className="block text-gray-700 text-sm font-bold">
                           Violations:
                         </label>
@@ -630,7 +629,7 @@ function DisciplinaryRecords() {
                             <li key={index}>{sanction}</li>
                           ))}
                         </ul>
-                      </div> */}
+                      </div>
                       <div className="mb-2">
                         <label className="block text-gray-700 text-sm font-bold">
                           Location:
@@ -711,9 +710,10 @@ function DisciplinaryRecords() {
 
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Violation:
+                  Violations:
                 </label>
                 <Select
+                  isMulti
                   value={selectedViolations}
                   onChange={handleViolationChange}
                   options={Object.entries(VIOLATIONS).map(
@@ -722,23 +722,25 @@ function DisciplinaryRecords() {
                       options: violations,
                     })
                   )}
-                  className="basic-single" 
+                  className="basic-multi-select"
                   classNamePrefix="select"
                 />
               </div>
 
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Sanction:
+                  Sanctions:
                 </label>
                 <Select
+                  isMulti
                   value={selectedSanctions}
                   onChange={handleSanctionChange}
                   options={getApplicableSanctions()}
-                  className="basic-single"
+                  className="basic-multi-select"
                   classNamePrefix="select"
                 />
               </div>
+
               <div>
                 <label
                   htmlFor="location"
