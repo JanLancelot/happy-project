@@ -489,13 +489,13 @@ function DisciplinaryRecords() {
   };
 
   const handleExpandRow = (recordId) => {
-    setExpandedRecordId((prevId) => (prevId === recordId ? null : recordId));
+    setExpandedRecordId(expandedRecordId === recordId ? null : recordId);
   };
 
   return (
     <Sidebar>
-      <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">Disciplinary Records</h2>
+      <div className="p-4">
+        <h1 className="text-2xl font-semibold mb-4">Disciplinary Records</h1>
         <div className="mb-4">
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -553,8 +553,8 @@ function DisciplinaryRecords() {
                     <td className="py-2 px-4 border-b">{record.fullName}</td>
                     <td className="py-2 px-4 border-b">{moment(record.date.toDate()).format("YYYY-MM-DD")}</td>
                     <td className="py-2 px-4 border-b">{record.offense}</td>
-                    <td className="py-2 px-4 border-b">{record.violations.join(", ")}</td>
-                    <td className="py-2 px-4 border-b">{record.sanctions.join(", ")}</td>
+                    <td className="py-2 px-4 border-b">{VIOLATIONS[record.violations[0]]}</td>
+                    <td className="py-2 px-4 border-b">{SANCTIONS[record.sanctions[0]]}</td>
                     <td className="py-2 px-4 border-b">
                       <button
                         className="text-blue-500 hover:underline"
