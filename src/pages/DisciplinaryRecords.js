@@ -369,13 +369,14 @@ function DisciplinaryRecords() {
               record.witnesses.map(async (witness) => {
                 const collectionName =
                   witness.type === "teacher" ? "teachers" : "students";
-                const witnessDoc = await getDoc(
-                  doc(db, collectionName, witness.id)
-                );
-                return witnessDoc.data().fullName;
+                const witnessDoc = await getDoc(doc(db, collectionName, witness.id));
+                const witnessData = witnessDoc.data();
+                const witnessName =
+                  witness.type === "teacher" ? witnessData.name : witnessData.fullName;
+                return witnessName;
               })
             );
-
+        
             return {
               ...record,
               witnessNames: witnessNames.join(", "),
