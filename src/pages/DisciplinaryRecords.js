@@ -441,7 +441,7 @@ function DisciplinaryRecords() {
 
       await addDoc(collection(db, "disciplinaryRecords"), {
         ...newRecord,
-        violations: selectedViolations.map((violation) => violation.value), 
+        violations: selectedViolations.map((violation) => violation.value),
         sanctions: selectedSanctions.map((sanction) => sanction.value),
         witnesses: witnesses,
         evidence: evidenceFileURL,
@@ -460,7 +460,7 @@ function DisciplinaryRecords() {
         location: "",
         witnesses: [],
         evidence: null,
-        violations: [], 
+        violations: [],
         sanctions: [],
       });
 
@@ -572,7 +572,8 @@ function DisciplinaryRecords() {
               <th className="py-2 border-b border-gray-200">Section</th>
               <th className="py-2 border-b border-gray-200">Grade Level</th>
               <th className="py-2 border-b border-gray-200">Date</th>
-              <th className="py-2 border-b border-gray-200">Offense</th>
+              <th className="py-2 border-b border-gray-200">Violations</th>{" "}
+              <th className="py-2 border-b border-gray-200">Sanctions</th>{" "}
               <th className="py-2 border-b border-gray-200"></th>
             </tr>
           </thead>
@@ -610,9 +611,24 @@ function DisciplinaryRecords() {
                     <td colSpan={7} className="border px-4 py-2">
                       <div className="mb-2">
                         <label className="block text-gray-700 text-sm font-bold">
-                          Description:
+                          Violations:
                         </label>
-                        <p>{record.description}</p>
+                        <ul className="list-disc list-inside">
+                          {record.violations.map((violation, index) => (
+                            <li key={index}>{violation}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="mb-2">
+                        <label className="block text-gray-700 text-sm font-bold">
+                          Sanctions:
+                        </label>
+                        <ul className="list-disc list-inside">
+                          {record.sanctions.map((sanction, index) => (
+                            <li key={index}>{sanction}</li>
+                          ))}
+                        </ul>
                       </div>
                       <div className="mb-2">
                         <label className="block text-gray-700 text-sm font-bold">
@@ -712,18 +728,18 @@ function DisciplinaryRecords() {
               </div>
 
               <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Sanctions:
-              </label>
-              <Select
-                isMulti
-                value={selectedSanctions}
-                onChange={handleSanctionChange}
-                options={getApplicableSanctions()} 
-                className="basic-multi-select"
-                classNamePrefix="select"
-              />
-            </div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Sanctions:
+                </label>
+                <Select
+                  isMulti
+                  value={selectedSanctions}
+                  onChange={handleSanctionChange}
+                  options={getApplicableSanctions()}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                />
+              </div>
 
               <div>
                 <label
