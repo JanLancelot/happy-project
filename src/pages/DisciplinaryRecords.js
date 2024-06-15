@@ -276,7 +276,7 @@ function DisciplinaryRecords() {
     studentGradeLevel: "",
     date: "",
     offense: "",
-    description: "",
+    sanction: "",
     location: "",
     witnesses: [],
     evidence: null,
@@ -412,12 +412,20 @@ function DisciplinaryRecords() {
     return applicableSanctions;
   };
 
-  const handleViolationChange = (selectedOptions) => {
-    setSelectedViolations(selectedOptions);
+  const handleViolationChange = (selectedOption) => {
+    setSelectedViolations(selectedOption);
+    setNewRecord({
+      ...newRecord,
+      offense: selectedOption ? selectedOption.value : "",
+    });
   };
 
-  const handleSanctionChange = (selectedOptions) => {
-    setSelectedSanctions(selectedOptions);
+  const handleSanctionChange = (selectedOption) => {
+    setSelectedSanctions(selectedOption);
+    setNewRecord({
+      ...newRecord,
+      sanction: selectedOption ? selectedOption.value : "",
+    });
   };
 
   const handleAddRecord = async (event) => {
@@ -441,8 +449,6 @@ function DisciplinaryRecords() {
 
       await addDoc(collection(db, "disciplinaryRecords"), {
         ...newRecord,
-        violations: selectedViolations.map((violation) => violation.value),
-        sanctions: selectedSanctions.map((sanction) => sanction.value),
         witnesses: witnesses,
         evidence: evidenceFileURL,
         timestamp: serverTimestamp(),
@@ -460,8 +466,8 @@ function DisciplinaryRecords() {
         location: "",
         witnesses: [],
         evidence: null,
-        violations: [],
-        sanctions: [],
+        violations: "",
+        sanctions: "",
       });
 
       alert("Disciplinary record added successfully!");
@@ -567,7 +573,6 @@ function DisciplinaryRecords() {
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr>
-              <th className="py-2 border-b border-gray-200">Student ID</th>
               <th className="py-2 border-b border-gray-200">Name</th>
               <th className="py-2 border-b border-gray-200">Section</th>
               <th className="py-2 border-b border-gray-200">Grade Level</th>
@@ -585,7 +590,6 @@ function DisciplinaryRecords() {
                   onClick={() => handleExpandRow(record.id)}
                   className="cursor-pointer hover:bg-gray-100"
                 >
-                  <td className="border px-4 py-2">{record.studentId}</td>
                   <td className="border px-4 py-2">{record.studentFullName}</td>
                   <td className="border px-4 py-2">{record.studentSection}</td>
                   <td className="border px-4 py-2">
@@ -596,7 +600,8 @@ function DisciplinaryRecords() {
                       ? moment(record.date).format("YYYY-MM-DD")
                       : moment(new Date(record.date)).format("YYYY-MM-DD")}
                   </td>
-                  <td className="border px-4 py-2">{record.offense}</td>
+                  <td className="border px-4 py-2">{record.offense}</td> 
+                  <td className="border px-4 py-2">{record.sanction}</td>
                   <td className="border px-4 py-2 text-center">
                     <FontAwesomeIcon
                       icon={
@@ -710,10 +715,9 @@ function DisciplinaryRecords() {
 
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Violations:
+                  Violation:
                 </label>
                 <Select
-                  isMulti
                   value={selectedViolations}
                   onChange={handleViolationChange}
                   options={Object.entries(VIOLATIONS).map(
@@ -722,25 +726,23 @@ function DisciplinaryRecords() {
                       options: violations,
                     })
                   )}
-                  className="basic-multi-select"
+                  className="basic-single" 
                   classNamePrefix="select"
                 />
               </div>
 
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Sanctions:
+                  Sanction:
                 </label>
                 <Select
-                  isMulti
                   value={selectedSanctions}
                   onChange={handleSanctionChange}
                   options={getApplicableSanctions()}
-                  className="basic-multi-select"
+                  className="basic-single"
                   classNamePrefix="select"
                 />
               </div>
-
               <div>
                 <label
                   htmlFor="location"
