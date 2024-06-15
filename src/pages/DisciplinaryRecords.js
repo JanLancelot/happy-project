@@ -37,6 +37,7 @@ function DisciplinaryRecords() {
     studentId: "",
     studentSection: "",
     studentFullName: "",
+    studentGradeLevel: "",
     date: "",
     offense: "",
     description: "",
@@ -60,6 +61,7 @@ function DisciplinaryRecords() {
           }`,
           fullName: doc.data().fullName,
           section: doc.data().section,
+          gradeLevel: doc.data().gradeLevel
         }));
         setStudentOptions(studentsData);
 
@@ -122,7 +124,6 @@ function DisciplinaryRecords() {
           })
         );
 
-        // Get witness full names
         const recordsWithWitnessNames = await Promise.all(
           recordsData.map(async (record) => {
             const witnessNames = await Promise.all(
@@ -171,7 +172,6 @@ function DisciplinaryRecords() {
         evidenceFileURL = await getDownloadURL(storageRef);
       }
 
-      // Get selected witness IDs, types, and full names
       const witnesses = selectedWitnesses.map((witness) => ({
         id: witness.value,
         type: witness.type || "student",
@@ -231,6 +231,7 @@ function DisciplinaryRecords() {
       studentId: selectedOption ? selectedOption.value : "",
       studentFullName: selectedOption ? selectedOption.fullName : "",
       studentSection: selectedOption ? selectedOption.section : "",
+      studentGradeLevel: selectedOption ? selectedOption.gradeLevel : ""
     });
   };
 
@@ -319,7 +320,7 @@ function DisciplinaryRecords() {
                   className="cursor-pointer hover:bg-gray-100"
                 >
                   <td className="border px-4 py-2">{record.studentId}</td>
-                  <td className="border px-4 py-2">{record.fullName}</td>
+                  <td className="border px-4 py-2">{record.studentFullName}</td>
                   <td className="border px-4 py-2">{record.studentSection}</td>
                   <td className="border px-4 py-2">{record.gradeLevel}</td>
                   <td className="border px-4 py-2">
@@ -337,7 +338,6 @@ function DisciplinaryRecords() {
                   </td>
                 </tr>
 
-                {/* Expandable Row for Details */}
                 {expandedRecordId === record.id && (
                   <tr className="bg-gray-100">
                     <td colSpan={7} className="border px-4 py-2">
