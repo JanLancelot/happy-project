@@ -632,7 +632,7 @@ function DisciplinaryRecords() {
                 {expandedRecordId === record.id && (
                   <tr className="bg-gray-50">
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="border-t border-gray-300 px-4 py-3"
                     >
                       <div className="mb-3">

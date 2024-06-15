@@ -37,7 +37,7 @@ const navigation = [
   },
   {
     name: "Disciplinary Records",
-    href: "#",
+    href: "/disciplinary-records",
     icon: AcademicCapIcon,
     current: false,
   },
