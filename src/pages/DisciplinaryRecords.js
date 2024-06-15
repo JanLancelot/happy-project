@@ -286,8 +286,8 @@ function DisciplinaryRecords() {
   const [searchQuery, setSearchQuery] = useState("");
   const [availableOffenses, setAvailableOffenses] = useState([]);
 
-  const [selectedViolations, setSelectedViolations] = useState([]);
-  const [selectedSanctions, setSelectedSanctions] = useState([]);
+  const [selectedViolation, setSelectedViolation] = useState(null);
+  const [selectedSanction, setSelectedSanction] = useState(null);
 
   useEffect(() => {
     const fetchStudentsAndTeachers = async () => {
@@ -295,9 +295,7 @@ function DisciplinaryRecords() {
         const studentsSnapshot = await getDocs(collection(db, "students"));
         const studentsData = studentsSnapshot.docs.map((doc) => ({
           value: doc.id,
-          label: `${doc.data().fullName} - ${doc.data().gradeLevel} - ${
-            doc.data().section
-          }`,
+          label: `${doc.data().fullName} - ${doc.data().gradeLevel} - ${doc.data().section}`,
           fullName: doc.data().fullName,
           section: doc.data().section,
           gradeLevel: doc.data().gradeLevel,
@@ -338,10 +336,7 @@ function DisciplinaryRecords() {
             const studentId = recordData.studentId;
 
             const studentsRef = collection(db, "students");
-            const studentQuery = query(
-              studentsRef,
-              where("uid", "==", studentId)
-            );
+            const studentQuery = query(studentsRef, where("uid", "==", studentId));
             const studentSnapshot = await getDocs(studentQuery);
             let fullName = "";
             if (!studentSnapshot.empty) {
@@ -367,11 +362,8 @@ function DisciplinaryRecords() {
           recordsData.map(async (record) => {
             const witnessNames = await Promise.all(
               record.witnesses.map(async (witness) => {
-                const collectionName =
-                  witness.type === "teacher" ? "teachers" : "students";
-                const witnessDoc = await getDoc(
-                  doc(db, collectionName, witness.id)
-                );
+                const collectionName = witness.type === "teacher" ? "teachers" : "students";
+                const witnessDoc = await getDoc(doc(db, collectionName, witness.id));
                 return witnessDoc.data().fullName;
               })
             );
@@ -386,9 +378,7 @@ function DisciplinaryRecords() {
         setRecords(recordsWithWitnessNames);
         setOriginalRecords(recordsWithWitnessNames);
 
-        const uniqueOffenses = [
-          ...new Set(recordsData.map((record) => record.offense)),
-        ];
+        const uniqueOffenses = [...new Set(recordsData.map((record) => record.offense))];
         setAvailableOffenses(uniqueOffenses);
       } catch (error) {
         console.error("Error fetching disciplinary records:", error);
@@ -398,26 +388,12 @@ function DisciplinaryRecords() {
     fetchRecords();
   }, [filterOffense]);
 
-  const getApplicableSanctions = () => {
-    const selectedViolationClasses = selectedViolations.map((violation) =>
-      violation.value.split(" (")[1].replace(")", "")
-    );
-    const uniqueClasses = [...new Set(selectedViolationClasses)];
-
-    let applicableSanctions = [];
-    uniqueClasses.forEach((classKey) => {
-      applicableSanctions = [...applicableSanctions, ...SANCTIONS[classKey]];
-    });
-
-    return applicableSanctions;
+  const handleViolationChange = (selectedOption) => {
+    setSelectedViolation(selectedOption);
   };
 
-  const handleViolationChange = (selectedOptions) => {
-    setSelectedViolations(selectedOptions);
-  };
-
-  const handleSanctionChange = (selectedOptions) => {
-    setSelectedSanctions(selectedOptions);
+  const handleSanctionChange = (selectedOption) => {
+    setSelectedSanction(selectedOption);
   };
 
   const handleAddRecord = async (event) => {
@@ -425,10 +401,7 @@ function DisciplinaryRecords() {
     try {
       let evidenceFileURL = null;
       if (newRecord.evidence) {
-        const storageRef = ref(
-          storage,
-          `disciplinary/${newRecord.studentId}/${newRecord.evidence.name}`
-        );
+        const storageRef = ref(storage, `disciplinary/${newRecord.studentId}/${newRecord.evidence.name}`);
         await uploadBytes(storageRef, newRecord.evidence);
         evidenceFileURL = await getDownloadURL(storageRef);
       }
@@ -441,8 +414,8 @@ function DisciplinaryRecords() {
 
       await addDoc(collection(db, "disciplinaryRecords"), {
         ...newRecord,
-        violations: selectedViolations.map((violation) => violation.value),
-        sanctions: selectedSanctions.map((sanction) => sanction.value),
+        violations: selectedViolation ? [selectedViolation.value] : [],
+        sanctions: selectedSanction ? [selectedSanction.value] : [],
         witnesses: witnesses,
         evidence: evidenceFileURL,
         timestamp: serverTimestamp(),
@@ -460,9 +433,10 @@ function DisciplinaryRecords() {
         location: "",
         witnesses: [],
         evidence: null,
-        violations: [],
-        sanctions: [],
       });
+
+      setSelectedViolation(null);
+      setSelectedSanction(null);
 
       alert("Disciplinary record added successfully!");
     } catch (error) {
@@ -480,8 +454,7 @@ function DisciplinaryRecords() {
   };
 
   const filteredRecords = originalRecords.filter((record) => {
-    const offenseMatch =
-      filterOffense === "all" || record.offense === filterOffense;
+    const offenseMatch = filterOffense === "all" || record.offense === filterOffense;
     const searchMatch =
       record.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.studentId.toLowerCase().includes(searchQuery.toLowerCase());
@@ -523,290 +496,230 @@ function DisciplinaryRecords() {
     <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Disciplinary Records</h2>
-
-        <button
-          onClick={() => setIsAddRecordModalOpen(true)}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mb-4"
-        >
-          Add Record
-        </button>
-
-        <div className="mb-4 flex space-x-4">
-          <div>
-            <label htmlFor="filterOffense" className="block text-gray-700 mb-1">
-              Filter by Offense:
-            </label>
-            <select
-              id="filterOffense"
-              value={filterOffense}
-              onChange={handleOffenseFilterChange}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-            >
-              <option value="all">All Offenses</option>
-              {availableOffenses.map((offense) => (
-                <option key={offense} value={offense}>
-                  {offense}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="searchQuery" className="block text-gray-700 mb-1">
-              Search by Name or ID:
-            </label>
-            <input
-              type="text"
-              id="searchQuery"
-              value={searchQuery}
-              onChange={handleSearchQueryChange}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-            />
-          </div>
+        <div className="mb-4">
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+            onClick={() => setIsAddRecordModalOpen(true)}
+          >
+            Add Disciplinary Record
+          </button>
         </div>
-
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead>
-            <tr>
-              <th className="py-2 border-b border-gray-200">Student ID</th>
-              <th className="py-2 border-b border-gray-200">Name</th>
-              <th className="py-2 border-b border-gray-200">Section</th>
-              <th className="py-2 border-b border-gray-200">Grade Level</th>
-              <th className="py-2 border-b border-gray-200">Date</th>
-              <th className="py-2 border-b border-gray-200">Violations</th>{" "}
-              <th className="py-2 border-b border-gray-200">Sanctions</th>{" "}
-              <th className="py-2 border-b border-gray-200"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRecords.map((record) => (
-              <React.Fragment key={record.id}>
-                <tr
-                  key={record.id}
-                  onClick={() => handleExpandRow(record.id)}
-                  className="cursor-pointer hover:bg-gray-100"
-                >
-                  <td className="border px-4 py-2">{record.studentId}</td>
-                  <td className="border px-4 py-2">{record.studentFullName}</td>
-                  <td className="border px-4 py-2">{record.studentSection}</td>
-                  <td className="border px-4 py-2">
-                    {record.studentGradeLevel}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {record.date instanceof Date
-                      ? moment(record.date).format("YYYY-MM-DD")
-                      : moment(new Date(record.date)).format("YYYY-MM-DD")}
-                  </td>
-                  <td className="border px-4 py-2">{record.offense}</td>
-                  <td className="border px-4 py-2 text-center">
-                    <FontAwesomeIcon
-                      icon={
-                        expandedRecordId === record.id ? faAngleUp : faAngleDown
-                      }
-                    />
-                  </td>
-                </tr>
-
-                {expandedRecordId === record.id && (
-                  <tr className="bg-gray-100">
-                    <td colSpan={7} className="border px-4 py-2">
-                      <div className="mb-2">
-                        <label className="block text-gray-700 text-sm font-bold">
-                          Violations:
-                        </label>
-                        <ul className="list-disc list-inside">
-                          {record.violations.map((violation, index) => (
-                            <li key={index}>{violation}</li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div className="mb-2">
-                        <label className="block text-gray-700 text-sm font-bold">
-                          Sanctions:
-                        </label>
-                        <ul className="list-disc list-inside">
-                          {record.sanctions.map((sanction, index) => (
-                            <li key={index}>{sanction}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="mb-2">
-                        <label className="block text-gray-700 text-sm font-bold">
-                          Location:
-                        </label>
-                        <p>{record.location || "N/A"}</p>
-                      </div>
-                      <div className="mb-2">
-                        <label className="block text-gray-700 text-sm font-bold">
-                          Witnesses:
-                        </label>
-                        <p>{record.witnessNames}</p>
-                      </div>
-                      <div>
-                        <label className="block text-gray-700 text-sm font-bold">
-                          Evidence:
-                        </label>
-                        {record.evidenceURL ? (
-                          <a
-                            href={record.evidenceURL}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline"
-                          >
-                            View Evidence
-                          </a>
+        <div className="mb-4">
+          <label htmlFor="filterOffense" className="mr-2">
+            Filter by Offense:
+          </label>
+          <select
+            id="filterOffense"
+            value={filterOffense}
+            onChange={handleOffenseFilterChange}
+            className="border border-gray-300 rounded p-2"
+          >
+            <option value="all">All</option>
+            {availableOffenses.map((offense, index) => (
+              <option key={index} value={offense}>
+                {offense}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-4">
+          <label htmlFor="searchQuery" className="mr-2">
+            Search by Student Name or ID:
+          </label>
+          <input
+            type="text"
+            id="searchQuery"
+            value={searchQuery}
+            onChange={handleSearchQueryChange}
+            className="border border-gray-300 rounded p-2"
+          />
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white">
+            <thead>
+              <tr>
+                <th className="py-2 px-4 border-b">Student Name</th>
+                <th className="py-2 px-4 border-b">Date</th>
+                <th className="py-2 px-4 border-b">Offense</th>
+                <th className="py-2 px-4 border-b">Violation</th>
+                <th className="py-2 px-4 border-b">Sanction</th>
+                <th className="py-2 px-4 border-b">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRecords.map((record) => (
+                <React.Fragment key={record.id}>
+                  <tr>
+                    <td className="py-2 px-4 border-b">{record.fullName}</td>
+                    <td className="py-2 px-4 border-b">{moment(record.date.toDate()).format("YYYY-MM-DD")}</td>
+                    <td className="py-2 px-4 border-b">{record.offense}</td>
+                    <td className="py-2 px-4 border-b">{record.violations.join(", ")}</td>
+                    <td className="py-2 px-4 border-b">{record.sanctions.join(", ")}</td>
+                    <td className="py-2 px-4 border-b">
+                      <button
+                        className="text-blue-500 hover:underline"
+                        onClick={() => handleExpandRow(record.id)}
+                      >
+                        {expandedRecordId === record.id ? (
+                          <FontAwesomeIcon icon={faAngleUp} />
                         ) : (
-                          "No Evidence"
+                          <FontAwesomeIcon icon={faAngleDown} />
                         )}
-                      </div>
+                      </button>
                     </td>
                   </tr>
-                )}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
-
-        <Modal
-          isOpen={isAddRecordModalOpen}
-          onClose={() => setIsAddRecordModalOpen(false)}
-        >
-          <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              Add Disciplinary Record
-            </h3>
-            <form className="space-y-4" onSubmit={handleAddRecord}>
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Student Name:
-                </label>
-                <Select
-                  value={selectedStudent}
-                  onChange={handleStudentChange}
-                  options={studentOptions}
-                  className="basic-single"
-                  classNamePrefix="select"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="date"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
-                  Date of Incident:
-                </label>
-                <input
-                  type="date"
-                  id="date"
-                  value={newRecord.date}
-                  onChange={(e) =>
-                    setNewRecord({ ...newRecord, date: e.target.value })
-                  }
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Violations:
-                </label>
-                <Select
-                  isMulti
-                  value={selectedViolations}
-                  onChange={handleViolationChange}
-                  options={Object.entries(VIOLATIONS).map(
-                    ([section, violations]) => ({
-                      label: section,
-                      options: violations,
-                    })
+                  {expandedRecordId === record.id && (
+                    <tr>
+                      <td colSpan="6" className="py-2 px-4 border-b bg-gray-100">
+                        <div>
+                          <p><strong>Full Description:</strong> {record.description}</p>
+                          <p><strong>Location:</strong> {record.location}</p>
+                          <p><strong>Witnesses:</strong> {record.witnessNames}</p>
+                          {record.evidenceURL && (
+                            <p>
+                              <strong>Evidence:</strong> <a href={record.evidenceURL} target="_blank" rel="noopener noreferrer">View</a>
+                            </p>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   )}
-                  className="basic-multi-select"
-                  classNamePrefix="select"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Sanctions:
-                </label>
-                <Select
-                  isMulti
-                  value={selectedSanctions}
-                  onChange={handleSanctionChange}
-                  options={getApplicableSanctions()}
-                  className="basic-multi-select"
-                  classNamePrefix="select"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="location"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
-                  Location:
-                </label>
-                <input
-                  type="text"
-                  id="location"
-                  value={newRecord.location}
-                  onChange={(e) =>
-                    setNewRecord({ ...newRecord, location: e.target.value })
-                  }
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Witnesses:
-                </label>
-                <Select
-                  isMulti
-                  value={selectedWitnesses}
-                  onChange={handleWitnessChange}
-                  options={witnessOptions}
-                  className="basic-multi-select"
-                  classNamePrefix="select"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="evidence"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
-                  Evidence:
-                </label>
-                <input
-                  type="file"
-                  id="evidence"
-                  onChange={(e) =>
-                    setNewRecord({ ...newRecord, evidence: e.target.files[0] })
-                  }
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-              </div>
-
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setIsAddRecordModalOpen(false)}
-                  className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  Add Record
-                </button>
-              </div>
-            </form>
-          </div>
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <Modal isOpen={isAddRecordModalOpen} onClose={() => setIsAddRecordModalOpen(false)}>
+          <h2 className="text-2xl font-semibold mb-4">Add Disciplinary Record</h2>
+          <form onSubmit={handleAddRecord}>
+            <div className="mb-4">
+              <label htmlFor="student" className="block text-sm font-medium text-gray-700">
+                Student
+              </label>
+              <Select
+                id="student"
+                options={studentOptions}
+                value={selectedStudent}
+                onChange={handleStudentChange}
+                placeholder="Select a student"
+                className="mt-1"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                Date
+              </label>
+              <input
+                type="date"
+                id="date"
+                value={newRecord.date}
+                onChange={(e) => setNewRecord({ ...newRecord, date: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded p-2"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="offense" className="block text-sm font-medium text-gray-700">
+                Offense
+              </label>
+              <input
+                type="text"
+                id="offense"
+                value={newRecord.offense}
+                onChange={(e) => setNewRecord({ ...newRecord, offense: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded p-2"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                Description
+              </label>
+              <textarea
+                id="description"
+                value={newRecord.description}
+                onChange={(e) => setNewRecord({ ...newRecord, description: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded p-2"
+                required
+              ></textarea>
+            </div>
+            <div className="mb-4">
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                Location
+              </label>
+              <input
+                type="text"
+                id="location"
+                value={newRecord.location}
+                onChange={(e) => setNewRecord({ ...newRecord, location: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded p-2"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="violations" className="block text-sm font-medium text-gray-700">
+                Violation
+              </label>
+              <Select
+                id="violations"
+                options={Object.keys(VIOLATIONS).map((key) => ({ value: key, label: VIOLATIONS[key] }))}
+                value={selectedViolation}
+                onChange={handleViolationChange}
+                placeholder="Select a violation"
+                className="mt-1"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="sanctions" className="block text-sm font-medium text-gray-700">
+                Sanction
+              </label>
+              <Select
+                id="sanctions"
+                options={Object.keys(SANCTIONS).map((key) => ({ value: key, label: SANCTIONS[key] }))}
+                value={selectedSanction}
+                onChange={handleSanctionChange}
+                placeholder="Select a sanction"
+                className="mt-1"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="witnesses" className="block text-sm font-medium text-gray-700">
+                Witnesses
+              </label>
+              <Select
+                id="witnesses"
+                options={witnessOptions}
+                value={selectedWitnesses}
+                onChange={handleWitnessChange}
+                isMulti
+                placeholder="Select witnesses"
+                className="mt-1"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="evidence" className="block text-sm font-medium text-gray-700">
+                Evidence
+              </label>
+              <input
+                type="file"
+                id="evidence"
+                onChange={(e) => setNewRecord({ ...newRecord, evidence: e.target.files[0] })}
+                className="mt-1 block w-full border border-gray-300 rounded p-2"
+              />
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded mr-2"
+                onClick={() => setIsAddRecordModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+                Save
+              </button>
+            </div>
+          </form>
         </Modal>
       </div>
     </Sidebar>
