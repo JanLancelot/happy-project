@@ -572,7 +572,6 @@ function DisciplinaryRecords() {
               <th className="py-2 border-b border-gray-200">Section</th>
               <th className="py-2 border-b border-gray-200">Grade Level</th>
               <th className="py-2 border-b border-gray-200">Date</th>
-              <th className="py-2 border-b border-gray-200">Offense</th>
               <th className="py-2 border-b border-gray-200">Violations</th>
               <th className="py-2 border-b border-gray-200">Sanctions</th>
               <th className="py-2 border-b border-gray-200"></th>
@@ -597,7 +596,6 @@ function DisciplinaryRecords() {
                       ? moment(record.date).format("YYYY-MM-DD")
                       : moment(new Date(record.date)).format("YYYY-MM-DD")}
                   </td>
-                  <td className="border px-4 py-2">{record.offense}</td>
                   <td className="border px-4 py-2">
                     {record.violations.join(", ")}
                   </td>
