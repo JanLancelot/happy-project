@@ -21,6 +21,242 @@ import Select from "react-select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 
+const VIOLATIONS = {
+  "Sec. 1 Academic Integrity": [
+    {
+      label: "a. Cheating (Class D)",
+      value: "Cheating (Class D)",
+    },
+    {
+      label: "b. Plagiarism (Class D)",
+      value: "Plagiarism (Class D)",
+    },
+    {
+      label:
+        "c. Falsification of academic records by altering, forging, or misrepresenting official scores, grade, or result of any graded assessment (Class D)",
+      value: "Falsification of academic records (Class D)",
+    },
+    {
+      label:
+        "d. Academic dishonesty in research projects involves the intentional misrepresentation or falsification of research data, findings, results or methodologies in order to deceive or manipulate the academic community (Class D/E)",
+      value: "Academic dishonesty in research projects (Class D/E)",
+    },
+  ],
+  "Sec. 2 Attendance and Punctuality": [
+    {
+      label:
+        "a. Frequent tardiness by consistently arriving late to classes without a valid reason (Class A)",
+      value: "Frequent tardiness (Class A)",
+    },
+    {
+      label:
+        "b. Unexcused absences that may exceed 20% of the total class hours required (Class A)",
+      value: "Unexcused absences (Class A)",
+    },
+    {
+      label:
+        "c. Leaving classes without permission by exiting the classroom during instructional time without authorization from the teacher (Class A)",
+      value: "Leaving classes without permission (Class A)",
+    },
+  ],
+  "Sec. 3 Dress Code": [
+    {
+      label:
+        "a. Non-conformity to the prescribed uniform of the respective college including any violation of I.D. and proper hair cut requirements (Class A)",
+      value: "Non-conformity to prescribed uniform (Class A)",
+    },
+    {
+      label:
+        "b. Misuse of school uniform by going to indecent places or engaging in unbecoming conduct while in uniform. (Class C)",
+      value: "Misuse of school uniform (Class C)",
+    },
+  ],
+  "Sec. 4 Conduct": [
+    {
+      label:
+        "a. Any form of disorderly conduct such as shouting, unruly behavior, frequent insolence towards teachers and disseminating unauthorized publications within school premises (Class B)",
+      value: "Disorderly conduct (Class B)",
+    },
+    {
+      label:
+        "b. Creation and/or distribution of unauthorized ID or school publications, illustrations/caricatures etc., distorting or injuring the image of the school, its faculty, and personnel (Class D)",
+      value:
+        "Creation/distribution of unauthorized ID or publications (Class D)",
+    },
+    {
+      label:
+        "c. Using indecent or obscene language within the school premises or engaging in immoral conduct and/or sexual advances. (Class C/D)",
+      value: "Indecent language/immoral conduct (Class C/D)",
+    },
+    {
+      label:
+        "d. Willful disobedience, general misbehavior, rowdiness, reckless behavior or horseplay within school premises (Class B/C)",
+      value: "Willful disobedience/misbehavior (Class B/C)",
+    },
+  ],
+  "Sec. 5 Cyber Offenses": [
+    {
+      label:
+        "a. Unauthorized access to the school computer systems or internet facilities (Class D/E)",
+      value: "Unauthorized access to school computer systems (Class D/E)",
+    },
+    {
+      label:
+        "b. Introduction of viruses or malicious programs into the school systems (Class D/E)",
+      value: "Introduction of viruses or malicious programs (Class D/E)",
+    },
+    {
+      label:
+        "c. Damaging or any attempt to damage computer systems, peripherals or networks belonging to the school (Class D/E)",
+      value: "Damaging school computer systems (Class D/E)",
+    },
+    {
+      label:
+        "d. Misuse of school computer systems such as browsing unauthorized sites, downloading unauthorized files or using the system for personal gains. (Class D)",
+      value: "Misuse of school computer systems (Class D)",
+    },
+    {
+      label:
+        "e. Hacking into an email, social networking or any electronic account to that will cause harm to any member of the academic community or damage the name and reputation of the school (Class D)",
+      value: "Hacking into accounts (Class D)",
+    },
+    {
+      label:
+        "f. Cyber voyeurism and Cyber bullying including but not limited to text messages and messages posted on social networking sites such as Facebook, Twitter and the likes (Class D/E)",
+      value: "Cyber voyeurism/bullying (Class D/E)",
+    },
+  ],
+  "Sec. 6 Substance Abuse": [
+    {
+      label: "a. Smoking within the school premises. (Class A)",
+      value: "Smoking (Class A)",
+    },
+    {
+      label:
+        "b. Possession of alcoholic beverage and/or drunkenness within the school premises. (Class B/C)",
+      value: "Possession of alcohol/drunkenness (Class B/C)",
+    },
+    {
+      label: "c. Gambling in any form even without money involved. (Class B)",
+      value: "Gambling (Class B)",
+    },
+    {
+      label:
+        "d. Possession and/or distribution of prohibited drugs and narcotics within school premises. (Class F)",
+      value: "Possession/distribution of drugs (Class F)",
+    },
+  ],
+  "Sec. 7 Property Damage/Theft": [
+    {
+      label: "a. Improper use of school facilities (Class A)",
+      value: "Improper use of school facilities (Class A)",
+    },
+    {
+      label:
+        "b. Spitting, littering, or scattering trash within school premises. (Class A)",
+      value: "Spitting/littering (Class A)",
+    },
+    {
+      label:
+        "c. Unauthorized picking of fruits or flowers, cutting of trees or plants and raising of animals within school premises. (Class A)",
+      value: "Unauthorized picking/cutting/raising animals (Class A)",
+    },
+    {
+      label:
+        "d. Identity theft by using the school ID, library card, or any personal ID of a fellow student (Class B)",
+      value: "Identity theft (Class B)",
+    },
+    {
+      label: "e. Violation of legally posted signs (Class B)",
+      value: "Violation of legally posted signs (Class B)",
+    },
+    {
+      label:
+        "f. Connecting or disconnecting electrical wires and plumbing devices (Class B/C)",
+      value: "Connecting/disconnecting electrical wires/plumbing (Class B/C)",
+    },
+    {
+      label:
+        "g. Any form of vandalism such as removing or damaging legally posted signs and notices (Class B), destroying another person or school property, either willfully or through negligence. (Class C/D)",
+      value: "Vandalism (Class B/C/D)",
+    },
+    {
+      label:
+        "h. Stealing or attempting to steal any property of the school or of any person in school. (Class D/E)",
+      value: "Stealing (Class D/E)",
+    },
+  ],
+  "Sec. 8 Safety and Security": [
+    {
+      label:
+        "a. Causing undue noise or disturbance in classrooms, library, corridors, quarters, public places or gatherings. (Class A)",
+      value: "Causing undue noise or disturbance (Class A)",
+    },
+    {
+      label:
+        "b. Scandalous disturbance of peace and order within the school premises by tampering the fire alarm and smoke detectors (Class C)",
+      value: "Scandalous disturbance of peace and order (Class C)",
+    },
+    {
+      label:
+        "c. Deliberately giving fictitious names to misrepresent facts. (Class D)",
+      value: "Deliberately giving fictitious names (Class D)",
+    },
+    {
+      label:
+        "d. Possession of deadly weapons such as but not limited to knives, guns, ice picks and the like. (Class D/E)",
+      value: "Possession of deadly weapons (Class D/E)",
+    },
+    {
+      label:
+        "e. Organizing and recruiting members for and joining any fraternity, sorority and other organization/s not approved by the school. (Class E)",
+      value: "Organizing/joining unapproved organizations (Class E)",
+    },
+    {
+      label:
+        "f. Participating in whatever capacity, in the hazing activities of any fraternity, sorority and other organization/s not approved by the school. (Class E)",
+      value: "Participating in hazing activities (Class E)",
+    },
+    {
+      label:
+        "g. Inciting or joining any form of group action (i.e. rallies, demonstrations, etc.) which create disorder or which impede or prevent the other students from attending their classes. (Class E)",
+      value: "Inciting/joining disruptive group action (Class E)",
+    },
+    {
+      label:
+        "h. Any act of subversion or affiliation/participation in any subversive movement. (Class F)",
+      value: "Subversion (Class F)",
+    },
+  ],
+};
+
+const SANCTIONS = {
+  "Class A": [
+    { label: "1st Offense: Oral Warning", value: "Oral Warning" },
+    { label: "2nd Offense: Written Reprimand", value: "Written Reprimand" },
+    { label: "3rd Offense: Suspension (2 days)", value: "Suspension (2 days)" },
+    { label: "4th Offense: Suspension (3 days)", value: "Suspension (3 days)" },
+    { label: "5th Offense: Exclusion", value: "Exclusion" },
+  ],
+  "Class B": [
+    { label: "1st Offense: Written Reprimand", value: "Written Reprimand" },
+    { label: "2nd Offense: Suspension (3 days)", value: "Suspension (3 days)" },
+    { label: "3rd Offense: Suspension (5 days)", value: "Suspension (5 days)" },
+    { label: "4th Offense: Exclusion", value: "Exclusion" },
+  ],
+  "Class C": [
+    { label: "1st Offense: Suspension (3 days)", value: "Suspension (3 days)" },
+    { label: "2nd Offense: Suspension (5 days)", value: "Suspension (5 days)" },
+    { label: "3rd Offense: Exclusion", value: "Exclusion" },
+  ],
+  "Class D": [
+    { label: "1st Offense: Suspension (5 days)", value: "Suspension (5 days)" },
+    { label: "2nd Offense: Exclusion", value: "Exclusion" },
+  ],
+  "Class E": [{ label: "1st Offense: Exclusion", value: "Exclusion" }],
+  "Class F": [{ label: "1st Offense: Expulsion", value: "Expulsion" }],
+};
+
 function DisciplinaryRecords() {
   const { currentUser } = useAuth();
   const [records, setRecords] = useState([]);
@@ -50,6 +286,9 @@ function DisciplinaryRecords() {
   const [searchQuery, setSearchQuery] = useState("");
   const [availableOffenses, setAvailableOffenses] = useState([]);
 
+  const [selectedViolations, setSelectedViolations] = useState([]);
+  const [selectedSanctions, setSelectedSanctions] = useState([]);
+
   useEffect(() => {
     const fetchStudentsAndTeachers = async () => {
       try {
@@ -61,7 +300,7 @@ function DisciplinaryRecords() {
           }`,
           fullName: doc.data().fullName,
           section: doc.data().section,
-          gradeLevel: doc.data().gradeLevel
+          gradeLevel: doc.data().gradeLevel,
         }));
         setStudentOptions(studentsData);
 
@@ -159,6 +398,28 @@ function DisciplinaryRecords() {
     fetchRecords();
   }, [filterOffense]);
 
+  const getApplicableSanctions = () => {
+    const selectedViolationClasses = selectedViolations.map((violation) =>
+      violation.value.split(" (")[1].replace(")", "")
+    );
+    const uniqueClasses = [...new Set(selectedViolationClasses)];
+
+    let applicableSanctions = [];
+    uniqueClasses.forEach((classKey) => {
+      applicableSanctions = [...applicableSanctions, ...SANCTIONS[classKey]];
+    });
+
+    return applicableSanctions;
+  };
+
+  const handleViolationChange = (selectedOptions) => {
+    setSelectedViolations(selectedOptions);
+  };
+
+  const handleSanctionChange = (selectedOptions) => {
+    setSelectedSanctions(selectedOptions);
+  };
+
   const handleAddRecord = async (event) => {
     event.preventDefault();
     try {
@@ -180,6 +441,8 @@ function DisciplinaryRecords() {
 
       await addDoc(collection(db, "disciplinaryRecords"), {
         ...newRecord,
+        violations: selectedViolations.map((violation) => violation.value), 
+        sanctions: selectedSanctions.map((sanction) => sanction.value),
         witnesses: witnesses,
         evidence: evidenceFileURL,
         timestamp: serverTimestamp(),
@@ -197,6 +460,8 @@ function DisciplinaryRecords() {
         location: "",
         witnesses: [],
         evidence: null,
+        violations: [], 
+        sanctions: [],
       });
 
       alert("Disciplinary record added successfully!");
@@ -231,7 +496,7 @@ function DisciplinaryRecords() {
       studentId: selectedOption ? selectedOption.value : "",
       studentFullName: selectedOption ? selectedOption.fullName : "",
       studentSection: selectedOption ? selectedOption.section : "",
-      studentGradeLevel: selectedOption ? selectedOption.gradeLevel : ""
+      studentGradeLevel: selectedOption ? selectedOption.gradeLevel : "",
     });
   };
 
@@ -322,7 +587,9 @@ function DisciplinaryRecords() {
                   <td className="border px-4 py-2">{record.studentId}</td>
                   <td className="border px-4 py-2">{record.studentFullName}</td>
                   <td className="border px-4 py-2">{record.studentSection}</td>
-                  <td className="border px-4 py-2">{record.studentGradeLevel}</td>
+                  <td className="border px-4 py-2">
+                    {record.studentGradeLevel}
+                  </td>
                   <td className="border px-4 py-2">
                     {record.date instanceof Date
                       ? moment(record.date).format("YYYY-MM-DD")
@@ -426,50 +693,37 @@ function DisciplinaryRecords() {
               </div>
 
               <div>
-                <label
-                  htmlFor="offense"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
-                  Nature of Offense:
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Violations:
                 </label>
-                <select
-                  id="offense"
-                  value={newRecord.offense}
-                  onChange={(e) =>
-                    setNewRecord({ ...newRecord, offense: e.target.value })
-                  }
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                >
-                  <option value="">Select Offense</option>
-                  <option value="Tardiness">Tardiness</option>
-                  <option value="Dress Code Violation">
-                    {" "}
-                    Dress Code Violation
-                  </option>
-                </select>
+                <Select
+                  isMulti
+                  value={selectedViolations}
+                  onChange={handleViolationChange}
+                  options={Object.entries(VIOLATIONS).map(
+                    ([section, violations]) => ({
+                      label: section,
+                      options: violations,
+                    })
+                  )}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                />
               </div>
 
               <div>
-                <label
-                  htmlFor="description"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
-                  Description:
-                </label>
-                <textarea
-                  id="description"
-                  value={newRecord.description}
-                  onChange={(e) =>
-                    setNewRecord({
-                      ...newRecord,
-                      description: e.target.value,
-                    })
-                  }
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                />
-              </div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Sanctions:
+              </label>
+              <Select
+                isMulti
+                value={selectedSanctions}
+                onChange={handleSanctionChange}
+                options={getApplicableSanctions()} 
+                className="basic-multi-select"
+                classNamePrefix="select"
+              />
+            </div>
 
               <div>
                 <label
