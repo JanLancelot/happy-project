@@ -557,7 +557,7 @@ function DisciplinaryRecords() {
           </div>
           <div>
             <label htmlFor="searchQuery" className="block text-gray-700 mb-1">
-              Search by Name or ID:
+              Search by Name:
             </label>
             <input
               type="text"
