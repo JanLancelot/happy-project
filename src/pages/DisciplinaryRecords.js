@@ -399,17 +399,13 @@ function DisciplinaryRecords() {
   }, [filterOffense]);
 
   const getApplicableSanctions = () => {
-    const selectedViolationClasses = selectedViolations.map((violation) =>
-      violation.value.split(" (")[1].replace(")", "")
-    );
-    const uniqueClasses = [...new Set(selectedViolationClasses)];
-
-    let applicableSanctions = [];
-    uniqueClasses.forEach((classKey) => {
-      applicableSanctions = [...applicableSanctions, ...SANCTIONS[classKey]];
-    });
-
-    return applicableSanctions;
+    if (!selectedViolations) {
+      return []; 
+    }
+  
+    const violationClass = selectedViolations.value.split(" (")[1].replace(")", ""); 
+  
+    return SANCTIONS[violationClass] || [];
   };
 
   const handleViolationChange = (selectedOption) => {
