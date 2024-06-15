@@ -402,10 +402,10 @@ function DisciplinaryRecords() {
     if (!selectedViolations) {
       return []; 
     }
-  
-    const violationClass = selectedViolations.value.split(" (")[1].replace(")", ""); 
-  
-    return SANCTIONS[violationClass] || [];
+
+    const violationClass = selectedViolations.value.split(" (")[1].replace(")", "");
+
+    return SANCTIONS[violationClass] || []; 
   };
 
   const handleViolationChange = (selectedOption) => {
