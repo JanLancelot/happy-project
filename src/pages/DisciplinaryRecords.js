@@ -425,73 +425,56 @@ function DisciplinaryRecords() {
     setSelectedSanctions(selectedOptions);
   };
 
-const handleAddRecord = async (event) => {
-  event.preventDefault();
-  try {
-    let evidenceFileURL = null;
-    if (newRecord.evidence) {
-      const storageRef = ref(
-        storage,
-        `disciplinary/${newRecord.studentId}/${newRecord.evidence.name}`
-      );
-      await uploadBytes(storageRef, newRecord.evidence);
-      evidenceFileURL = await getDownloadURL(storageRef);
+  const handleAddRecord = async (event) => {
+    event.preventDefault();
+    try {
+      let evidenceFileURL = null;
+      if (newRecord.evidence) {
+        const storageRef = ref(
+          storage,
+          `disciplinary/${newRecord.studentId}/${newRecord.evidence.name}`
+        );
+        await uploadBytes(storageRef, newRecord.evidence);
+        evidenceFileURL = await getDownloadURL(storageRef);
+      }
+
+      const witnesses = selectedWitnesses.map((witness) => ({
+        id: witness.value,
+        type: witness.type || "student",
+        fullName: witness.fullName,
+      }));
+
+      await addDoc(collection(db, "disciplinaryRecords"), {
+        ...newRecord,
+        violations: selectedViolations.map((violation) => violation.value),
+        sanctions: selectedSanctions.map((sanction) => sanction.value),
+        witnesses: witnesses,
+        evidence: evidenceFileURL,
+        timestamp: serverTimestamp(),
+        createdBy: currentUser.uid,
+      });
+
+      setIsAddRecordModalOpen(false);
+      setNewRecord({
+        studentId: "",
+        studentSection: "",
+        studentFullName: "",
+        date: "",
+        offense: "",
+        description: "",
+        location: "",
+        witnesses: [],
+        evidence: null,
+        violations: [],
+        sanctions: [],
+      });
+
+      alert("Disciplinary record added successfully!");
+    } catch (error) {
+      console.error("Error adding disciplinary record:", error);
+      alert("Error adding record. Please try again later.");
     }
-
-    const witnesses = selectedWitnesses.map((witness) => ({
-      id: witness.value,
-      type: witness.type || "student",
-      fullName: witness.fullName,
-    }));
-
-    const docRef = await addDoc(collection(db, "disciplinaryRecords"), {
-      ...newRecord,
-      violations: selectedViolations.map((violation) => violation.value),
-      sanctions: selectedSanctions.map((sanction) => sanction.value),
-      witnesses: witnesses,
-      evidence: evidenceFileURL,
-      timestamp: serverTimestamp(),
-      createdBy: currentUser.uid,
-    });
-
-    const newRecordId = docRef.id;
-
-    const newRecordSnapshot = await getDoc(doc(db, "disciplinaryRecords", newRecordId));
-
-    if (newRecordSnapshot.exists()) {
-      setRecords([
-        { id: newRecordId, ...newRecordSnapshot.data(), evidenceURL: evidenceFileURL, witnessNames: witnesses.map(w => w.fullName).join(', ') },
-        ...records,
-      ]);
-
-      setOriginalRecords([
-        { id: newRecordId, ...newRecordSnapshot.data(), evidenceURL: evidenceFileURL, witnessNames: witnesses.map(w => w.fullName).join(', ') },
-        ...originalRecords,
-      ]);
-    }
-
-    setIsAddRecordModalOpen(false);
-    setNewRecord({
-      studentId: "",
-      studentSection: "",
-      studentFullName: "",
-      studentGradeLevel: "",
-      date: "",
-      offense: "",
-      description: "",
-      location: "",
-      witnesses: [],
-      evidence: null,
-      violations: [],
-      sanctions: [],
-    });
-
-    alert("Disciplinary record added successfully!");
-  } catch (error) {
-    console.error("Error adding disciplinary record:", error);
-    alert("Error adding record. Please try again later.");
-  }
-};
+  };
 
   const handleOffenseFilterChange = (e) => {
     setFilterOffense(e.target.value);
