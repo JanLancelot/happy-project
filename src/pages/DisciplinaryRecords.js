@@ -404,9 +404,14 @@ function DisciplinaryRecords() {
   }, [filterOffense]);
 
   const getApplicableSanctions = () => {
-    const selectedViolationClasses = selectedViolations.map((violation) =>
-      violation.value.split(" (")[1].replace(")", "")
-    );
+    const selectedViolationClasses = selectedViolations.map((violation) => {
+      const classMatch = violation.value.match(/Class ([A-F])(?:\/([A-F]))?/);
+      if (classMatch) {
+        return [classMatch[1], classMatch[2]].filter(Boolean); 
+      }
+      return []; 
+    }).flat(); 
+
     const uniqueClasses = [...new Set(selectedViolationClasses)];
 
     let applicableSanctions = [];
