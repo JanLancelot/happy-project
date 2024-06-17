@@ -444,7 +444,7 @@ function DisciplinaryRecords() {
         fullName: witness.fullName,
       }));
 
-      await addDoc(collection(db, "disciplinaryRecords"), {
+      const newRecordRef = await addDoc(collection(db, "disciplinaryRecords"), {
         ...newRecord,
         violations: selectedViolations.map((violation) => violation.value),
         sanctions: selectedSanctions.map((sanction) => sanction.value),
@@ -452,6 +452,19 @@ function DisciplinaryRecords() {
         evidence: evidenceFileURL,
         timestamp: serverTimestamp(),
         createdBy: currentUser.uid,
+      });
+
+      const auditLogsRef = collection(db, "auditLogs");
+      await addDoc(auditLogsRef, {
+        timestamp: serverTimestamp(),
+        userId: currentUser.uid,
+        actionType: "add_disciplinary_record",
+        email: currentUser.email, 
+        details: {
+          recordId: newRecordRef.id,
+          studentId: newRecord.studentId,
+          studentFullName: newRecord.studentFullName,
+        },
       });
 
       setIsAddRecordModalOpen(false);
