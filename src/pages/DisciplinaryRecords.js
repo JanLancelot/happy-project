@@ -404,26 +404,19 @@ function DisciplinaryRecords() {
   }, [filterOffense]);
 
   const getApplicableSanctions = () => {
-    const selectedViolationClasses = selectedViolations.map((violation) => {
-      const classMatch = violation.value.match(/Class ([A-F])(?:\/([A-F]))?/);
-      if (classMatch) {
-        return [classMatch[1], classMatch[2]].filter(Boolean);
-      }
-      return []; 
-    }).flat();
-  
+    const selectedViolationClasses = selectedViolations.map((violation) =>
+      violation.value.split(" (")[1].replace(")", "")
+    );
     const uniqueClasses = [...new Set(selectedViolationClasses)];
-  
+
     let applicableSanctions = [];
-    Object.keys(SANCTIONS).forEach((classKey) => { 
-      if (uniqueClasses.includes(classKey)) { 
-        applicableSanctions = [...applicableSanctions, ...SANCTIONS[classKey]];
-      }
+    uniqueClasses.forEach((classKey) => {
+      applicableSanctions = [...applicableSanctions, ...SANCTIONS[classKey]];
     });
-  
+
     return applicableSanctions;
   };
-  
+
   const handleViolationChange = (selectedOptions) => {
     setSelectedViolations(selectedOptions);
   };
