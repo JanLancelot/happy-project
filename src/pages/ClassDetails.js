@@ -6,15 +6,13 @@ import {
   query,
   where,
   doc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import SidebarFaculty from "../components/SidebarFaculty";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheckCircle,
-  faTimesCircle,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { useParams } from "react-router-dom";
 import { PieChart, Pie, Cell, Legend } from "recharts";
 import ReactToPrint from "react-to-print";
@@ -29,6 +27,7 @@ function ClassDetails() {
   const [searchQuery, setSearchQuery] = useState("");
   const [clearanceFilter, setClearanceFilter] = useState("all");
   const componentRef = useRef(null);
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
 
   useEffect(() => {
     const fetchClassData = async () => {
@@ -98,10 +97,12 @@ function ClassDetails() {
 
   const handleSubjectChange = (subjectName) => {
     setSelectedSubject(subjectName);
+    setSelectedStudentIds([]); 
   };
 
   const handleClearanceFilterChange = (e) => {
     setClearanceFilter(e.target.value);
+    setSelectedStudentIds([]);
   };
 
   const chartData = [
@@ -132,8 +133,80 @@ function ClassDetails() {
     );
   };
 
+  const handleClearStudent = async (studentId) => {
+    if (!selectedSubject) return;
+
+    try {
+      const studentDocRef = doc(db, "students", studentId);
+      await updateDoc(studentDocRef, {
+        [`clearance.${selectedSubject}`]: true,
+      });
+
+      setStudents((prevStudents) =>
+        prevStudents.map((student) =>
+          student.uid === studentId
+            ? {
+                ...student,
+                clearance: { ...student.clearance, [selectedSubject]: true },
+              }
+            : student
+        )
+      );
+
+      alert("Student clearance updated successfully!");
+    } catch (error) {
+      console.error("Error updating student clearance: ", error);
+      alert("Error updating clearance. Please try again later.");
+    }
+  };
+
+  const handleSelectAllStudents = () => {
+    if (selectedStudentIds.length === getFilteredStudents().length) {
+      setSelectedStudentIds([]);
+    } else {
+      setSelectedStudentIds(
+        getFilteredStudents().map((student) => student.uid)
+      );
+    }
+  };
+
+  const handleSelectStudent = (studentId) => {
+    if (selectedStudentIds.includes(studentId)) {
+      setSelectedStudentIds(
+        selectedStudentIds.filter((id) => id !== studentId)
+      );
+    } else {
+      setSelectedStudentIds([...selectedStudentIds, studentId]);
+    }
+  };
+
+  const handleClearSelectedStudents = async () => {
+    if (selectedStudentIds.length === 0) {
+      alert("Please select students to clear.");
+      return;
+    }
+
+    if (!selectedSubject) {
+      alert("Please select a subject.");
+      return;
+    }
+
+    try {
+      const updatePromises = selectedStudentIds.map(async (studentId) => {
+        await handleClearStudent(studentId);
+      });
+      await Promise.all(updatePromises);
+
+      alert("Selected students cleared successfully!");
+      setSelectedStudentIds([]);
+    } catch (error) {
+      console.error("Error clearing selected students: ", error);
+      alert("Error clearing students. Please try again later.");
+    }
+  };
+
   if (!classData) {
-    return <div>Loading class details...</div>;
+    return <div>Loading class details...</div>; 
   }
 
   return (
@@ -227,16 +300,38 @@ function ClassDetails() {
               <table className="min-w-full bg-white border border-gray-200">
                 <thead>
                   <tr>
+                    <th className="py-2 border-b border-gray-200 w-8">
+                      <input
+                        type="checkbox"
+                        checked={
+                          selectedStudentIds.length ===
+                          getFilteredStudents().length
+                        }
+                        onChange={handleSelectAllStudents}
+                      />
+                    </th>
                     <th className="py-2 border-b border-gray-200">Name</th>
                     <th className="py-2 border-b border-gray-200 text-center">
                       Cleared
+                    </th>
+                    <th className="py-2 border-b border-gray-200">
+                      Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {getFilteredStudents().map((student) => (
                     <tr key={student.uid}>
-                      <td className="border px-4 py-2">{student.fullName}</td>
+                      <td className="border px-4 py-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedStudentIds.includes(student.uid)}
+                          onChange={() => handleSelectStudent(student.uid)}
+                        />
+                      </td>
+                      <td className="border px-4 py-2">
+                        {student.fullName}
+                      </td>
                       <td className="border px-4 py-2 text-center">
                         {student.clearance[selectedSubject] ? (
                           <FontAwesomeIcon
@@ -250,13 +345,34 @@ function ClassDetails() {
                           />
                         )}
                       </td>
+                      <td className="border px-4 py-2">
+                        {!student.clearance[selectedSubject] && (
+                          <button
+                            onClick={() => handleClearStudent(student.uid)}
+                            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                          >
+                            Mark Cleared
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
+
+            <div className="mt-4">
+              <button
+                onClick={handleClearSelectedStudents}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                disabled={selectedStudentIds.length === 0}
+              >
+                Clear Selected Students
+              </button>
+            </div>
           </div>
         )}
+
 
         {selectedSubject && students.length > 0 && (
           <div className="mt-8">

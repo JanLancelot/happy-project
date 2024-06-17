@@ -410,12 +410,10 @@ function DisciplinaryRecords() {
     const uniqueClasses = [...new Set(selectedViolationClasses)];
 
     let applicableSanctions = [];
-    Object.keys(SANCTIONS).forEach((classKey) => { 
-      if (uniqueClasses.includes(classKey)) { 
-        applicableSanctions = [...applicableSanctions, ...SANCTIONS[classKey]];
-      }
+    uniqueClasses.forEach((classKey) => {
+      applicableSanctions = [...applicableSanctions, ...SANCTIONS[classKey]];
     });
-  
+
     return applicableSanctions;
   };
 
