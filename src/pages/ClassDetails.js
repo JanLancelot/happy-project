@@ -133,14 +133,19 @@ function ClassDetails() {
     );
   };
 
-  const handleClearStudent = async (studentId) => {
-    if (!selectedSubject) return;
+const handleClearStudent = async (studentId) => {
+  if (!selectedSubject) return;
 
-    try {
-      const studentDocRef = doc(db, "students", studentId);
-      console.log("Student ID Cleared: ", studentId);
-      await updateDoc(studentDocRef, {
-        [`clearance.${selectedSubject}`]: true,
+  try {
+    const q = query(collection(db, "students"), where("uid", "==", studentId));
+    
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach(async (doc) => {
+        await updateDoc(doc.ref, {
+          [`clearance.${selectedSubject}`]: true,
+        });
       });
 
       setStudents((prevStudents) =>
@@ -155,11 +160,15 @@ function ClassDetails() {
       );
 
       alert("Student clearance updated successfully!");
-    } catch (error) {
-      console.error("Error updating student clearance: ", error);
-      alert("Error updating clearance. Please try again later.");
+    } else {
+      console.error("No student found with the given ID");
+      alert("No student found with the given ID");
     }
-  };
+  } catch (error) {
+    console.error("Error updating student clearance: ", error);
+    alert("Error updating clearance. Please try again later.");
+  }
+};
 
   const handleSelectAllStudents = () => {
     if (selectedStudentIds.length === getFilteredStudents().length) {
