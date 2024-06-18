@@ -513,7 +513,7 @@ function DisciplinaryRecords() {
     console.log("Student ID: ", selectedOption.uid);
     setNewRecord({
       ...newRecord,
-      studentId: selectedOption ? selectedOption.value : "",
+      studentId: selectedOption ? selectedOption.uid : "",
       studentFullName: selectedOption ? selectedOption.fullName : "",
       studentSection: selectedOption ? selectedOption.section : "",
       studentGradeLevel: selectedOption ? selectedOption.gradeLevel : "",
