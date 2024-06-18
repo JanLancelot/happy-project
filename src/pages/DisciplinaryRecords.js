@@ -508,7 +508,7 @@ function DisciplinaryRecords() {
   });
 
   const handleStudentChange = (selectedOption) => {
-    setSelectedStudent(selectedOption);
+    setSelectedStudent(selectedOption.uid);
     console.log("Student ID: ", selectedOption.value);
     setNewRecord({
       ...newRecord,
