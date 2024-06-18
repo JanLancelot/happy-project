@@ -143,6 +143,7 @@ export default function Sidebar({ children }) {
       console.error("Error during logout:", error);
     }
   };
+  console.log();
 
   return (
     <>
