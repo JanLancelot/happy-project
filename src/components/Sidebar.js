@@ -26,7 +26,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { Spinner } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 const auth = getAuth();
 const db = getFirestore();
@@ -42,17 +42,24 @@ const navigation = [
   {
     name: "Disciplinary Records",
     href: "/disciplinary-records",
-    icon: AcademicCapIcon, current: false,
+    icon: AcademicCapIcon,
+    current: false,
   },
   { name: "Classes", href: "/classes", icon: UserGroupIcon, current: false },
   {
     name: "User Management",
     href: "/user-management",
-    icon: LockClosedIcon, current: false,
+    icon: LockClosedIcon,
+    current: false,
   },
   { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
   { name: "Audit Trail", href: "/audit-log", icon: ClockIcon, current: false },
-  { name: "Student Master List", href: "/student-master-list", icon: AcademicCapIcon, current: false },
+  {
+    name: "Student Master List",
+    href: "/student-master-list",
+    icon: AcademicCapIcon,
+    current: false,
+  },
   { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
 ];
 
@@ -130,15 +137,14 @@ export default function Sidebar({ children }) {
       const auditLogsRef = collection(db, "auditLogs");
       await addDoc(auditLogsRef, {
         timestamp: serverTimestamp(),
-        userId: currentUser.uid, 
+        userId: currentUser.uid,
         actionType: "logout",
-        email: currentUser.email, 
+        email: currentUser.email,
       });
 
       await signOut(auth);
 
-      navigate("/"); 
-
+      navigate("/");
     } catch (error) {
       console.error("Error during logout:", error);
     }
@@ -393,6 +399,18 @@ export default function Sidebar({ children }) {
                             </div>
                           )}
                         </div>
+                      </li>
+                      <li className="-mx-6">
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
+                        >
+                          <ArrowLeftOnRectangleIcon
+                            className="h-6 w-6 text-gray-400 group-hover:text-indigo-600"
+                            aria-hidden="true"
+                          />
+                          Logout
+                        </button>
                       </li>
                     </ul>
                   </nav>
