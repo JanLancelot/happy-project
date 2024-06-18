@@ -81,6 +81,7 @@ function ClassDetailsForAdviser() {
               db,
               "disciplinaryRecords"
             );
+            console.log("StudentData uid dp: ", studentData.uid);
             const disciplinaryQuery = query(
               disciplinaryRecordsRef,
               where("studentId", "==", studentData.uid)
