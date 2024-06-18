@@ -81,7 +81,6 @@ function ClassDetailsForAdviser() {
               db,
               "disciplinaryRecords"
             );
-            console.log("StudentData uid dp: ", studentData.id);
             const disciplinaryQuery = query(
               disciplinaryRecordsRef,
               where("studentId", "==", studentData.uid)
@@ -178,55 +177,45 @@ function ClassDetailsForAdviser() {
     }
   };
 
-  const handleClearStudent = async (studentId, subject) => {
+  const handleClearStudent = async (studentId) => {
     try {
-      const studentsCollectionRef = collection(db, "students");
-      const querySnapshot = await getDocs(
-        query(studentsCollectionRef, where("uid", "==", studentId))
+      const studentDocRef = doc(db, "students", studentId);
+      await updateDoc(studentDocRef, {
+        [`clearance.Class Adviser`]: true,
+      });
+
+      setStudents((prevStudents) =>
+        prevStudents.map((student) =>
+          student.uid === studentId
+            ? {
+                ...student,
+                clearance: {
+                  ...student.clearance,
+                  "Class Adviser": true,
+                },
+                completionPercentage: calculateCompletionPercentage(student),
+              }
+            : student
+        )
       );
 
-      if (!querySnapshot.empty) {
-        const studentDocRef = querySnapshot.docs[0].ref;
-        await updateDoc(studentDocRef, {
-          [`clearance.${subject}`]: true,
-        });
-
-        setStudents((prevStudents) =>
-          prevStudents.map((student) =>
-            student.uid === studentId
-              ? {
-                  ...student,
-                  clearance: { ...student.clearance, [subject]: true },
-                  completionPercentage: calculateCompletionPercentage(
-                    student,
-                    subject,
-                    true
-                  ),
-                }
-              : student
-          )
-        );
-
-        alert("Student clearance updated successfully!");
-      } else {
-        console.log("No student document found with the provided studentId");
-      }
+      alert("Student cleared for Class Adviser requirement.");
     } catch (error) {
       console.error("Error updating student clearance: ", error);
       alert("Error updating clearance. Please try again later.");
     }
   };
 
-  const handleSelectAllStudents = (subject) => {
-    const filteredStudents = students.filter(
-      (student) => !student.clearance[subject]
+  const handleSelectAllStudents = () => {
+    const unclearedStudents = students.filter(
+      (student) => !student.clearance["Class Adviser"]
     );
-    const allSelected = selectedStudentIds.length === filteredStudents.length;
+    const allSelected = selectedStudentIds.length === unclearedStudents.length;
 
     if (allSelected) {
       setSelectedStudentIds([]);
     } else {
-      setSelectedStudentIds(filteredStudents.map((student) => student.uid));
+      setSelectedStudentIds(unclearedStudents.map((student) => student.uid));
     }
   };
 
@@ -240,7 +229,7 @@ function ClassDetailsForAdviser() {
     }
   };
 
-  const handleClearSelectedStudents = async (subject) => {
+  const handleClearSelectedStudents = async () => {
     if (selectedStudentIds.length === 0) {
       alert("Please select students to clear.");
       return;
@@ -248,11 +237,11 @@ function ClassDetailsForAdviser() {
 
     try {
       const updatePromises = selectedStudentIds.map(async (studentId) => {
-        await handleClearStudent(studentId, subject);
+        await handleClearStudent(studentId);
       });
       await Promise.all(updatePromises);
 
-      alert("Selected students cleared successfully!");
+      alert("Selected students cleared for Class Adviser requirement.");
       setSelectedStudentIds([]);
     } catch (error) {
       console.error("Error clearing selected students: ", error);
@@ -260,18 +249,11 @@ function ClassDetailsForAdviser() {
     }
   };
 
-  const calculateCompletionPercentage = (student, subject, newStatus) => {
+  const calculateCompletionPercentage = (student) => {
     const totalRequirements = Object.keys(student.clearance).length;
-    let completedRequirements = Object.values(student.clearance).filter(
+    const completedRequirements = Object.values(student.clearance).filter(
       (cleared) => cleared
     ).length;
-
-    if (newStatus === true) {
-      completedRequirements++;
-    } else if (newStatus === false && student.clearance[subject]) {
-      completedRequirements--;
-    }
-
     return Math.round((completedRequirements / totalRequirements) * 100);
   };
 
@@ -305,14 +287,14 @@ function ClassDetailsForAdviser() {
             Add Adviser Requirement
           </button>
           <button
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-                disabled={selectedStudentIds.length === 0}
-                onClick={() => handleClearSelectedStudents("Class Adviser")}
-              >
-                Clear Selected Students
-              </button>
+            onClick={handleClearSelectedStudents}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            disabled={selectedStudentIds.length === 0}
+          >
+            Clear Selected Students
+          </button>
         </div>
-
+        
         {students.length === 0 ? (
           <p>No students found.</p>
         ) : (
@@ -351,6 +333,7 @@ function ClassDetailsForAdviser() {
                           type="checkbox"
                           checked={selectedStudentIds.includes(student.uid)}
                           onChange={() => handleSelectStudent(student.uid)}
+                          disabled={student.clearance["Class Adviser"]}
                         />
                       </td>
                       <td className="border-t border-gray-200 px-4 py-3">
@@ -363,7 +346,7 @@ function ClassDetailsForAdviser() {
                         {student.completionPercentage}%
                       </td>
                       <td className="border-t border-gray-200 px-4 py-3 text-center">
-                      {!student.clearance["Class Adviser"] && (
+                        {!student.clearance["Class Adviser"] && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -399,9 +382,6 @@ function ClassDetailsForAdviser() {
                                   <th className="py-2 border-b border-gray-200 text-center">
                                     Status
                                   </th>
-                                  <th className="py-2 border-b border-gray-200">
-                                    Action
-                                  </th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -423,21 +403,6 @@ function ClassDetailsForAdviser() {
                                             icon={faTimesCircle}
                                             className="text-red-500"
                                           />
-                                        )}
-                                      </td>
-                                      <td className="border px-4 py-2">
-                                        {!isCleared && (
-                                          <button
-                                            onClick={() =>
-                                              handleClearStudent(
-                                                student.uid,
-                                                subject
-                                              )
-                                            }
-                                            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                                          >
-                                            Mark Cleared
-                                          </button>
                                         )}
                                       </td>
                                     </tr>
