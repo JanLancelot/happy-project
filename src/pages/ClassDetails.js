@@ -138,6 +138,7 @@ function ClassDetails() {
 
     try {
       const studentDocRef = doc(db, "students", studentId);
+      console.log("Student ID Cleared: ", studentId);
       await updateDoc(studentDocRef, {
         [`clearance.${selectedSubject}`]: true,
       });
