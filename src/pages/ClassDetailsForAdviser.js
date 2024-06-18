@@ -23,6 +23,7 @@ import {
   faAngleUp,
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../components/Modal";
+import moment from "moment";
 
 function ClassDetailsForAdviser() {
   const { currentUser } = useAuth();
@@ -35,6 +36,7 @@ function ClassDetailsForAdviser() {
   const [newRequirementName, setNewRequirementName] = useState("");
   const [newRequirementDescription, setNewRequirementDescription] =
     useState("");
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
 
   useEffect(() => {
     const fetchClassData = async () => {
@@ -71,21 +73,38 @@ function ClassDetailsForAdviser() {
         );
         const studentsSnapshot = await getDocs(q);
 
-        const studentsWithCompletion = studentsSnapshot.docs.map((doc) => {
-          const studentData = doc.data();
-          const totalRequirements = Object.keys(studentData.clearance).length;
-          const completedRequirements = Object.values(
-            studentData.clearance
-          ).filter((cleared) => cleared).length;
-          const completionPercentage = Math.round(
-            (completedRequirements / totalRequirements) * 100
-          );
+        const studentsWithCompletion = await Promise.all(
+          studentsSnapshot.docs.map(async (doc) => {
+            const studentData = doc.data();
 
-          return {
-            ...studentData,
-            completionPercentage,
-          };
-        });
+            const disciplinaryRecordsRef = collection(
+              db,
+              "disciplinaryRecords"
+            );
+            const disciplinaryQuery = query(
+              disciplinaryRecordsRef,
+              where("studentId", "==", studentData.uid)
+            );
+            const disciplinarySnapshot = await getDocs(disciplinaryQuery);
+            const disciplinaryRecords = disciplinarySnapshot.docs.map(
+              (recordDoc) => recordDoc.data()
+            );
+
+            const totalRequirements = Object.keys(studentData.clearance).length;
+            const completedRequirements = Object.values(
+              studentData.clearance
+            ).filter((cleared) => cleared).length;
+            const completionPercentage = Math.round(
+              (completedRequirements / totalRequirements) * 100
+            );
+
+            return {
+              ...studentData,
+              completionPercentage,
+              disciplinaryRecords,
+            };
+          })
+        );
 
         setStudents(studentsWithCompletion);
       } catch (error) {
@@ -158,6 +177,98 @@ function ClassDetailsForAdviser() {
     }
   };
 
+  const handleClearStudent = async (studentId, subject) => {
+    try {
+      const studentDocRef = doc(db, "students", studentId);
+      await updateDoc(studentDocRef, {
+        [`clearance.${subject}`]: true,
+      });
+
+      setStudents((prevStudents) =>
+        prevStudents.map((student) =>
+          student.uid === studentId
+            ? {
+                ...student,
+                clearance: { ...student.clearance, [subject]: true },
+                completionPercentage: calculateCompletionPercentage(
+                  student,
+                  subject,
+                  true
+                ), // Recalculate completion percentage
+              }
+            : student
+        )
+      );
+
+      alert("Student clearance updated successfully!");
+    } catch (error) {
+      console.error("Error updating student clearance: ", error);
+      alert("Error updating clearance. Please try again later.");
+    }
+  };
+
+  const handleSelectAllStudents = (subject) => {
+    const filteredStudents = students.filter(
+      (student) => !student.clearance[subject]
+    );
+    const allSelected = selectedStudentIds.length === filteredStudents.length;
+
+    if (allSelected) {
+      setSelectedStudentIds([]);
+    } else {
+      setSelectedStudentIds(filteredStudents.map((student) => student.uid));
+    }
+  };
+
+  const handleSelectStudent = (studentId) => {
+    if (selectedStudentIds.includes(studentId)) {
+      setSelectedStudentIds(
+        selectedStudentIds.filter((id) => id !== studentId)
+      );
+    } else {
+      setSelectedStudentIds([...selectedStudentIds, studentId]);
+    }
+  };
+
+  const handleClearSelectedStudents = async (subject) => {
+    if (selectedStudentIds.length === 0) {
+      alert("Please select students to clear.");
+      return;
+    }
+
+    try {
+      const updatePromises = selectedStudentIds.map(async (studentId) => {
+        await handleClearStudent(studentId, subject);
+      });
+      await Promise.all(updatePromises);
+
+      alert("Selected students cleared successfully!");
+      setSelectedStudentIds([]);
+    } catch (error) {
+      console.error("Error clearing selected students: ", error);
+      alert("Error clearing students. Please try again later.");
+    }
+  };
+
+  const calculateCompletionPercentage = (student, subject, newStatus) => {
+    const totalRequirements = Object.keys(student.clearance).length;
+    let completedRequirements = Object.values(student.clearance).filter(
+      (cleared) => cleared
+    ).length;
+
+    if (newStatus === true) {
+      completedRequirements++;
+    } else if (newStatus === false && student.clearance[subject]) {
+      completedRequirements--;
+    }
+
+    return Math.round((completedRequirements / totalRequirements) * 100);
+  };
+
+  if (!classData) {
+    return <div>Loading class details...</div>;
+  }
+
   if (!classData) {
     return <div>Loading class details...</div>;
   }
@@ -195,7 +306,16 @@ function ClassDetailsForAdviser() {
           <table className="min-w-full bg-white border border-gray-200">
             <thead>
               <tr>
+                <th className="py-2 border-b border-gray-200 w-8">
+                  <input
+                    type="checkbox"
+                    onChange={() => handleSelectAllStudents("Class Adviser")}
+                  />
+                </th>
                 <th className="py-2 border-b border-gray-200">Name</th>
+                <th className="py-2 border-b border-gray-200 text-center">
+                  Disciplinary Records
+                </th>
                 <th className="py-2 border-b border-gray-200 text-center">
                   Completion (%)
                 </th>
@@ -210,10 +330,20 @@ function ClassDetailsForAdviser() {
                     onClick={() => handleStudentClick(student.uid)}
                     className="cursor-pointer hover:bg-gray-100"
                   >
+                    <td className="border px-4 py-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedStudentIds.includes(student.uid)}
+                        onChange={() => handleSelectStudent(student.uid)}
+                      />
+                    </td>
                     <td className="border px-4 py-2">{student.fullName}</td>
                     <td className="border px-4 py-2 text-center">
-                      {student.completionPercentage}%
+                      {student.disciplinaryRecords.length}
                     </td>
+                    <td className="border px-4 py-2 text-center">
+                      {student.completionPercentage}%
+                    </td>{" "}
                     <td className="border px-4 py-2 text-center">
                       <FontAwesomeIcon
                         icon={
@@ -226,43 +356,115 @@ function ClassDetailsForAdviser() {
                   </tr>
                   {expandedStudent === student.uid && (
                     <tr className="bg-gray-100">
-                      <td colSpan={3} className="border px-4 py-2">
-                        <table className="min-w-full">
-                          <thead>
-                            <tr>
-                              <th className="py-2 border-b border-gray-200">
-                                Subject
-                              </th>
-                              <th className="py-2 border-b border-gray-200 text-center">
-                                Status
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {Object.entries(student.clearance)
-                              .sort(([a], [b]) => a.localeCompare(b))
-                              .map(([subject, isCleared]) => (
-                                <tr key={subject}>
-                                  <td className="border px-4 py-2">
-                                    {subject}
-                                  </td>
-                                  <td className="border px-4 py-2 text-center">
-                                    {isCleared ? (
-                                      <FontAwesomeIcon
-                                        icon={faCheckCircle}
-                                        className="text-green-500"
-                                      />
-                                    ) : (
-                                      <FontAwesomeIcon
-                                        icon={faTimesCircle}
-                                        className="text-red-500"
-                                      />
-                                    )}
-                                  </td>
+                      <td colSpan={5} className="border px-4 py-2">
+                        <div className="mb-4">
+                          <h4 className="font-medium mb-2">Clearances:</h4>
+                          <table className="min-w-full">
+                            <thead>
+                              <tr>
+                                <th className="py-2 border-b border-gray-200">
+                                  Subject
+                                </th>
+                                <th className="py-2 border-b border-gray-200 text-center">
+                                  Status
+                                </th>
+                                <th className="py-2 border-b border-gray-200">
+                                  Action
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {Object.entries(student.clearance)
+                                .sort(([a], [b]) => a.localeCompare(b))
+                                .map(([subject, isCleared]) => (
+                                  <tr key={subject}>
+                                    <td className="border px-4 py-2">
+                                      {subject}
+                                    </td>
+                                    <td className="border px-4 py-2 text-center">
+                                      {isCleared ? (
+                                        <FontAwesomeIcon
+                                          icon={faCheckCircle}
+                                          className="text-green-500"
+                                        />
+                                      ) : (
+                                        <FontAwesomeIcon
+                                          icon={faTimesCircle}
+                                          className="text-red-500"
+                                        />
+                                      )}
+                                    </td>
+                                    <td className="border px-4 py-2">
+                                      {!isCleared && (
+                                        <button
+                                          onClick={() =>
+                                            handleClearStudent(
+                                              student.uid,
+                                              subject
+                                            )
+                                          }
+                                          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                                        >
+                                          Mark Cleared
+                                        </button>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                          <div className="mt-4">
+                            <button
+                              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                              disabled={selectedStudentIds.length === 0}
+                              onClick={() =>
+                                handleClearSelectedStudents("Class Adviser")
+                              }
+                            >
+                              Clear Selected Students
+                            </button>
+                          </div>
+                        </div>
+
+                        {student.disciplinaryRecords.length > 0 && (
+                          <div>
+                            <h4 className="font-medium mb-2">
+                              Disciplinary Records:
+                            </h4>
+                            <table className="min-w-full">
+                              <thead>
+                                <tr>
+                                  <th className="py-2 border-b border-gray-200">
+                                    Date
+                                  </th>
+                                  <th className="py-2 border-b border-gray-200">
+                                    Violations
+                                  </th>
+                                  <th className="py-2 border-b border-gray-200">
+                                    Sanctions
+                                  </th>
                                 </tr>
-                              ))}
-                          </tbody>
-                        </table>
+                              </thead>
+                              <tbody>
+                                {student.disciplinaryRecords.map((record) => (
+                                  <tr key={record.timestamp}>
+                                    <td className="border px-4 py-2">
+                                      {moment(record.timestamp.toDate()).format(
+                                        "YYYY-MM-DD"
+                                      )}
+                                    </td>
+                                    <td className="border px-4 py-2">
+                                      {record.violations.join(", ")}
+                                    </td>
+                                    <td className="border px-4 py-2">
+                                      {record.sanctions.join(", ")}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   )}
@@ -295,7 +497,6 @@ function ClassDetailsForAdviser() {
             <Legend />
           </PieChart>
         </div>
-        {/* Modal for Adding Requirement */}
         <Modal
           isOpen={isRequirementModalOpen}
           onClose={closeAddRequirementModal}
