@@ -184,13 +184,13 @@ function ClassDetailsForAdviser() {
       const querySnapshot = await getDocs(
         query(studentsCollectionRef, where("uid", "==", studentId))
       );
-  
+
       if (!querySnapshot.empty) {
         const studentDocRef = querySnapshot.docs[0].ref;
         await updateDoc(studentDocRef, {
           [`clearance.${subject}`]: true,
         });
-  
+
         setStudents((prevStudents) =>
           prevStudents.map((student) =>
             student.uid === studentId
@@ -206,7 +206,7 @@ function ClassDetailsForAdviser() {
               : student
           )
         );
-  
+
         alert("Student clearance updated successfully!");
       } else {
         console.log("No student document found with the provided studentId");
@@ -310,6 +310,15 @@ function ClassDetailsForAdviser() {
           <p>No students found.</p>
         ) : (
           <div className="overflow-x-auto">
+            <div className="mt-4">
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                disabled={selectedStudentIds.length === 0}
+                onClick={() => handleClearSelectedStudents("Class Adviser")}
+              >
+                Clear Selected Students
+              </button>
+            </div>
             <table className="min-w-full bg-white border border-gray-200 rounded-md shadow-md">
               <thead>
                 <tr className="bg-gray-100">
@@ -435,17 +444,6 @@ function ClassDetailsForAdviser() {
                                   ))}
                               </tbody>
                             </table>
-                            <div className="mt-4">
-                              <button
-                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-                                disabled={selectedStudentIds.length === 0}
-                                onClick={() =>
-                                  handleClearSelectedStudents("Class Adviser")
-                                }
-                              >
-                                Clear Selected Students
-                              </button>
-                            </div>
                           </div>
 
                           {student.disciplinaryRecords.length > 0 && (
