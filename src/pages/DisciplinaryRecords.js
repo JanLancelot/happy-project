@@ -301,6 +301,7 @@ function DisciplinaryRecords() {
           fullName: doc.data().fullName,
           section: doc.data().section,
           gradeLevel: doc.data().gradeLevel,
+          uid: doc.data().uid,
         }));
         setStudentOptions(studentsData);
 
