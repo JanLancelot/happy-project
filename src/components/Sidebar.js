@@ -387,7 +387,7 @@ export default function Sidebar({ children }) {
                           <span aria-hidden="true">Jocelyn Tejada</span>
                         </a>
                       </li>
-                      <li className="-mx-6">
+                      <li className="-mx-6 mt-auto">
                         <button
                           onClick={handleLogout}
                           className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
