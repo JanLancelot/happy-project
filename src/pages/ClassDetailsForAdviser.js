@@ -195,7 +195,7 @@ function ClassDetailsForAdviser() {
                   student,
                   subject,
                   true
-                ), // Recalculate completion percentage
+                ), 
               }
             : student
         )
@@ -270,10 +270,6 @@ function ClassDetailsForAdviser() {
     return <div>Loading class details...</div>;
   }
 
-  if (!classData) {
-    return <div>Loading class details...</div>;
-  }
-
   return (
     <SidebarFaculty>
       <div className="container mx-auto p-4" ref={componentRef}>
@@ -292,201 +288,33 @@ function ClassDetailsForAdviser() {
           />
         </div>
 
-        <div className="mb-4">
+        <div className="mb-4 flex justify-between items-center">
           <button
             onClick={openAddRequirementModal}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Add Adviser Requirement
           </button>
+          <button
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+            disabled={selectedStudentIds.length === 0}
+            onClick={() => handleClearSelectedStudents("Class Adviser")}
+          >
+            Clear Selected Students
+          </button>
         </div>
 
-        {students.length === 0 ? (
-          <p>No students found.</p>
-        ) : (
-          <table className="min-w-full bg-white border border-gray-200">
-            <thead>
-              <tr>
-                <th className="py-2 border-b border-gray-200 w-8">
-                  <input
-                    type="checkbox"
-                    onChange={() => handleSelectAllStudents("Class Adviser")}
-                  />
-                </th>
-                <th className="py-2 border-b border-gray-200">Name</th>
-                <th className="py-2 border-b border-gray-200 text-center">
-                  Disciplinary Records
-                </th>
-                <th className="py-2 border-b border-gray-200 text-center">
-                  Completion (%)
-                </th>
-                <th className="py-2 border-b border-gray-200"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student) => (
-                <React.Fragment key={student.uid}>
-                  <tr
-                    key={student.uid}
-                    onClick={() => handleStudentClick(student.uid)}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    <td className="border px-4 py-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedStudentIds.includes(student.uid)}
-                        onChange={() => handleSelectStudent(student.uid)}
-                      />
-                    </td>
-                    <td className="border px-4 py-2">{student.fullName}</td>
-                    <td className="border px-4 py-2 text-center">
-                      {student.disciplinaryRecords.length}
-                    </td>
-                    <td className="border px-4 py-2 text-center">
-                      {student.completionPercentage}%
-                    </td>{" "}
-                    <td className="border px-4 py-2 text-center">
-                      <FontAwesomeIcon
-                        icon={
-                          expandedStudent === student.uid
-                            ? faAngleUp
-                            : faAngleDown
-                        }
-                      />
-                    </td>
-                  </tr>
-                  {expandedStudent === student.uid && (
-                    <tr className="bg-gray-100">
-                      <td colSpan={5} className="border px-4 py-2">
-                        <div className="mb-4">
-                          <h4 className="font-medium mb-2">Clearances:</h4>
-                          <table className="min-w-full">
-                            <thead>
-                              <tr>
-                                <th className="py-2 border-b border-gray-200">
-                                  Subject
-                                </th>
-                                <th className="py-2 border-b border-gray-200 text-center">
-                                  Status
-                                </th>
-                                <th className="py-2 border-b border-gray-200">
-                                  Action
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {Object.entries(student.clearance)
-                                .sort(([a], [b]) => a.localeCompare(b))
-                                .map(([subject, isCleared]) => (
-                                  <tr key={subject}>
-                                    <td className="border px-4 py-2">
-                                      {subject}
-                                    </td>
-                                    <td className="border px-4 py-2 text-center">
-                                      {isCleared ? (
-                                        <FontAwesomeIcon
-                                          icon={faCheckCircle}
-                                          className="text-green-500"
-                                        />
-                                      ) : (
-                                        <FontAwesomeIcon
-                                          icon={faTimesCircle}
-                                          className="text-red-500"
-                                        />
-                                      )}
-                                    </td>
-                                    <td className="border px-4 py-2">
-                                      {!isCleared && (
-                                        <button
-                                          onClick={() =>
-                                            handleClearStudent(
-                                              student.uid,
-                                              subject
-                                            )
-                                          }
-                                          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                                        >
-                                          Mark Cleared
-                                        </button>
-                                      )}
-                                    </td>
-                                  </tr>
-                                ))}
-                            </tbody>
-                          </table>
-                          <div className="mt-4">
-                            <button
-                              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-                              disabled={selectedStudentIds.length === 0}
-                              onClick={() =>
-                                handleClearSelectedStudents("Class Adviser")
-                              }
-                            >
-                              Clear Selected Students
-                            </button>
-                          </div>
-                        </div>
-
-                        {student.disciplinaryRecords.length > 0 && (
-                          <div>
-                            <h4 className="font-medium mb-2">
-                              Disciplinary Records:
-                            </h4>
-                            <table className="min-w-full">
-                              <thead>
-                                <tr>
-                                  <th className="py-2 border-b border-gray-200">
-                                    Date
-                                  </th>
-                                  <th className="py-2 border-b border-gray-200">
-                                    Violations
-                                  </th>
-                                  <th className="py-2 border-b border-gray-200">
-                                    Sanctions
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {student.disciplinaryRecords.map((record) => (
-                                  <tr key={record.timestamp}>
-                                    <td className="border px-4 py-2">
-                                      {moment(record.timestamp.toDate()).format(
-                                        "YYYY-MM-DD"
-                                      )}
-                                    </td>
-                                    <td className="border px-4 py-2">
-                                      {record.violations.join(", ")}
-                                    </td>
-                                    <td className="border px-4 py-2">
-                                      {record.sanctions.join(", ")}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        )}
-
-        <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-2">Clearance Completion</h3>
+        <div className="mb-8">
           <PieChart width={400} height={300}>
             <Pie
               data={chartData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
+              cx={200}
+              cy={150}
+              labelLine={false}
               outerRadius={80}
               fill="#8884d8"
-              label
+              dataKey="value"
+              label={({ name, value }) => `${name}: ${value}`}
             >
               {chartData.map((entry, index) => (
                 <Cell
@@ -498,58 +326,152 @@ function ClassDetailsForAdviser() {
             <Legend />
           </PieChart>
         </div>
-        <Modal
-          isOpen={isRequirementModalOpen}
-          onClose={closeAddRequirementModal}
-        >
-          <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Add Requirement</h3>
-            <div className="mb-4">
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="requirementName"
-              >
-                Requirement Name:
-              </label>
-              <input
-                type="text"
-                id="requirementName"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={newRequirementName}
-                onChange={(e) => setNewRequirementName(e.target.value)}
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="requirementDescription"
-              >
-                Description:
-              </label>
-              <textarea
-                id="requirementDescription"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={newRequirementDescription}
-                onChange={(e) => setNewRequirementDescription(e.target.value)}
-              />
-            </div>
-            <div className="flex justify-end">
-              <button
-                onClick={closeAddRequirementModal}
-                className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddRequirement}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </Modal>
+
+        <h3 className="text-xl font-semibold mb-2">Students</h3>
+        <table className="min-w-full bg-white rounded-lg overflow-hidden">
+          <thead>
+            <tr>
+              <th className="py-2 px-4 bg-gray-200">Student Name</th>
+              <th className="py-2 px-4 bg-gray-200">Completion</th>
+              <th className="py-2 px-4 bg-gray-200">Disciplinary Records</th>
+              <th className="py-2 px-4 bg-gray-200">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {students.map((student) => (
+              <React.Fragment key={student.uid}>
+                <tr
+                  onClick={() => handleStudentClick(student.uid)}
+                  className="cursor-pointer hover:bg-gray-100"
+                >
+                  <td className="py-2 px-4 border-b">{student.fullName}</td>
+                  <td className="py-2 px-4 border-b">
+                    {student.completionPercentage}%
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    {student.disciplinaryRecords.length}
+                  </td>
+                  <td className="py-2 px-4 border-b flex justify-between">
+                    <button
+                      onClick={() =>
+                        handleClearStudent(student.uid, "Class Adviser")
+                      }
+                      className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                    >
+                      Clear Student
+                    </button>
+                    <FontAwesomeIcon
+                      icon={
+                        expandedStudent === student.uid
+                          ? faAngleUp
+                          : faAngleDown
+                      }
+                      className="text-gray-500"
+                    />
+                  </td>
+                </tr>
+                {expandedStudent === student.uid && (
+                  <tr>
+                    <td
+                      colSpan="4"
+                      className="py-2 px-4 border-b bg-gray-50 text-sm"
+                    >
+                      <div className="mb-2">
+                        <strong>Clearance:</strong>
+                        <ul>
+                          {Object.entries(student.clearance).map(
+                            ([subject, cleared]) => (
+                              <li key={subject}>
+                                {subject}:{" "}
+                                {cleared ? (
+                                  <FontAwesomeIcon
+                                    icon={faCheckCircle}
+                                    className="text-green-500"
+                                  />
+                                ) : (
+                                  <FontAwesomeIcon
+                                    icon={faTimesCircle}
+                                    className="text-red-500"
+                                  />
+                                )}
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                      <div>
+                        <strong>Disciplinary Records:</strong>
+                        <ul>
+                          {student.disciplinaryRecords.length > 0 ? (
+                            student.disciplinaryRecords.map((record, index) => (
+                              <li key={index}>
+                                {moment(record.date.toDate()).format(
+                                  "MMMM D, YYYY"
+                                )}
+                                : {record.description}
+                              </li>
+                            ))
+                          ) : (
+                            <li>No disciplinary records</li>
+                          )}
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
       </div>
+
+      <Modal
+        isOpen={isRequirementModalOpen}
+        onClose={closeAddRequirementModal}
+      >
+        <h2 className="text-xl font-semibold mb-4">Add Adviser Requirement</h2>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAddRequirement();
+          }}
+        >
+          <div className="mb-4">
+            <label className="block mb-1">Requirement Name</label>
+            <input
+              type="text"
+              value={newRequirementName}
+              onChange={(e) => setNewRequirementName(e.target.value)}
+              className="w-full px-3 py-2 border rounded"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block mb-1">Requirement Description</label>
+            <textarea
+              value={newRequirementDescription}
+              onChange={(e) => setNewRequirementDescription(e.target.value)}
+              className="w-full px-3 py-2 border rounded"
+              required
+            ></textarea>
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={closeAddRequirementModal}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 mr-2"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Add Requirement
+            </button>
+          </div>
+        </form>
+      </Modal>
     </SidebarFaculty>
   );
 }
