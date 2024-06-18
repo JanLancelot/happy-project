@@ -3,6 +3,7 @@ import { collection, addDoc } from "firebase/firestore";
 import { db, auth } from "../firebaseConfig";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import Papa from "papaparse";
 
 import Sidebar from "../components/Sidebar";
 
@@ -12,6 +13,7 @@ function CreateStudent() {
   const [password, setPassword] = useState("");
   const [educationLevel, setEducationLevel] = useState("");
   const [gradeLevel, setGradeLevel] = useState("");
+  const [csvFile, setCsvFile] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -63,6 +65,53 @@ function CreateStudent() {
       default:
         return [];
     }
+  };
+
+  const handleCsvFileChange = (e) => {
+    setCsvFile(e.target.files[0]);
+  };
+
+  const handleCsvUpload = async () => {
+    if (!csvFile) return;
+
+    Papa.parse(csvFile, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (result) => {
+        const students = result.data;
+
+        for (const student of students) {
+          const { fullName, email, password, educationLevel, gradeLevel } = student;
+
+          try {
+            const userCredential = await createUserWithEmailAndPassword(
+              auth,
+              email,
+              password
+            );
+            const user = userCredential.user;
+
+            await addDoc(collection(db, "students"), {
+              uid: user.uid,
+              fullName,
+              email,
+              educationLevel,
+              gradeLevel,
+            });
+
+            await addDoc(collection(db, "users"), {
+              uid: user.uid,
+              email: user.email,
+              role: "student",
+            });
+          } catch (error) {
+            console.error("Error creating student: ", error);
+          }
+        }
+
+        navigate("/students");
+      },
+    });
   };
 
   return (
@@ -143,6 +192,16 @@ function CreateStudent() {
             Create Student
           </button>
         </form>
+        <div className="mt-6">
+          <h2 className="text-2xl font-semibold mb-4">Upload CSV</h2>
+          <input type="file" accept=".csv" onChange={handleCsvFileChange} />
+          <button
+            onClick={handleCsvUpload}
+            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700 mt-2"
+          >
+            Upload CSV
+          </button>
+        </div>
       </div>
     </Sidebar>
   );
