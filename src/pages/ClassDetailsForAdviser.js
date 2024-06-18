@@ -81,10 +81,10 @@ function ClassDetailsForAdviser() {
               db,
               "disciplinaryRecords"
             );
-            console.log("StudentData uid dp: ", studentData.uid);
+            console.log("StudentData uid dp: ", studentData.id);
             const disciplinaryQuery = query(
               disciplinaryRecordsRef,
-              where("studentId", "==", studentData.id)
+              where("studentId", "==", studentData.uid)
             );
             const disciplinarySnapshot = await getDocs(disciplinaryQuery);
             const disciplinaryRecords = disciplinarySnapshot.docs.map(
