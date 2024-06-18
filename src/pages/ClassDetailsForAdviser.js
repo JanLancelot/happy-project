@@ -177,29 +177,39 @@ function ClassDetailsForAdviser() {
     }
   };
 
-  const handleClearStudent = async (studentId) => {
+  const handleClearStudent = async (studentId, subject) => {
     try {
-      const studentDocRef = doc(db, "students", studentId);
-      await updateDoc(studentDocRef, {
-        [`clearance.Class Adviser`]: true,
-      });
-
-      setStudents((prevStudents) =>
-        prevStudents.map((student) =>
-          student.uid === studentId
-            ? {
-                ...student,
-                clearance: {
-                  ...student.clearance,
-                  "Class Adviser": true,
-                },
-                completionPercentage: calculateCompletionPercentage(student),
-              }
-            : student
-        )
+      const studentsCollectionRef = collection(db, "students");
+      const querySnapshot = await getDocs(
+        query(studentsCollectionRef, where("uid", "==", studentId))
       );
-
-      alert("Student cleared for Class Adviser requirement.");
+  
+      if (!querySnapshot.empty) {
+        const studentDocRef = querySnapshot.docs[0].ref;
+        await updateDoc(studentDocRef, {
+          [`clearance.${subject}`]: true,
+        });
+  
+        setStudents((prevStudents) =>
+          prevStudents.map((student) =>
+            student.uid === studentId
+              ? {
+                  ...student,
+                  clearance: { ...student.clearance, [subject]: true },
+                  completionPercentage: calculateCompletionPercentage(
+                    student,
+                    subject,
+                    true
+                  ),
+                }
+              : student
+          )
+        );
+  
+        alert("Student clearance updated successfully!");
+      } else {
+        console.log("No student document found with the provided studentId");
+      }
     } catch (error) {
       console.error("Error updating student clearance: ", error);
       alert("Error updating clearance. Please try again later.");
@@ -294,7 +304,7 @@ function ClassDetailsForAdviser() {
             Clear Selected Students
           </button>
         </div>
-        
+
         {students.length === 0 ? (
           <p>No students found.</p>
         ) : (
