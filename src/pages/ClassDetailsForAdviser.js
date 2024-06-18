@@ -187,7 +187,7 @@ function ClassDetailsForAdviser() {
       if (!querySnapshot.empty) {
         const studentDocRef = querySnapshot.docs[0].ref;
         await updateDoc(studentDocRef, {
-          [`clearance.${subject}`]: true,
+          [`clearance.Class Adviser`]: true,
         });
   
         setStudents((prevStudents) =>
@@ -195,17 +195,16 @@ function ClassDetailsForAdviser() {
             student.uid === studentId
               ? {
                   ...student,
-                  clearance: { ...student.clearance, [subject]: true },
-                  completionPercentage: calculateCompletionPercentage(
-                    student,
-                    subject,
-                    true
-                  ),
+                  clearance: {
+                    ...student.clearance,
+                    "Class Adviser": true,
+                  },
+                  completionPercentage: calculateCompletionPercentage(student), 
                 }
               : student
           )
         );
-  
+        
         alert("Student clearance updated successfully!");
       } else {
         console.log("No student document found with the provided studentId");
