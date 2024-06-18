@@ -195,7 +195,7 @@ function ClassDetailsForAdviser() {
                   student,
                   subject,
                   true
-                ), 
+                ),
               }
             : student
         )
@@ -270,10 +270,6 @@ function ClassDetailsForAdviser() {
     return <div>Loading class details...</div>;
   }
 
-  if (!classData) {
-    return <div>Loading class details...</div>;
-  }
-
   return (
     <SidebarFaculty>
       <div className="container mx-auto p-4" ref={componentRef}>
@@ -304,175 +300,192 @@ function ClassDetailsForAdviser() {
         {students.length === 0 ? (
           <p>No students found.</p>
         ) : (
-          <table className="min-w-full bg-white border border-gray-200">
-            <thead>
-              <tr>
-                <th className="py-2 border-b border-gray-200 w-8">
-                  <input
-                    type="checkbox"
-                    onChange={() => handleSelectAllStudents("Class Adviser")}
-                  />
-                </th>
-                <th className="py-2 border-b border-gray-200">Name</th>
-                <th className="py-2 border-b border-gray-200 text-center">
-                  Disciplinary Records
-                </th>
-                <th className="py-2 border-b border-gray-200 text-center">
-                  Completion (%)
-                </th>
-                <th className="py-2 border-b border-gray-200"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student) => (
-                <React.Fragment key={student.uid}>
-                  <tr
-                    key={student.uid}
-                    onClick={() => handleStudentClick(student.uid)}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    <td className="border px-4 py-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedStudentIds.includes(student.uid)}
-                        onChange={() => handleSelectStudent(student.uid)}
-                      />
-                    </td>
-                    <td className="border px-4 py-2">{student.fullName}</td>
-                    <td className="border px-4 py-2 text-center">
-                      {student.disciplinaryRecords.length}
-                    </td>
-                    <td className="border px-4 py-2 text-center">
-                      {student.completionPercentage}%
-                    </td>{" "}
-                    <td className="border px-4 py-2 text-center">
-                      <FontAwesomeIcon
-                        icon={
-                          expandedStudent === student.uid
-                            ? faAngleUp
-                            : faAngleDown
-                        }
-                      />
-                    </td>
-                  </tr>
-                  {expandedStudent === student.uid && (
-                    <tr className="bg-gray-100">
-                      <td colSpan={5} className="border px-4 py-2">
-                        <div className="mb-4">
-                          <h4 className="font-medium mb-2">Clearances:</h4>
-                          <table className="min-w-full">
-                            <thead>
-                              <tr>
-                                <th className="py-2 border-b border-gray-200">
-                                  Subject
-                                </th>
-                                <th className="py-2 border-b border-gray-200 text-center">
-                                  Status
-                                </th>
-                                <th className="py-2 border-b border-gray-200">
-                                  Action
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {Object.entries(student.clearance)
-                                .sort(([a], [b]) => a.localeCompare(b))
-                                .map(([subject, isCleared]) => (
-                                  <tr key={subject}>
-                                    <td className="border px-4 py-2">
-                                      {subject}
-                                    </td>
-                                    <td className="border px-4 py-2 text-center">
-                                      {isCleared ? (
-                                        <FontAwesomeIcon
-                                          icon={faCheckCircle}
-                                          className="text-green-500"
-                                        />
-                                      ) : (
-                                        <FontAwesomeIcon
-                                          icon={faTimesCircle}
-                                          className="text-red-500"
-                                        />
-                                      )}
-                                    </td>
-                                    <td className="border px-4 py-2">
-                                      {!isCleared && (
-                                        <button
-                                          onClick={() =>
-                                            handleClearStudent(
-                                              student.uid,
-                                              subject
-                                            )
-                                          }
-                                          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                                        >
-                                          Mark Cleared
-                                        </button>
-                                      )}
-                                    </td>
-                                  </tr>
-                                ))}
-                            </tbody>
-                          </table>
-                          <div className="mt-4">
-                            <button
-                              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-                              disabled={selectedStudentIds.length === 0}
-                              onClick={() =>
-                                handleClearSelectedStudents("Class Adviser")
-                              }
-                            >
-                              Clear Selected Students
-                            </button>
-                          </div>
-                        </div>
-
-                        {student.disciplinaryRecords.length > 0 && (
-                          <div>
-                            <h4 className="font-medium mb-2">
-                              Disciplinary Records:
-                            </h4>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border border-gray-200 rounded-md shadow-md">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="py-3 px-4 border-b border-gray-200 w-8">
+                    <input type="checkbox" onChange={handleSelectAllStudents} />
+                  </th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left font-medium text-gray-700">
+                    Name
+                  </th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-center font-medium text-gray-700">
+                    Disciplinary Records
+                  </th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-center font-medium text-gray-700">
+                    Completion (%)
+                  </th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-center font-medium text-gray-700">
+                    Actions
+                  </th>
+                  <th className="py-3 px-4 border-b border-gray-200"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((student) => (
+                  <React.Fragment key={student.uid}>
+                    <tr
+                      key={student.uid}
+                      onClick={() => handleStudentClick(student.uid)}
+                      className="cursor-pointer hover:bg-gray-50 transition duration-150 ease-in-out"
+                    >
+                      <td className="border-t border-gray-200 px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedStudentIds.includes(student.uid)}
+                          onChange={() => handleSelectStudent(student.uid)}
+                        />
+                      </td>
+                      <td className="border-t border-gray-200 px-4 py-3">
+                        {student.fullName}
+                      </td>
+                      <td className="border-t border-gray-200 px-4 py-3 text-center">
+                        {student.disciplinaryRecords.length}
+                      </td>
+                      <td className="border-t border-gray-200 px-4 py-3 text-center">
+                        {student.completionPercentage}%
+                      </td>
+                      <td className="border-t border-gray-200 px-4 py-3 text-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleClearStudent(student.uid);
+                          }}
+                          className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring focus:ring-green-300"
+                        >
+                          Clear
+                        </button>
+                      </td>
+                      <td className="border-t border-gray-200 px-4 py-3 text-center">
+                        <FontAwesomeIcon
+                          icon={
+                            expandedStudent === student.uid
+                              ? faAngleUp
+                              : faAngleDown
+                          }
+                        />
+                      </td>
+                    </tr>
+                    {expandedStudent === student.uid && (
+                      <tr className="bg-gray-100">
+                        <td colSpan={6} className="border px-4 py-2">
+                          <div className="mb-4">
+                            <h4 className="font-medium mb-2">Clearances:</h4>
                             <table className="min-w-full">
                               <thead>
                                 <tr>
                                   <th className="py-2 border-b border-gray-200">
-                                    Date
+                                    Subject
+                                  </th>
+                                  <th className="py-2 border-b border-gray-200 text-center">
+                                    Status
                                   </th>
                                   <th className="py-2 border-b border-gray-200">
-                                    Violations
-                                  </th>
-                                  <th className="py-2 border-b border-gray-200">
-                                    Sanctions
+                                    Action
                                   </th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {student.disciplinaryRecords.map((record) => (
-                                  <tr key={record.timestamp}>
-                                    <td className="border px-4 py-2">
-                                      {moment(record.timestamp.toDate()).format(
-                                        "YYYY-MM-DD"
-                                      )}
-                                    </td>
-                                    <td className="border px-4 py-2">
-                                      {record.violations.join(", ")}
-                                    </td>
-                                    <td className="border px-4 py-2">
-                                      {record.sanctions.join(", ")}
-                                    </td>
-                                  </tr>
-                                ))}
+                                {Object.entries(student.clearance)
+                                  .sort(([a], [b]) => a.localeCompare(b))
+                                  .map(([subject, isCleared]) => (
+                                    <tr key={subject}>
+                                      <td className="border px-4 py-2">
+                                        {subject}
+                                      </td>
+                                      <td className="border px-4 py-2 text-center">
+                                        {isCleared ? (
+                                          <FontAwesomeIcon
+                                            icon={faCheckCircle}
+                                            className="text-green-500"
+                                          />
+                                        ) : (
+                                          <FontAwesomeIcon
+                                            icon={faTimesCircle}
+                                            className="text-red-500"
+                                          />
+                                        )}
+                                      </td>
+                                      <td className="border px-4 py-2">
+                                        {!isCleared && (
+                                          <button
+                                            onClick={() =>
+                                              handleClearStudent(
+                                                student.uid,
+                                                subject
+                                              )
+                                            }
+                                            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                                          >
+                                            Mark Cleared
+                                          </button>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
                               </tbody>
                             </table>
+                            <div className="mt-4">
+                              <button
+                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                                disabled={selectedStudentIds.length === 0}
+                                onClick={() =>
+                                  handleClearSelectedStudents("Class Adviser")
+                                }
+                              >
+                                Clear Selected Students
+                              </button>
+                            </div>
                           </div>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+
+                          {student.disciplinaryRecords.length > 0 && (
+                            <div>
+                              <h4 className="font-medium mb-2">
+                                Disciplinary Records:
+                              </h4>
+                              <table className="min-w-full">
+                                <thead>
+                                  <tr>
+                                    <th className="py-2 border-b border-gray-200">
+                                      Date
+                                    </th>
+                                    <th className="py-2 border-b border-gray-200">
+                                      Violations
+                                    </th>
+                                    <th className="py-2 border-b border-gray-200">
+                                      Sanctions
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {student.disciplinaryRecords.map((record) => (
+                                    <tr key={record.timestamp}>
+                                      <td className="border px-4 py-2">
+                                        {moment(
+                                          record.timestamp.toDate()
+                                        ).format("YYYY-MM-DD")}
+                                      </td>
+                                      <td className="border px-4 py-2">
+                                        {record.violations.join(", ")}
+                                      </td>
+                                      <td className="border px-4 py-2">
+                                        {record.sanctions.join(", ")}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         <div className="mt-8">
