@@ -41,6 +41,19 @@ function CreateStudent() {
         role: "student",
       });
 
+      const auditLogsRef = collection(db, "auditLogs");
+      await addDoc(auditLogsRef, {
+        timestamp: new Date(), 
+        userId: user.uid, 
+        actionType: "create_student",
+        email: email,
+        details: {
+          fullName: fullName,
+          educationLevel: educationLevel,
+          gradeLevel: gradeLevel,
+        },
+      });
+
       navigate("/students");
     } catch (error) {
       console.error("Error creating student: ", error);

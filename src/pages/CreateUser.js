@@ -4,6 +4,7 @@ import { db, auth } from "../firebaseConfig";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import SidebarSuper from "../components/SidebarSuper";
+import { useAuth } from "../components/AuthContext";
 
 function CreateUser() {
   const [email, setEmail] = useState("");
@@ -13,6 +14,7 @@ function CreateUser() {
   const [educationLevel, setEducationLevel] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   const collegeRoles = [
     "College Library",
@@ -69,8 +71,22 @@ function CreateUser() {
         isLocked: false,
       });
 
+      const auditLogsRef = collection(db, "auditLogs");
+      await addDoc(auditLogsRef, {
+        timestamp: new Date(), 
+        userId: currentUser.uid, 
+        actionType: "create_user",
+        email: currentUser.email, 
+        details: {
+          createdUserEmail: email,
+          createdUserRole: role,
+          educationLevel: educationLevel,
+          department: department,
+        },
+      });
+
       alert("User created successfully!");
-      navigate("/user-management"); 
+      navigate("/user-management");
     } catch (error) {
       console.error("Error creating user: ", error);
       alert("Error creating user. Please try again.");
