@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Fragment } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -11,18 +10,23 @@ import {
   ChartBarIcon,
   UserGroupIcon,
   CogIcon,
+  ClockIcon,
   LockClosedIcon,
-  ClockIcon
+  InboxIcon,
+  ArrowLeftOnRectangleIcon,
 } from "@heroicons/react/24/outline";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import {
   getFirestore,
   collection,
   where,
   query,
   getDocs,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { Spinner } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom"; 
 
 const auth = getAuth();
 const db = getFirestore();
@@ -90,10 +94,13 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function SidebarSuper({ children }) {
+export default function Sidebar({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     onAuthStateChanged(auth, async (user) => {
@@ -111,6 +118,7 @@ export default function SidebarSuper({ children }) {
 
           console.log("UID: ", user.uid);
           console.log("Role: ", userRole);
+          setCurrentUser(user);
         } catch (error) {
           console.error("Error fetching user data:", error);
         } finally {
@@ -119,6 +127,25 @@ export default function SidebarSuper({ children }) {
       }
     });
   }, [userRole]);
+
+  const handleLogout = async () => {
+    try {
+      const auditLogsRef = collection(db, "auditLogs");
+      await addDoc(auditLogsRef, {
+        timestamp: serverTimestamp(),
+        userId: currentUser.uid, 
+        actionType: "logout",
+        email: currentUser.email, 
+      });
+
+      await signOut(auth);
+
+      navigate("/"); 
+
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
 
   return (
     <>
@@ -344,18 +371,30 @@ export default function SidebarSuper({ children }) {
                         </ul>
                       </li>
                       <li className="-mx-6 mt-auto">
-                        <a
-                          href="#"
-                          className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
-                        >
-                          <img
-                            className="h-8 w-8 rounded-full bg-gray-50"
-                            src="https://scontent.fcrk3-2.fna.fbcdn.net/v/t39.30808-6/434160685_3684034858582066_7920754165546455039_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeGhBHbIAGejJ9X4kVIO8GJ_E7K8DJZKydYTsrwMlkrJ1okJf462xxpn1XdWPFBCtGI_UNMDSsljXOBo0iVVH51B&_nc_ohc=gTd2lOAtIMQQ7kNvgHc96QU&_nc_ht=scontent.fcrk3-2.fna&oh=00_AYABD6tOJ6q3oEMHpbOR1ypGoVLs9klEQEGaXXiM4ubxFQ&oe=6662D828"
-                            alt=""
-                          />
-                          <span className="sr-only">Your profile</span>
-                          <span aria-hidden="true">Jocelyn Tejada</span>
-                        </a>
+                        <div className="relative">
+                          <button
+                            onClick={() => setDropdownOpen(!dropdownOpen)}
+                            className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
+                          >
+                            <img
+                              className="h-8 w-8 rounded-full bg-gray-50"
+                              src="https://scontent.fcrk3-2.fna.fbcdn.net/v/t39.30808-6/434160685_3684034858582066_7920754165546455039_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeGhBHbIAGejJ9X4kVIO8GJ_E7K8DJZKydYTsrwMlkrJ1okJf462xxpn1XdWPFBCtGI_UNMDSsljXOBo0iVVH51B&_nc_ohc=gTd2lOAtIMQQ7kNvgHc96QU&_nc_ht=scontent.fcrk3-2.fna&oh=00_AYABD6tOJ6q3oEMHpbOR1ypGoVLs9klEQEGaXXiM4ubxFQ&oe=6662D828"
+                              alt=""
+                            />
+                            <span className="sr-only">Your profile</span>
+                            <span aria-hidden="true">Jocelyn Tejada</span>
+                          </button>
+                          {dropdownOpen && (
+                            <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5">
+                              <button
+                                onClick={handleLogout}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                              >
+                                Logout
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </li>
                     </ul>
                   </nav>
@@ -375,14 +414,29 @@ export default function SidebarSuper({ children }) {
               <div className="flex-1 text-sm font-semibold leading-6 text-gray-900">
                 Dashboard
               </div>
-              <a href="#">
-                <span className="sr-only">Your profile</span>
-                <img
-                  className="h-8 w-8 rounded-full bg-gray-50"
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  alt=""
-                />
-              </a>
+              <div className="relative">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center"
+                >
+                  <span className="sr-only">Your profile</span>
+                  <img
+                    className="h-8 w-8 rounded-full bg-gray-50"
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                    alt=""
+                  />
+                </button>
+                {dropdownOpen && (
+                  <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5">
+                    <button
+                      onClick={handleLogout}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <main className="py-10 lg:pl-72">
