@@ -9,6 +9,8 @@ import {
   CogIcon,
   InboxIcon,
   UserGroupIcon,
+  ClockIcon,
+  LockClosedIcon,
 } from "@heroicons/react/24/outline";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import {
@@ -30,52 +32,55 @@ const navigationOptions = {
   admin: [
     { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
     {
-      name: "Clearances",
-      href: "#",
-      icon: DocumentDuplicateIcon,
+      name: "Disciplinary Records",
+      href: "/disciplinary-records",
+      icon: AcademicCapIcon,
       current: false,
     },
+    { name: "Classes", href: "/classes", icon: UserGroupIcon, current: false },
+    {
+      name: "Student Master List",
+      href: "/student-master-list",
+      icon: AcademicCapIcon,
+      current: false,
+    },
+    {
+      name: "Audit Trail",
+      href: "/audit-log",
+      icon: ClockIcon,
+      current: false,
+    },
+    { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
+    { name: "Settings", href: "#", icon: CogIcon, current: false },
+  ],
+  "super-admin": [
+    { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
     {
       name: "Disciplinary Records",
       href: "/disciplinary-records",
       icon: AcademicCapIcon,
       current: false,
     },
-    { name: "Settings", href: "#", icon: CogIcon, current: false },
+    { name: "Classes", href: "/classes", icon: UserGroupIcon, current: false },
     {
       name: "Student Master List",
       href: "/student-master-list",
       icon: AcademicCapIcon,
       current: false,
     },
-    { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
-  ],
-  "super-admin": [
-    {
-      name: "Dashboard",
-      href: "/approve-clearance-office",
-      icon: HomeIcon,
-      current: true,
-    },
-    {
-      name: "Clearances",
-      href: "/add-office-requirement",
-      icon: DocumentDuplicateIcon,
-      current: false,
-    },
-    { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
     {
       name: "User Management",
       href: "/user-management",
-      icon: DocumentDuplicateIcon,
+      icon: LockClosedIcon,
       current: false,
     },
     {
-      name: "Student Master List",
-      href: "/student-master-list",
-      icon: AcademicCapIcon,
+      name: "Audit Trail",
+      href: "/audit-log",
+      icon: ClockIcon,
       current: false,
     },
+    { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
     { name: "Settings", href: "#", icon: CogIcon, current: false },
   ],
   faculty: [
