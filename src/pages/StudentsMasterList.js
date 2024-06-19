@@ -25,8 +25,8 @@ function StudentsMasterList() {
       try {
         const studentsRef = collection(db, "students");
         const snapshot = await getDocs(studentsRef);
-
-        const studentsData = snapshot.docs.map((doc) => {
+  
+        let studentsData = snapshot.docs.map((doc) => {
           const studentData = doc.data();
           const totalRequirements = Object.keys(studentData.clearance).length;
           const completedRequirements = Object.values(
@@ -40,10 +40,12 @@ function StudentsMasterList() {
             completionPercentage,
           };
         });
-
+  
+        studentsData = studentsData.filter((student) => student.section);
+  
         setStudents(studentsData);
         setOriginalStudents(studentsData);
-
+  
         const uniqueSections = [
           ...new Set(studentsData.map((student) => student.section)),
         ];
@@ -56,7 +58,7 @@ function StudentsMasterList() {
         console.error("Error fetching students:", error);
       }
     };
-
+  
     fetchStudents();
   }, []);
 

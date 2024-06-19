@@ -406,15 +406,19 @@ function DisciplinaryRecords() {
 
   const getApplicableSanctions = () => {
     const selectedViolationClasses = selectedViolations.map((violation) =>
-      violation.value.split(" (")[1].replace(")", "")
+      violation.value.split(" (")[1].replace(")", "") 
     );
-    const uniqueClasses = [...new Set(selectedViolationClasses)];
-
+  
     let applicableSanctions = [];
-    uniqueClasses.forEach((classKey) => {
-      applicableSanctions = [...applicableSanctions, ...SANCTIONS[classKey]];
+    selectedViolationClasses.forEach((classes) => { 
+      classes.split('/').forEach(classKey => { 
+        classKey = classKey.trim();
+        if (SANCTIONS[classKey]) { 
+          applicableSanctions = [...applicableSanctions, ...SANCTIONS[classKey]];
+        }
+      });
     });
-
+  
     return applicableSanctions;
   };
 
