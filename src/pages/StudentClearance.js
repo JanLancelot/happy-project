@@ -652,7 +652,6 @@ const StudentClearance = () => {
                                 </button>
                               </div>
                             )}
-                            {/* Send Inquiry Button (Office Requirement) */}
                             <button
                               onClick={() =>
                                 handleOpenInquiryModal(

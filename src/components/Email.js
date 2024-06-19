@@ -1,4 +1,3 @@
-// Email.js
 import React from "react";
 import {
   Body,

@@ -163,9 +163,7 @@ function ApproveClearanceOffice() {
           Approve Clearance Requests
         </h2>
 
-        {/* Filtering and Search Section */}
         <div className="mb-4 flex space-x-4">
-          {/* Filter by Section */}
           <div>
             <label className="block text-gray-700 mb-1">
               Filter by Section:
@@ -184,7 +182,6 @@ function ApproveClearanceOffice() {
             </select>
           </div>
 
-          {/* Filter by Subject */}
           <div>
             <label className="block text-gray-700 mb-1">
               Filter by Subject:
@@ -203,7 +200,6 @@ function ApproveClearanceOffice() {
             </select>
           </div>
 
-          {/* Search by Student Name */}
           <div>
             <label className="block text-gray-700 mb-1">
               Search by Student Name:
@@ -217,7 +213,6 @@ function ApproveClearanceOffice() {
           </div>
         </div>
 
-        {/* Table of Clearance Requests */}
         {clearanceRequests.length === 0 ? (
           <p>No clearance requests found.</p>
         ) : (
@@ -310,7 +305,6 @@ function ApproveClearanceOffice() {
         )}
       </div>
 
-      {/* Reject Confirmation Modal */}
       <Modal isOpen={isModalOpen} onClose={closeRejectModal}>
         <div className="p-6">
           <h3 className="text-lg font-semibold mb-4">

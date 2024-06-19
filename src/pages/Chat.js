@@ -247,7 +247,6 @@ function Chat() {
                         )}
                     </div>
 
-                    {/* Emoji Picker */}
                     {showEmojiPicker && activeMessageId === message.id && (
                       <div
                         ref={emojiPickerRef} 
@@ -267,7 +266,6 @@ function Chat() {
                       </div>
                     )}
 
-                    {/* Reactions and Reaction Button */}
                     <div
                       className={`flex mt-2 ${
                         message.senderId === currentUser.uid

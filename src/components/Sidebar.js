@@ -57,34 +57,8 @@ const navigation = [
 ];
 
 const teams = [
-  { id: 1, name: "Finance", href: "#", initial: "F", current: false },
-  { id: 2, name: "Registrar", href: "#", initial: "R", current: false },
-  { id: 3, name: "Dean", href: "#", initial: "D", current: false },
-  {
-    id: 4,
-    name: "Property Custodian",
-    href: "#",
-    initial: "P",
-    current: false,
-  },
-  { id: 5, name: "Guidance", href: "#", initial: "G", current: false },
-  { id: 6, name: "Library", href: "#", initial: "L", current: false },
-  { id: 7, name: "Teachers", href: "/teachers", initial: "T", current: false },
-  { id: 8, name: "Students", href: "/students", initial: "S", current: false },
-  {
-    id: 9,
-    name: "Student Org (SSITE)",
-    href: "#",
-    initial: "S",
-    current: false,
-  },
-  {
-    id: 10,
-    name: "Student Council (SSC)",
-    href: "#",
-    initial: "C",
-    current: false,
-  },
+  { id: 1, name: "Teachers", href: "/teachers", initial: "T", current: false },
+  { id: 2, name: "Students", href: "/students", initial: "S", current: false },
 ];
 
 function classNames(...classes) {

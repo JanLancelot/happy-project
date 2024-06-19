@@ -139,7 +139,6 @@ function AddRequirement() {
           Add Requirement
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Subject Selection */}
           <div>
             <label className="block text-gray-700">
               Select Subject:
@@ -158,7 +157,6 @@ function AddRequirement() {
             </select>
           </div>
 
-          {/* Class Selection */}
           <div>
             <label className="block text-gray-700">
               Select Classes:
@@ -174,7 +172,6 @@ function AddRequirement() {
             />
           </div>
 
-          {/* Requirement Name */}
           <div>
             <label className="block text-gray-700">
               Requirement Name:
@@ -190,7 +187,6 @@ function AddRequirement() {
             />
           </div>
 
-          {/* Requirement Description */}
           <div>
             <label className="block text-gray-700">
               Description:
