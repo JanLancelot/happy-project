@@ -60,12 +60,18 @@ function Classes() {
           </thead>
           <tbody>
             {filteredClasses.map((cls) => (
-              <tr key={cls.id}>
-                <td className="border px-4 py-2">{cls.gradeLevel}</td>
-                <td className="border px-4 py-2">{cls.sectionName}</td>
-                <td className="border px-4 py-2">{cls.adviser}</td>
-                <td className="border px-4 py-2">{cls.educationLevel}</td>
-              </tr>
+              <Link
+                to={`/update-class/${cls.id}`}
+                key={cls.id}
+                className="hover:bg-gray-100"
+              >
+                <tr className="cursor-pointer">
+                  <td className="border px-4 py-2">{cls.gradeLevel}</td>
+                  <td className="border px-4 py-2">{cls.sectionName}</td>
+                  <td className="border px-4 py-2">{cls.adviser}</td>
+                  <td className="border px-4 py-2">{cls.educationLevel}</td>
+                </tr>
+              </Link>
             ))}
           </tbody>
         </table>
