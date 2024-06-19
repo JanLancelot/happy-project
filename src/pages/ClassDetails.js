@@ -10,7 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import SidebarFaculty from "../components/SidebarFaculty";
+import Sidebar from "../components/Sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { useParams } from "react-router-dom";
@@ -220,7 +220,7 @@ const handleClearStudent = async (studentId) => {
   }
 
   return (
-    <SidebarFaculty>
+    <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">
           Class Details: {classData.sectionName}
@@ -412,7 +412,7 @@ const handleClearStudent = async (studentId) => {
           </div>
         )}
       </div>
-    </SidebarFaculty>
+    </Sidebar>
   );
 }
 

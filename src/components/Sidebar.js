@@ -6,14 +6,9 @@ import {
   HomeIcon,
   DocumentDuplicateIcon,
   AcademicCapIcon,
-  CreditCardIcon,
-  ChartBarIcon,
-  UserGroupIcon,
   CogIcon,
-  ClockIcon,
-  LockClosedIcon,
   InboxIcon,
-  ArrowLeftOnRectangleIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import {
@@ -26,34 +21,142 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { Spinner } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 const auth = getAuth();
 const db = getFirestore();
 
-const navigation = [
-  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
+const navigationOptions = {
+  admin: [
+    { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
+    {
+      name: "Clearances",
+      href: "#",
+      icon: DocumentDuplicateIcon,
+      current: false,
+    },
+    {
+      name: "Disciplinary Records",
+      href: "/disciplinary-records",
+      icon: AcademicCapIcon,
+      current: false,
+    },
+    { name: "Settings", href: "#", icon: CogIcon, current: false },
+    {
+      name: "Student Master List",
+      href: "/student-master-list",
+      icon: AcademicCapIcon,
+      current: false,
+    },
+    { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
+  ],
+  "super-admin": [
+    {
+      name: "Dashboard",
+      href: "/approve-clearance-office",
+      icon: HomeIcon,
+      current: true,
+    },
+    {
+      name: "Clearances",
+      href: "/add-office-requirement",
+      icon: DocumentDuplicateIcon,
+      current: false,
+    },
+    { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
+    {
+      name: "User Management",
+      href: "/user-management",
+      icon: DocumentDuplicateIcon,
+      current: false,
+    },
+    {
+      name: "Student Master List",
+      href: "/student-master-list",
+      icon: AcademicCapIcon,
+      current: false,
+    },
+    { name: "Settings", href: "#", icon: CogIcon, current: false },
+  ],
+  faculty: [
+    {
+      name: "Dashboard",
+      href: "/approve-clearance-faculty",
+      icon: HomeIcon,
+      current: true,
+    },
+    {
+      name: "Clearances",
+      href: "/add-requirement",
+      icon: DocumentDuplicateIcon,
+      current: false,
+    },
+    {
+      name: "Classes",
+      href: "/view-classes",
+      icon: UserGroupIcon,
+      current: false,
+    },
+    { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
+    {
+      name: "Student Master List",
+      href: "/student-master-list",
+      icon: AcademicCapIcon,
+      current: false,
+    },
+    {
+      name: "Settings",
+      href: "#",
+      icon: CogIcon,
+      current: false,
+      children: [],
+    },
+  ],
+  student: [
+    { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: false },
+    {
+      name: "Clearance",
+      href: "/student-clearance",
+      icon: DocumentDuplicateIcon,
+      current: true,
+    },
+    {
+      name: "Inbox",
+      href: "/view-messages-student",
+      icon: InboxIcon,
+      current: false,
+    },
+    {
+      name: "Settings",
+      href: "#",
+      icon: CogIcon,
+      current: false,
+      children: [],
+    },
+  ],
+};
+
+const defaultNavigation = [
+  {
+    name: "Dashboard",
+    href: "/approve-clearance-office",
+    icon: HomeIcon,
+    current: true,
+  },
   {
     name: "Clearances",
-    href: "#",
+    href: "/add-office-requirement",
     icon: DocumentDuplicateIcon,
     current: false,
   },
-  {
-    name: "Disciplinary Records",
-    href: "/disciplinary-records",
-    icon: AcademicCapIcon, current: false,
-  },
-  { name: "Classes", href: "/classes", icon: UserGroupIcon, current: false },
-  {
-    name: "User Management",
-    href: "/user-management",
-    icon: LockClosedIcon, current: false,
-  },
-  { name: "Settings", href: "#", icon: CogIcon, current: false, children: [] },
-  { name: "Audit Trail", href: "/audit-log", icon: ClockIcon, current: false },
-  { name: "Student Master List", href: "/student-master-list", icon: AcademicCapIcon, current: false },
   { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
+  {
+    name: "Student Master List",
+    href: "/student-master-list",
+    icon: AcademicCapIcon,
+    current: false,
+  },
+  { name: "Settings", href: "#", icon: CogIcon, current: false },
 ];
 
 const teams = [
@@ -85,6 +188,8 @@ export default function Sidebar({ children }) {
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
             setUserRole(userData.role);
+          } else {
+            console.error("User document not found!");
           }
 
           console.log("UID: ", user.uid);
@@ -97,26 +202,29 @@ export default function Sidebar({ children }) {
         }
       }
     });
-  }, [userRole]);
+  }, []);
 
   const handleLogout = async () => {
     try {
       const auditLogsRef = collection(db, "auditLogs");
       await addDoc(auditLogsRef, {
         timestamp: serverTimestamp(),
-        userId: currentUser.uid, 
+        userId: currentUser.uid,
         actionType: "logout",
-        email: currentUser.email, 
+        email: currentUser.email,
       });
 
       await signOut(auth);
-
-      navigate("/"); 
-
+      navigate("/");
     } catch (error) {
       console.error("Error during logout:", error);
     }
   };
+
+  let navigation = defaultNavigation;
+  if (userRole && navigationOptions[userRole]) {
+    navigation = navigationOptions[userRole];
+  }
 
   return (
     <>
@@ -221,43 +329,46 @@ export default function Sidebar({ children }) {
                                   ))}
                                 </ul>
                               </li>
-                              <li>
-                                <div className="text-xs font-semibold leading-6 text-gray-400">
-                                  Your teams
-                                </div>
-                                <ul
-                                  role="list"
-                                  className="-mx-2 mt-2 space-y-1"
-                                >
-                                  {teams.map((team) => (
-                                    <li key={team.name}>
-                                      <a
-                                        href={team.href}
-                                        className={classNames(
-                                          team.current
-                                            ? "bg-gray-50 text-indigo-600"
-                                            : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
-                                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                        )}
-                                      >
-                                        <span
+                              {(userRole === "admin" ||
+                                userRole === "super-admin") && (
+                                <li>
+                                  <div className="text-xs font-semibold leading-6 text-gray-400">
+                                    Your teams
+                                  </div>
+                                  <ul
+                                    role="list"
+                                    className="-mx-2 mt-2 space-y-1"
+                                  >
+                                    {teams.map((team) => (
+                                      <li key={team.name}>
+                                        <a
+                                          href={team.href}
                                           className={classNames(
                                             team.current
-                                              ? "text-indigo-600 border-indigo-600"
-                                              : "text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600",
-                                            "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
+                                              ? "bg-gray-50 text-indigo-600"
+                                              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
+                                            "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                                           )}
                                         >
-                                          {team.initial}
-                                        </span>
-                                        <span className="truncate">
-                                          {team.name}
-                                        </span>
-                                      </a>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </li>
+                                          <span
+                                            className={classNames(
+                                              team.current
+                                                ? "text-indigo-600 border-indigo-600"
+                                                : "text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600",
+                                              "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
+                                            )}
+                                          >
+                                            {team.initial}
+                                          </span>
+                                          <span className="truncate">
+                                            {team.name}
+                                          </span>
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </li>
+                              )}
                             </ul>
                           </nav>
                         )}
@@ -309,38 +420,40 @@ export default function Sidebar({ children }) {
                           ))}
                         </ul>
                       </li>
-                      <li>
-                        <div className="text-xs font-semibold leading-6 text-gray-400">
-                          Your teams
-                        </div>
-                        <ul role="list" className="-mx-2 mt-2 space-y-1">
-                          {teams.map((team) => (
-                            <li key={team.name}>
-                              <a
-                                href={team.href}
-                                className={classNames(
-                                  team.current
-                                    ? "bg-gray-50 text-indigo-600"
-                                    : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
-                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                )}
-                              >
-                                <span
+                      {(userRole === "admin" || userRole === "super-admin") && (
+                        <li>
+                          <div className="text-xs font-semibold leading-6 text-gray-400">
+                            Your teams
+                          </div>
+                          <ul role="list" className="-mx-2 mt-2 space-y-1">
+                            {teams.map((team) => (
+                              <li key={team.name}>
+                                <a
+                                  href={team.href}
                                   className={classNames(
                                     team.current
-                                      ? "text-indigo-600 border-indigo-600"
-                                      : "text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600",
-                                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
+                                      ? "bg-gray-50 text-indigo-600"
+                                      : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
+                                    "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                                   )}
                                 >
-                                  {team.initial}
-                                </span>
-                                <span className="truncate">{team.name}</span>
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
+                                  <span
+                                    className={classNames(
+                                      team.current
+                                        ? "text-indigo-600 border-indigo-600"
+                                        : "text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600",
+                                      "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
+                                    )}
+                                  >
+                                    {team.initial}
+                                  </span>
+                                  <span className="truncate">{team.name}</span>
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </li>
+                      )}
                       <li className="-mx-6 mt-auto">
                         <div className="relative">
                           <button

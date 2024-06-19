@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import SidebarFaculty from "../components/SidebarFaculty";
+import Sidebar from "../components/Sidebar";
 import { useParams } from "react-router-dom";
 import { PieChart, Pie, Cell, Legend } from "recharts";
 import ReactToPrint from "react-to-print";
@@ -271,7 +271,7 @@ function ClassDetailsForAdviser() {
   }
 
   return (
-    <SidebarFaculty>
+    <Sidebar>
       <div className="container mx-auto p-4" ref={componentRef}>
         <h2 className="text-2xl font-semibold mb-4">
           Advisory Class Details: {classData.sectionName}
@@ -544,7 +544,7 @@ function ClassDetailsForAdviser() {
           </div>
         </Modal>
       </div>
-    </SidebarFaculty>
+    </Sidebar>
   );
 }
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import SidebarSuper from "../components/SidebarSuper";
+import Sidebar from "../components/Sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheckCircle,
@@ -97,7 +97,7 @@ function StudentsMasterList() {
   };
 
   return (
-    <SidebarSuper>
+    <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Students Master List</h2>
 
@@ -250,7 +250,7 @@ function StudentsMasterList() {
           </tbody>
         </table>
       </div>
-    </SidebarSuper>
+    </Sidebar>
   );
 }
 

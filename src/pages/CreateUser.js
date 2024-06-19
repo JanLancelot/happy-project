@@ -3,7 +3,7 @@ import { collection, addDoc } from "firebase/firestore";
 import { db, auth } from "../firebaseConfig";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import SidebarSuper from "../components/SidebarSuper";
+import Sidebar from "../components/Sidebar";
 import { useAuth } from "../components/AuthContext";
 
 function CreateUser() {
@@ -96,7 +96,7 @@ function CreateUser() {
   };
 
   return (
-    <SidebarSuper>
+    <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Create User</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -181,7 +181,7 @@ function CreateUser() {
           </button>
         </form>
       </div>
-    </SidebarSuper>
+    </Sidebar>
   );
 }
 

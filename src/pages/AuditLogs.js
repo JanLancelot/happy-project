@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import SidebarSuper from "../components/SidebarSuper";
+import Sidebar from "../components/Sidebar";
 import moment from "moment";
 
 function AuditLogs() {
@@ -55,7 +55,7 @@ function AuditLogs() {
   }, [filterAction, filterUser, searchEmail, originalLogs]);
 
   return (
-    <SidebarSuper>
+    <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Audit Logs</h2>
 
@@ -115,7 +115,7 @@ function AuditLogs() {
           </tbody>
         </table>
       </div>
-    </SidebarSuper>
+    </Sidebar>
   );
 }
 

@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import SidebarOffice from "../components/SidebarOffice";
+import Sidebar from "../components/Sidebar";
 import Select from "react-select";
 import Modal from "../components/Modal";
 
@@ -192,7 +192,7 @@ function AddOfficeRequirement() {
   };
 
   return (
-    <SidebarOffice>
+    <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Add Office Requirement</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -263,7 +263,7 @@ function AddOfficeRequirement() {
           </div>
         </Modal>
       </div>
-    </SidebarOffice>
+    </Sidebar>
   );
 }
 

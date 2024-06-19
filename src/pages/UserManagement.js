@@ -9,7 +9,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import SidebarSuper from "../components/SidebarSuper";
+import Sidebar from "../components/Sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faLock,
@@ -165,7 +165,7 @@ function UserManagement() {
   };
 
   return (
-    <SidebarSuper>
+    <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">User Management</h2>
 
@@ -312,7 +312,7 @@ function UserManagement() {
           </div>
         </Modal>
       </div>
-    </SidebarSuper>
+    </Sidebar>
   );
 }
 

@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import SidebarStudent from "../components/SidebarStudent";
+import Sidebar from "../components/Sidebar";
 import moment from "moment";
 import Modal from "../components/Modal";
 
@@ -133,7 +133,7 @@ function ViewMessagesStudent() {
   };
 
   return (
-    <SidebarStudent>
+    <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">
           Replies to Your Inquiries
@@ -253,7 +253,7 @@ function ViewMessagesStudent() {
           </div>
         </Modal>
       </div>
-    </SidebarStudent>
+    </Sidebar>
   );
 }
 

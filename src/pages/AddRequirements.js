@@ -8,7 +8,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import SidebarFaculty from "../components/SidebarFaculty";
+import Sidebar from "../components/Sidebar";
 import Select from "react-select";
 
 function AddRequirement() {
@@ -133,7 +133,7 @@ function AddRequirement() {
   };
 
   return (
-    <SidebarFaculty>
+    <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">
           Add Requirement
@@ -208,7 +208,7 @@ function AddRequirement() {
           </button>
         </form>
       </div>
-    </SidebarFaculty>
+    </Sidebar>
   );
 }
 

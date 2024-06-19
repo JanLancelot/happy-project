@@ -12,7 +12,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import SidebarStudent from "../components/SidebarStudent";
+import Sidebar from "../components/Sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheckCircle,
@@ -318,7 +318,7 @@ const StudentClearance = () => {
   };
 
   return (
-    <SidebarStudent>
+    <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Student Clearance</h2>
 
@@ -742,7 +742,7 @@ const StudentClearance = () => {
           </div>
         </Modal>
       </div>
-    </SidebarStudent>
+    </Sidebar>
   );
 };
 
