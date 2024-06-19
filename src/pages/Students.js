@@ -23,10 +23,7 @@ function Students() {
 
   useEffect(() => {
     const fetchStudents = async () => {
-      let q = query(
-        collection(db, "students"),
-        where("archived", "in", [false, undefined])
-      );
+      let q = query(collection(db, "students"));
     
       if (searchQuery) {
         q = query(
@@ -44,7 +41,12 @@ function Students() {
         id: doc.id,
         ...doc.data(),
       }));
-      setStudents(studentsData);
+    
+      const filteredStudents = studentsData.filter(
+        (student) => student.archived !== true 
+      );
+    
+      setStudents(filteredStudents); 
     };
 
     fetchStudents();
