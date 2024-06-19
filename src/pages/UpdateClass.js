@@ -105,6 +105,7 @@ function UpdateClass() {
       const prevSelectedStudentIds = selectedStudentOptions.map(
         (option) => option.value
       );
+
       const currentSelectedStudentIds = selectedStudentOptions.map(
         (option) => option.value
       );
@@ -112,6 +113,7 @@ function UpdateClass() {
       const studentUpdatePromises = allStudentOptions.map(
         async (student) => {
           const studentDocRef = doc(db, "students", student.value);
+
           if (currentSelectedStudentIds.includes(student.value)) {
             await updateDoc(studentDocRef, {
               section: sectionName,
@@ -119,12 +121,11 @@ function UpdateClass() {
             });
           } else if (
             prevSelectedStudentIds.includes(student.value) &&
-            student.section === sectionName
+            student.section === sectionName 
           ) {
             await updateDoc(studentDocRef, {
               section: null,
               department: null,
-              clearance: {},
             });
           }
         }
