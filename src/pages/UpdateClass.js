@@ -5,6 +5,7 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useNavigate, useParams } from "react-router-dom";
@@ -124,6 +125,7 @@ function UpdateClass() {
             await updateDoc(studentDocRef, {
               section: null,
               department: null,
+              clearance: {},
             });
           }
         }
@@ -135,6 +137,27 @@ function UpdateClass() {
       navigate("/classes");
     } catch (error) {
       console.error("Error updating class:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this class?")) {
+      try {
+        const classDocRef = doc(db, "classes", classId);
+
+        const resetStudentPromises = selectedStudentOptions.map((student) => {
+          const studentDocRef = doc(db, "students", student.value);
+          return updateDoc(studentDocRef, { section: null, department: null });
+        });
+
+        await Promise.all(resetStudentPromises);
+        await deleteDoc(classDocRef);
+
+        alert("Class deleted successfully!");
+        navigate("/classes");
+      } catch (error) {
+        console.error("Error deleting class:", error);
+      }
     }
   };
 
@@ -343,12 +366,21 @@ function UpdateClass() {
             />
           </div>
 
-          <button
-            type="submit"
-            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
-          >
-            Update Class
-          </button>
+          <div className="flex space-x-4">
+            <button
+              type="submit"
+              className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
+            >
+              Update Class
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="bg-red-500 text-white p-2 rounded hover:bg-red-700"
+            >
+              Delete Class
+            </button>
+          </div>
         </form>
       </div>
     </Sidebar>
