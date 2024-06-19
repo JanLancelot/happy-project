@@ -6,11 +6,20 @@ import {
   getDocs,
   doc,
   updateDoc,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
+import moment from "moment";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCheckCircle,
+  faTimesCircle,
+  faAngleDown,
+  faAngleUp,
+} from "@fortawesome/free-solid-svg-icons";
 
 function ApproveClearanceOffice() {
   const { currentUser } = useAuth();
@@ -23,6 +32,7 @@ function ApproveClearanceOffice() {
   const [searchQuery, setSearchQuery] = useState("");
   const [availableSections, setAvailableSections] = useState([]);
   const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [expandedRequestId, setExpandedRequestId] = useState(null); 
 
   useEffect(() => {
     const fetchClearanceRequests = async () => {
@@ -36,10 +46,30 @@ function ApproveClearanceOffice() {
         );
 
         const requestsSnapshot = await getDocs(q);
-        const requestsData = requestsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const requestsData = await Promise.all(
+          requestsSnapshot.docs.map(async (doc) => {
+            const requestData = doc.data();
+
+            const disciplinaryRecordsRef = collection(
+              db,
+              "disciplinaryRecords"
+            );
+            const disciplinaryQuery = query(
+              disciplinaryRecordsRef,
+              where("studentId", "==", requestData.studentId)
+            );
+            const disciplinarySnapshot = await getDocs(disciplinaryQuery);
+            const disciplinaryRecords = disciplinarySnapshot.docs.map(
+              (recordDoc) => recordDoc.data()
+            );
+
+            return {
+              id: doc.id,
+              ...requestData,
+              disciplinaryRecords,
+            };
+          })
+        );
 
         setClearanceRequests(requestsData);
         setOriginalRequests(requestsData);
@@ -156,6 +186,10 @@ function ApproveClearanceOffice() {
     }
   };
 
+    const handleExpandRow = (requestId) => {
+      setExpandedRequestId((prevId) => (prevId === requestId ? null : requestId));
+    };
+
   return (
     <Sidebar>
       <div className="container mx-auto p-4">
@@ -217,43 +251,29 @@ function ApproveClearanceOffice() {
           <p>No clearance requests found.</p>
         ) : (
           <table className="min-w-full bg-white border border-gray-200">
-            <thead>
-              <tr>
-                <th className="py-2 border-b border-gray-200">
-                  Student Name
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Office
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Section
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Status
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Files
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {clearanceRequests.map((request) => (
-                <tr key={request.id}>
-                  <td className="border px-4 py-2">
-                    {request.studentName}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {request.subject}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {request.section}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {request.status}
-                  </td>
+          <thead>
+            <tr>
+              <th className="py-2 border-b border-gray-200">Student Name</th>
+              <th className="py-2 border-b border-gray-200">Office</th>
+              <th className="py-2 border-b border-gray-200">Section</th>
+              <th className="py-2 border-b border-gray-200">Status</th>
+              <th className="py-2 border-b border-gray-200">
+                Disciplinary Records
+              </th>
+              <th className="py-2 border-b border-gray-200">Files</th>
+              <th className="py-2 border-b border-gray-200">Actions</th>
+              <th className="py-2 border-b border-gray-200"></th> {/* For expand/collapse icon */}
+            </tr>
+          </thead>
+          <tbody>
+            {clearanceRequests.map((request) => (
+              <React.Fragment key={request.id}>
+                <tr key={request.id} onClick={() => handleExpandRow(request.id)} className="cursor-pointer hover:bg-gray-100">
+                  <td className="border px-4 py-2">{request.studentName}</td>
+                  <td className="border px-4 py-2">{request.subject}</td>
+                  <td className="border px-4 py-2">{request.section}</td>
+                  <td className="border px-4 py-2">{request.status}</td>
+                  <td className="border px-4 py-2 text-center">{request.disciplinaryRecords.length}</td>
                   <td className="border px-4 py-2">
                     {request.fileURLs && request.fileURLs.length > 0 ? (
                       <ul>
@@ -298,10 +318,59 @@ function ApproveClearanceOffice() {
                       </>
                     )}
                   </td>
+                  <td className="border px-4 py-2 text-center">
+                    <FontAwesomeIcon
+                      icon={expandedRequestId === request.id ? faAngleUp : faAngleDown} 
+                    />
+                  </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+
+                {expandedRequestId === request.id && (
+                  <tr className="bg-gray-100">
+                    <td colSpan={8} className="border px-4 py-2">
+                      {request.disciplinaryRecords.length === 0 ? (
+                        <p>No disciplinary records found.</p>
+                      ) : (
+                        <table className="min-w-full">
+                          <thead>
+                            <tr>
+                              <th className="py-2 border-b border-gray-200">
+                                Date
+                              </th>
+                              <th className="py-2 border-b border-gray-200">
+                                Violations
+                              </th>
+                              <th className="py-2 border-b border-gray-200">
+                                Sanctions
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {request.disciplinaryRecords.map((record) => (
+                              <tr key={record.timestamp}>
+                                <td className="border px-4 py-2">
+                                  {moment(record.timestamp.toDate()).format(
+                                    "YYYY-MM-DD"
+                                  )}
+                                </td>
+                                <td className="border px-4 py-2">
+                                  {record.violations.join(", ")}
+                                </td>
+                                <td className="border px-4 py-2">
+                                  {record.sanctions.join(", ")}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
         )}
       </div>
 

@@ -31,7 +31,6 @@ import { useNavigate } from "react-router-dom";
 const auth = getAuth();
 const db = getFirestore();
 
-
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: false },
   {
