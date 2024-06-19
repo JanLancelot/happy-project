@@ -14,7 +14,7 @@ import Select from "react-select";
 import Sidebar from "../components/Sidebar";
 
 function UpdateClass() {
-  const { classId } = useParams(); 
+  const { classId } = useParams();
   const navigate = useNavigate();
 
   const [educationLevel, setEducationLevel] = useState("");
@@ -27,7 +27,9 @@ function UpdateClass() {
   const [teachers, setTeachers] = useState([]);
   const [selectedStudentOptions, setSelectedStudentOptions] = useState([]);
   const [allStudentOptions, setAllStudentOptions] = useState([]);
-  const [originalSelectedStudentIds, setOriginalSelectedStudentIds] = useState([]);
+  const [originalSelectedStudentIds, setOriginalSelectedStudentIds] = useState(
+    []
+  );
 
   useEffect(() => {
     const fetchClassData = async () => {
@@ -45,9 +47,7 @@ function UpdateClass() {
           setCourse(classData.course || "");
           setSubjects(classData.subjects);
 
-          const studentsSnapshot = await getDocs(
-            collection(db, "students")
-          );
+          const studentsSnapshot = await getDocs(collection(db, "students"));
           const studentsData = studentsSnapshot.docs.map((doc) => ({
             value: doc.id,
             label: doc.data().fullName,
@@ -59,12 +59,14 @@ function UpdateClass() {
               !student.section || student.section === classData.sectionName
           );
 
-          setAllStudentOptions(filteredStudents); 
+          setAllStudentOptions(filteredStudents);
           const selectedStudents = filteredStudents.filter(
             (student) => student.section === classData.sectionName
           );
           setSelectedStudentOptions(selectedStudents);
-          setOriginalSelectedStudentIds(selectedStudents.map(student => student.value));
+          setOriginalSelectedStudentIds(
+            selectedStudents.map((student) => student.value)
+          );
         }
       } catch (error) {
         console.error("Error fetching class data:", error);
@@ -109,27 +111,25 @@ function UpdateClass() {
         (option) => option.value
       );
 
-      const studentUpdatePromises = allStudentOptions.map(
-        async (student) => {
-          const studentDocRef = doc(db, "students", student.value);
+      const studentUpdatePromises = allStudentOptions.map(async (student) => {
+        const studentDocRef = doc(db, "students", student.value);
 
-          if (currentSelectedStudentIds.includes(student.value)) {
-            await updateDoc(studentDocRef, {
-              section: sectionName,
-              department: educationLevel === "college" ? department : null,
-            });
-          } else if (
-            originalSelectedStudentIds.includes(student.value) &&
-            student.section === sectionName 
-          ) {
-            await updateDoc(studentDocRef, {
-              section: null,
-              department: null,
-              clearance: {},
-            });
-          }
+        if (currentSelectedStudentIds.includes(student.value)) {
+          await updateDoc(studentDocRef, {
+            section: sectionName,
+            department: educationLevel === "college" ? department : null,
+          });
+        } else if (
+          originalSelectedStudentIds.includes(student.value) &&
+          student.section === sectionName
+        ) {
+          await updateDoc(studentDocRef, {
+            section: null,
+            department: null,
+            clearance: {},
+          });
         }
-      );
+      });
 
       await Promise.all(studentUpdatePromises);
 
@@ -147,7 +147,7 @@ function UpdateClass() {
 
         const resetStudentPromises = selectedStudentOptions.map((student) => {
           const studentDocRef = doc(db, "students", student.value);
-          return updateDoc(studentDocRef, { section: null, department: null });
+          return updateDoc(studentDocRef, { section: null, department: null, clearance: {} });
         });
 
         await Promise.all(resetStudentPromises);
@@ -320,9 +320,7 @@ function UpdateClass() {
                   />
                   <select
                     value={subject.teacherUid}
-                    onChange={(e) =>
-                      handleTeacherChange(index, e.target.value)
-                    }
+                    onChange={(e) => handleTeacherChange(index, e.target.value)}
                     required
                     className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                   >
