@@ -26,6 +26,7 @@ function UpdateClass() {
   const [teachers, setTeachers] = useState([]);
   const [selectedStudentOptions, setSelectedStudentOptions] = useState([]);
   const [allStudentOptions, setAllStudentOptions] = useState([]);
+  const [originalSelectedStudentIds, setOriginalSelectedStudentIds] = useState([]);
 
   useEffect(() => {
     const fetchClassData = async () => {
@@ -62,6 +63,7 @@ function UpdateClass() {
             (student) => student.section === classData.sectionName
           );
           setSelectedStudentOptions(selectedStudents);
+          setOriginalSelectedStudentIds(selectedStudents.map(student => student.value));
         }
       } catch (error) {
         console.error("Error fetching class data:", error);
@@ -102,10 +104,6 @@ function UpdateClass() {
         subjects,
       });
 
-      const prevSelectedStudentIds = selectedStudentOptions.map(
-        (option) => option.value
-      );
-
       const currentSelectedStudentIds = selectedStudentOptions.map(
         (option) => option.value
       );
@@ -120,7 +118,7 @@ function UpdateClass() {
               department: educationLevel === "college" ? department : null,
             });
           } else if (
-            prevSelectedStudentIds.includes(student.value) &&
+            originalSelectedStudentIds.includes(student.value) &&
             student.section === sectionName 
           ) {
             await updateDoc(studentDocRef, {
