@@ -52,8 +52,13 @@ function UpdateClass() {
             section: doc.data().section,
           }));
 
-          setAllStudentOptions(studentsData);
-          const selectedStudents = studentsData.filter(
+          const filteredStudents = studentsData.filter(
+            (student) =>
+              !student.section || student.section === classData.sectionName
+          );
+
+          setAllStudentOptions(filteredStudents); 
+          const selectedStudents = filteredStudents.filter(
             (student) => student.section === classData.sectionName
           );
           setSelectedStudentOptions(selectedStudents);
