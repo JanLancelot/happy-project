@@ -23,8 +23,11 @@ function Students() {
 
   useEffect(() => {
     const fetchStudents = async () => {
-      let q = query(collection(db, "students"), where("archived", "==", false));
-
+      let q = query(
+        collection(db, "students"),
+        where("archived", "in", [false, undefined])
+      );
+    
       if (searchQuery) {
         q = query(
           q,
@@ -35,7 +38,7 @@ function Students() {
       if (selectedLevel) {
         q = query(q, where("educationLevel", "==", selectedLevel));
       }
-
+    
       const studentsSnapshot = await getDocs(q);
       const studentsData = studentsSnapshot.docs.map((doc) => ({
         id: doc.id,
