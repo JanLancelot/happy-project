@@ -111,6 +111,38 @@ function UpdateClass() {
         (option) => option.value
       );
 
+      const generateClearance = () => {
+        const clearance = {};
+
+        if (educationLevel === "college") {
+          clearance["Guidance Office"] = false;
+          clearance["Office of The Dean"] = false;
+          clearance["Student Council"] = false;
+          clearance["Property Custodian"] = false;
+          clearance["College Library"] = false;
+          clearance["Office of the Registrar"] = false;
+          clearance["Office of the Finance Director"] = false;
+        } else {
+          subjects.forEach((subject) => {
+            clearance[subject.subject] = false;
+          });
+
+          const additionalClearances = [
+            "Librarian",
+            "Character Renewal Office",
+            "Finance",
+            "Basic Education Registrar",
+            "Class Adviser",
+            "Director/Principal",
+          ];
+
+          additionalClearances.forEach((role) => {
+            clearance[role] = false;
+          });
+        }
+        return clearance;
+      };
+
       const studentUpdatePromises = allStudentOptions.map(async (student) => {
         const studentDocRef = doc(db, "students", student.value);
 
@@ -118,6 +150,7 @@ function UpdateClass() {
           await updateDoc(studentDocRef, {
             section: sectionName,
             department: educationLevel === "college" ? department : null,
+            clearance: generateClearance(),
           });
         } else if (
           originalSelectedStudentIds.includes(student.value) &&
@@ -126,7 +159,7 @@ function UpdateClass() {
           await updateDoc(studentDocRef, {
             section: null,
             department: null,
-            clearance: {},
+            clearance: {}, 
           });
         }
       });
@@ -147,7 +180,11 @@ function UpdateClass() {
 
         const resetStudentPromises = selectedStudentOptions.map((student) => {
           const studentDocRef = doc(db, "students", student.value);
-          return updateDoc(studentDocRef, { section: null, department: null, clearance: {} });
+          return updateDoc(studentDocRef, {
+            section: null,
+            department: null,
+            clearance: {},
+          });
         });
 
         await Promise.all(resetStudentPromises);
@@ -320,7 +357,9 @@ function UpdateClass() {
                   />
                   <select
                     value={subject.teacherUid}
-                    onChange={(e) => handleTeacherChange(index, e.target.value)}
+                    onChange={(e) =>
+                      handleTeacherChange(index, e.target.value)
+                    }
                     required
                     className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                   >
