@@ -169,6 +169,7 @@ function Students() {
         <table className="min-w-full bg-white">
           <thead>
             <tr>
+              <th className="py-2">Student ID</th>
               <th className="py-2">Name</th>
               <th className="py-2">Email</th>
               <th className="py-2">Education Level</th>
@@ -180,6 +181,7 @@ function Students() {
           <tbody>
             {students.map((student) => (
               <tr key={student.id}>
+                <td className="border px-4 py-2">{student.studentId}</td>
                 <td className="border px-4 py-2">{student.fullName}</td>
                 <td className="border px-4 py-2">{student.email}</td>
                 <td className="border px-4 py-2">{student.educationLevel}</td>

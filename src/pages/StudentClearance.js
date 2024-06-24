@@ -187,6 +187,7 @@ const StudentClearance = () => {
         if (subjectRequirements && subjectRequirements.length > 0) {
           await addDoc(clearanceRequestsRef, {
             studentId: currentUser.uid,
+            studentNo: studentData.studentId,
             studentName: studentData.fullName,
             section: studentData.section,
             subject: selectedSubject,

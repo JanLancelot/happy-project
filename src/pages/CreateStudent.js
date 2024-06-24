@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db, auth } from "../firebaseConfig";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import Papa from "papaparse";
-
 import Sidebar from "../components/Sidebar";
 
 function CreateStudent() {
   const [fullName, setFullName] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [educationLevel, setEducationLevel] = useState("");
@@ -18,6 +18,17 @@ function CreateStudent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const existingStudentQuery = query(
+      collection(db, "students"),
+      where("studentId", "==", studentId)
+    );
+    const existingStudentSnapshot = await getDocs(existingStudentQuery);
+
+    if (!existingStudentSnapshot.empty) {
+      alert("Student ID already exists!");
+      return;
+    }
 
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -29,6 +40,7 @@ function CreateStudent() {
 
       await addDoc(collection(db, "students"), {
         uid: user.uid,
+        studentId: studentId,
         fullName,
         email,
         educationLevel,
@@ -43,8 +55,8 @@ function CreateStudent() {
 
       const auditLogsRef = collection(db, "auditLogs");
       await addDoc(auditLogsRef, {
-        timestamp: new Date(), 
-        userId: user.uid, 
+        timestamp: new Date(),
+        userId: user.uid,
         actionType: "create_student",
         email: email,
         details: {
@@ -62,7 +74,7 @@ function CreateStudent() {
 
   const handleEducationLevelChange = (e) => {
     setEducationLevel(e.target.value);
-    setGradeLevel(""); 
+    setGradeLevel("");
   };
 
   const getGradeLevels = () => {
@@ -94,7 +106,27 @@ function CreateStudent() {
         const students = result.data;
 
         for (const student of students) {
-          const { fullName, email, password, educationLevel, gradeLevel } = student;
+          const {
+            studentId,
+            fullName,
+            email,
+            password,
+            educationLevel,
+            gradeLevel,
+          } = student;
+
+          const existingStudentQuery = query(
+            collection(db, "students"),
+            where("studentId", "==", studentId)
+          );
+          const existingStudentSnapshot = await getDocs(existingStudentQuery);
+
+          if (!existingStudentSnapshot.empty) {
+            alert(
+              `Student ID ${studentId} already exists! Skipping this student.`
+            );
+            continue;
+          }
 
           try {
             const userCredential = await createUserWithEmailAndPassword(
@@ -106,6 +138,7 @@ function CreateStudent() {
 
             await addDoc(collection(db, "students"), {
               uid: user.uid,
+              studentId: studentId,
               fullName,
               email,
               educationLevel,
@@ -116,6 +149,19 @@ function CreateStudent() {
               uid: user.uid,
               email: user.email,
               role: "student",
+            });
+
+            const auditLogsRef = collection(db, "auditLogs");
+            await addDoc(auditLogsRef, {
+              timestamp: new Date(),
+              userId: user.uid,
+              actionType: "create_student",
+              email: email,
+              details: {
+                fullName: fullName,
+                educationLevel: educationLevel,
+                gradeLevel: gradeLevel,
+              },
             });
           } catch (error) {
             console.error("Error creating student: ", error);
@@ -132,6 +178,16 @@ function CreateStudent() {
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Create Student</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-700">Student ID:</label>
+            <input
+              type="text"
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+              required
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            />
+          </div>
           <div>
             <label className="block text-gray-700">Full Name</label>
             <input
@@ -166,7 +222,7 @@ function CreateStudent() {
             <label className="block text-gray-700">Education Level</label>
             <select
               value={educationLevel}
-              onChange={handleEducationLevelChange} 
+              onChange={handleEducationLevelChange}
               required
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             >
@@ -186,7 +242,7 @@ function CreateStudent() {
               onChange={(e) => setGradeLevel(e.target.value)}
               required
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-              disabled={!educationLevel} 
+              disabled={!educationLevel}
             >
               <option value="" disabled>
                 Select grade level

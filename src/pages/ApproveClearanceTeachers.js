@@ -97,13 +97,13 @@ function ApproveClearanceTeachers() {
       const studentsRef = collection(db, "students");
       const q = query(studentsRef, where("uid", "==", studentId));
       const querySnapshot = await getDocs(q);
-    
+
       if (!querySnapshot.empty) {
         const studentDoc = querySnapshot.docs[0];
         await updateDoc(studentDoc.ref, {
           [`clearance.${subject}`]: true,
         });
-    
+
         console.log(`Student clearance for ${subject} updated successfully.`);
       } else {
         console.log(`No student found with uid ${studentId}.`);
@@ -142,9 +142,7 @@ function ApproveClearanceTeachers() {
 
       setClearanceRequests((prevRequests) =>
         prevRequests.map((req) =>
-          req.id === requestToReject.id
-            ? { ...req, status: "rejected" }
-            : req
+          req.id === requestToReject.id ? { ...req, status: "rejected" } : req
         )
       );
 
@@ -219,41 +217,23 @@ function ApproveClearanceTeachers() {
           <table className="min-w-full bg-white border border-gray-200">
             <thead>
               <tr>
-                <th className="py-2 border-b border-gray-200">
-                  Student Name
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Subject
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Section
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Status
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Files
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Actions
-                </th>
+                <th className="py-2 border-b border-gray-200">Student ID</th>
+                <th className="py-2 border-b border-gray-200">Student Name</th>
+                <th className="py-2 border-b border-gray-200">Subject</th>
+                <th className="py-2 border-b border-gray-200">Section</th>
+                <th className="py-2 border-b border-gray-200">Status</th>
+                <th className="py-2 border-b border-gray-200">Files</th>
+                <th className="py-2 border-b border-gray-200">Actions</th>
               </tr>
             </thead>
             <tbody>
               {clearanceRequests.map((request) => (
                 <tr key={request.id}>
-                  <td className="border px-4 py-2">
-                    {request.studentName}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {request.subject}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {request.section}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {request.status}
-                  </td>
+                  <td className="border px-4 py-2">{request.studentNo}</td>
+                  <td className="border px-4 py-2">{request.studentName}</td>
+                  <td className="border px-4 py-2">{request.subject}</td>
+                  <td className="border px-4 py-2">{request.section}</td>
+                  <td className="border px-4 py-2">{request.status}</td>
                   <td className="border px-4 py-2">
                     {request.fileURLs && request.fileURLs.length > 0 ? (
                       <ul>

@@ -320,6 +320,7 @@ const handleClearStudent = async (studentId) => {
                         onChange={handleSelectAllStudents}
                       />
                     </th>
+                    <th className="py-2 border-b border-gray-200">Student ID</th>
                     <th className="py-2 border-b border-gray-200">Name</th>
                     <th className="py-2 border-b border-gray-200 text-center">
                       Cleared
@@ -338,6 +339,9 @@ const handleClearStudent = async (studentId) => {
                           checked={selectedStudentIds.includes(student.uid)}
                           onChange={() => handleSelectStudent(student.uid)}
                         />
+                      </td>
+                      <td className="border px-4 py-2">
+                        {student.studentId}
                       </td>
                       <td className="border px-4 py-2">
                         {student.fullName}

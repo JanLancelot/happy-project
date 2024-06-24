@@ -25,7 +25,7 @@ function StudentsMasterList() {
       try {
         const studentsRef = collection(db, "students");
         const snapshot = await getDocs(studentsRef);
-  
+
         let studentsData = snapshot.docs.map((doc) => {
           const studentData = doc.data();
           const totalRequirements = Object.keys(studentData.clearance).length;
@@ -40,12 +40,12 @@ function StudentsMasterList() {
             completionPercentage,
           };
         });
-  
+
         studentsData = studentsData.filter((student) => student.section);
-  
+
         setStudents(studentsData);
         setOriginalStudents(studentsData);
-  
+
         const uniqueSections = [
           ...new Set(studentsData.map((student) => student.section)),
         ];
@@ -58,7 +58,7 @@ function StudentsMasterList() {
         console.error("Error fetching students:", error);
       }
     };
-  
+
     fetchStudents();
   }, []);
 
@@ -78,19 +78,13 @@ function StudentsMasterList() {
     }
 
     if (searchQuery) {
-      filteredStudents = filteredStudents.filter(
-        (student) =>
-          student.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+      filteredStudents = filteredStudents.filter((student) =>
+        student.fullName.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     setStudents(filteredStudents);
-  }, [
-    educationLevelFilter,
-    sectionFilter,
-    searchQuery,
-    originalStudents,
-  ]);
+  }, [educationLevelFilter, sectionFilter, searchQuery, originalStudents]);
 
   const handleStudentClick = (studentId) => {
     setExpandedStudent((prev) => (prev === studentId ? null : studentId));
@@ -157,17 +151,15 @@ function StudentsMasterList() {
           </div>
         </div>
 
-     {/* Students Table */}
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr>
+              <th className="py-2 border-b border-gray-200">Student ID</th>
               <th className="py-2 border-b border-gray-200">Name</th>
-              <th className="py-2 border-b border-gray-200">Email</th> 
+              <th className="py-2 border-b border-gray-200">Email</th>
               <th className="py-2 border-b border-gray-200">Section</th>
-              <th className="py-2 border-b border-gray-200">Grade Level</th> 
-              <th className="py-2 border-b border-gray-200">
-                Education Level
-              </th>
+              <th className="py-2 border-b border-gray-200">Grade Level</th>
+              <th className="py-2 border-b border-gray-200">Education Level</th>
               <th className="py-2 border-b border-gray-200 text-center">
                 Completion (%)
               </th>
@@ -182,10 +174,11 @@ function StudentsMasterList() {
                   onClick={() => handleStudentClick(student.uid)}
                   className="cursor-pointer hover:bg-gray-100"
                 >
+                  <td className="border px-4 py-2">{student.studentId}</td>
                   <td className="border px-4 py-2">{student.fullName}</td>
-                  <td className="border px-4 py-2">{student.email}</td> 
+                  <td className="border px-4 py-2">{student.email}</td>
                   <td className="border px-4 py-2">{student.section}</td>
-                  <td className="border px-4 py-2">{student.gradeLevel}</td> 
+                  <td className="border px-4 py-2">{student.gradeLevel}</td>
                   <td className="border px-4 py-2">{student.educationLevel}</td>
                   <td className="border px-4 py-2 text-center">
                     {student.completionPercentage}%
@@ -222,9 +215,7 @@ function StudentsMasterList() {
                             )
                             .map(([subject, isCleared]) => (
                               <tr key={subject}>
-                                <td className="border px-4 py-2">
-                                  {subject}
-                                </td>
+                                <td className="border px-4 py-2">{subject}</td>
                                 <td className="border px-4 py-2 text-center">
                                   {isCleared ? (
                                     <FontAwesomeIcon

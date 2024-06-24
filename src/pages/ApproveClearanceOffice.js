@@ -32,7 +32,7 @@ function ApproveClearanceOffice() {
   const [searchQuery, setSearchQuery] = useState("");
   const [availableSections, setAvailableSections] = useState([]);
   const [availableSubjects, setAvailableSubjects] = useState([]);
-  const [expandedRequestId, setExpandedRequestId] = useState(null); 
+  const [expandedRequestId, setExpandedRequestId] = useState(null);
 
   useEffect(() => {
     const fetchClearanceRequests = async () => {
@@ -40,10 +40,7 @@ function ApproveClearanceOffice() {
 
       try {
         const requestsRef = collection(db, "clearanceRequests");
-        const q = query(
-          requestsRef,
-          where("officerId", "==", currentUser.uid)
-        );
+        const q = query(requestsRef, where("officerId", "==", currentUser.uid));
 
         const requestsSnapshot = await getDocs(q);
         const requestsData = await Promise.all(
@@ -127,13 +124,13 @@ function ApproveClearanceOffice() {
       const studentsRef = collection(db, "students");
       const q = query(studentsRef, where("uid", "==", studentId));
       const querySnapshot = await getDocs(q);
-    
+
       if (!querySnapshot.empty) {
         const studentDoc = querySnapshot.docs[0];
         await updateDoc(studentDoc.ref, {
           [`clearance.${subject}`]: true,
         });
-    
+
         console.log(`Student clearance for ${subject} updated successfully.`);
       } else {
         console.log(`No student found with uid ${studentId}.`);
@@ -172,9 +169,7 @@ function ApproveClearanceOffice() {
 
       setClearanceRequests((prevRequests) =>
         prevRequests.map((req) =>
-          req.id === requestToReject.id
-            ? { ...req, status: "rejected" }
-            : req
+          req.id === requestToReject.id ? { ...req, status: "rejected" } : req
         )
       );
 
@@ -186,9 +181,9 @@ function ApproveClearanceOffice() {
     }
   };
 
-    const handleExpandRow = (requestId) => {
-      setExpandedRequestId((prevId) => (prevId === requestId ? null : requestId));
-    };
+  const handleExpandRow = (requestId) => {
+    setExpandedRequestId((prevId) => (prevId === requestId ? null : requestId));
+  };
 
   return (
     <Sidebar>
@@ -251,126 +246,138 @@ function ApproveClearanceOffice() {
           <p>No clearance requests found.</p>
         ) : (
           <table className="min-w-full bg-white border border-gray-200">
-          <thead>
-            <tr>
-              <th className="py-2 border-b border-gray-200">Student Name</th>
-              <th className="py-2 border-b border-gray-200">Office</th>
-              <th className="py-2 border-b border-gray-200">Section</th>
-              <th className="py-2 border-b border-gray-200">Status</th>
-              <th className="py-2 border-b border-gray-200">
-                Disciplinary Records
-              </th>
-              <th className="py-2 border-b border-gray-200">Files</th>
-              <th className="py-2 border-b border-gray-200">Actions</th>
-              <th className="py-2 border-b border-gray-200"></th> {/* For expand/collapse icon */}
-            </tr>
-          </thead>
-          <tbody>
-            {clearanceRequests.map((request) => (
-              <React.Fragment key={request.id}>
-                <tr key={request.id} onClick={() => handleExpandRow(request.id)} className="cursor-pointer hover:bg-gray-100">
-                  <td className="border px-4 py-2">{request.studentName}</td>
-                  <td className="border px-4 py-2">{request.subject}</td>
-                  <td className="border px-4 py-2">{request.section}</td>
-                  <td className="border px-4 py-2">{request.status}</td>
-                  <td className="border px-4 py-2 text-center">{request.disciplinaryRecords.length}</td>
-                  <td className="border px-4 py-2">
-                    {request.fileURLs && request.fileURLs.length > 0 ? (
-                      <ul>
-                        {request.fileURLs.map((url, index) => (
-                          <li key={index}>
-                            <a
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-500 hover:underline"
-                            >
-                              File {index + 1}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      "No files submitted"
-                    )}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {request.status === "pending" && (
-                      <>
-                        <button
-                          onClick={() =>
-                            handleApprove(
-                              request.id,
-                              request.studentId,
-                              request.subject
-                            )
-                          }
-                          className="mr-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => openRejectModal(request)}
-                          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
-                  </td>
-                  <td className="border px-4 py-2 text-center">
-                    <FontAwesomeIcon
-                      icon={expandedRequestId === request.id ? faAngleUp : faAngleDown} 
-                    />
-                  </td>
-                </tr>
-
-                {expandedRequestId === request.id && (
-                  <tr className="bg-gray-100">
-                    <td colSpan={8} className="border px-4 py-2">
-                      {request.disciplinaryRecords.length === 0 ? (
-                        <p>No disciplinary records found.</p>
+            <thead>
+              <tr>
+                <th className="py-2 border-b border-gray-200">Student ID</th>
+                <th className="py-2 border-b border-gray-200">Student Name</th>
+                <th className="py-2 border-b border-gray-200">Office</th>
+                <th className="py-2 border-b border-gray-200">Section</th>
+                <th className="py-2 border-b border-gray-200">Status</th>
+                <th className="py-2 border-b border-gray-200">
+                  Disciplinary Records
+                </th>
+                <th className="py-2 border-b border-gray-200">Files</th>
+                <th className="py-2 border-b border-gray-200">Actions</th>
+                <th className="py-2 border-b border-gray-200"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {clearanceRequests.map((request) => (
+                <React.Fragment key={request.id}>
+                  <tr
+                    key={request.id}
+                    onClick={() => handleExpandRow(request.id)}
+                    className="cursor-pointer hover:bg-gray-100"
+                  >
+                    <td className="border px-4 py-2">{request.studentNo}</td>
+                    <td className="border px-4 py-2">{request.studentName}</td>
+                    <td className="border px-4 py-2">{request.subject}</td>
+                    <td className="border px-4 py-2">{request.section}</td>
+                    <td className="border px-4 py-2">{request.status}</td>
+                    <td className="border px-4 py-2 text-center">
+                      {request.disciplinaryRecords.length}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {request.fileURLs && request.fileURLs.length > 0 ? (
+                        <ul>
+                          {request.fileURLs.map((url, index) => (
+                            <li key={index}>
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:underline"
+                              >
+                                File {index + 1}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
                       ) : (
-                        <table className="min-w-full">
-                          <thead>
-                            <tr>
-                              <th className="py-2 border-b border-gray-200">
-                                Date
-                              </th>
-                              <th className="py-2 border-b border-gray-200">
-                                Violations
-                              </th>
-                              <th className="py-2 border-b border-gray-200">
-                                Sanctions
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {request.disciplinaryRecords.map((record) => (
-                              <tr key={record.timestamp}>
-                                <td className="border px-4 py-2">
-                                  {moment(record.timestamp.toDate()).format(
-                                    "YYYY-MM-DD"
-                                  )}
-                                </td>
-                                <td className="border px-4 py-2">
-                                  {record.violations.join(", ")}
-                                </td>
-                                <td className="border px-4 py-2">
-                                  {record.sanctions.join(", ")}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                        "No files submitted"
                       )}
                     </td>
+                    <td className="border px-4 py-2">
+                      {request.status === "pending" && (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleApprove(
+                                request.id,
+                                request.studentId,
+                                request.subject
+                              )
+                            }
+                            className="mr-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => openRejectModal(request)}
+                            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                    </td>
+                    <td className="border px-4 py-2 text-center">
+                      <FontAwesomeIcon
+                        icon={
+                          expandedRequestId === request.id
+                            ? faAngleUp
+                            : faAngleDown
+                        }
+                      />
+                    </td>
                   </tr>
-                )}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+
+                  {expandedRequestId === request.id && (
+                    <tr className="bg-gray-100">
+                      <td colSpan={8} className="border px-4 py-2">
+                        {request.disciplinaryRecords.length === 0 ? (
+                          <p>No disciplinary records found.</p>
+                        ) : (
+                          <table className="min-w-full">
+                            <thead>
+                              <tr>
+                                <th className="py-2 border-b border-gray-200">
+                                  Date
+                                </th>
+                                <th className="py-2 border-b border-gray-200">
+                                  Violations
+                                </th>
+                                <th className="py-2 border-b border-gray-200">
+                                  Sanctions
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {request.disciplinaryRecords.map((record) => (
+                                <tr key={record.timestamp}>
+                                  <td className="border px-4 py-2">
+                                    {moment(record.timestamp.toDate()).format(
+                                      "YYYY-MM-DD"
+                                    )}
+                                  </td>
+                                  <td className="border px-4 py-2">
+                                    {record.violations.join(", ")}
+                                  </td>
+                                  <td className="border px-4 py-2">
+                                    {record.sanctions.join(", ")}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 

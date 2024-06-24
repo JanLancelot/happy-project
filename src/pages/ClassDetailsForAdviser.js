@@ -315,6 +315,9 @@ function ClassDetailsForAdviser() {
                     <input type="checkbox" onChange={handleSelectAllStudents} />
                   </th>
                   <th className="py-3 px-4 border-b border-gray-200 text-left font-medium text-gray-700">
+                    Student ID
+                  </th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left font-medium text-gray-700">
                     Name
                   </th>
                   <th className="py-3 px-4 border-b border-gray-200 text-center font-medium text-gray-700">
@@ -344,6 +347,9 @@ function ClassDetailsForAdviser() {
                           onChange={() => handleSelectStudent(student.uid)}
                           disabled={student.clearance["Class Adviser"]}
                         />
+                      </td>
+                      <td className="border-t border-gray-200 px-4 py-3">
+                        {student.studentId}
                       </td>
                       <td className="border-t border-gray-200 px-4 py-3">
                         {student.fullName}

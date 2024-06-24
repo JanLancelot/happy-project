@@ -271,6 +271,7 @@ function DisciplinaryRecords() {
 
   const [newRecord, setNewRecord] = useState({
     studentId: "",
+    studentNo: "",
     studentSection: "",
     studentFullName: "",
     studentGradeLevel: "",
@@ -406,19 +407,22 @@ function DisciplinaryRecords() {
 
   const getApplicableSanctions = () => {
     const selectedViolationClasses = selectedViolations.map((violation) =>
-      violation.value.split(" (")[1].replace(")", "") 
+      violation.value.split(" (")[1].replace(")", "")
     );
-  
+
     let applicableSanctions = [];
-    selectedViolationClasses.forEach((classes) => { 
-      classes.split('/').forEach(classKey => { 
+    selectedViolationClasses.forEach((classes) => {
+      classes.split("/").forEach((classKey) => {
         classKey = classKey.trim();
-        if (SANCTIONS[classKey]) { 
-          applicableSanctions = [...applicableSanctions, ...SANCTIONS[classKey]];
+        if (SANCTIONS[classKey]) {
+          applicableSanctions = [
+            ...applicableSanctions,
+            ...SANCTIONS[classKey],
+          ];
         }
       });
     });
-  
+
     return applicableSanctions;
   };
 
@@ -464,7 +468,7 @@ function DisciplinaryRecords() {
         timestamp: serverTimestamp(),
         userId: currentUser.uid,
         actionType: "add_disciplinary_record",
-        email: currentUser.email, 
+        email: currentUser.email,
         details: {
           recordId: newRecordRef.id,
           studentId: newRecord.studentId,
@@ -475,6 +479,7 @@ function DisciplinaryRecords() {
       setIsAddRecordModalOpen(false);
       setNewRecord({
         studentId: "",
+        studentNo: "",
         studentSection: "",
         studentFullName: "",
         date: "",
@@ -518,6 +523,7 @@ function DisciplinaryRecords() {
     setNewRecord({
       ...newRecord,
       studentId: selectedOption ? selectedOption.uid : "",
+      studentNo: selectedOption ? selectedOption.studentNo : "",
       studentFullName: selectedOption ? selectedOption.fullName : "",
       studentSection: selectedOption ? selectedOption.section : "",
       studentGradeLevel: selectedOption ? selectedOption.gradeLevel : "",
@@ -592,6 +598,9 @@ function DisciplinaryRecords() {
           <thead className="bg-gray-200">
             <tr>
               <th className="py-3 px-4 border-b border-gray-300 text-left text-gray-700 font-semibold">
+                Student ID
+              </th>
+              <th className="py-3 px-4 border-b border-gray-300 text-left text-gray-700 font-semibold">
                 Name
               </th>
               <th className="py-3 px-4 border-b border-gray-300 text-left text-gray-700 font-semibold">
@@ -619,6 +628,9 @@ function DisciplinaryRecords() {
                   onClick={() => handleExpandRow(record.id)}
                   className="cursor-pointer hover:bg-gray-100 transition duration-150 ease-in-out"
                 >
+                  <td className="border-t border-gray-300 px-4 py-3">
+                    {record.studentNo}
+                  </td>{" "}
                   <td className="border-t border-gray-300 px-4 py-3">
                     {record.studentFullName}
                   </td>
