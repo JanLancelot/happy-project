@@ -26,7 +26,7 @@ function Classes() {
     (cls) =>
       cls.gradeLevel.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cls.sectionName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cls.adviser.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (cls.adviser && cls.adviser.toLowerCase().includes(searchTerm.toLowerCase())) ||
       cls.educationLevel.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -56,7 +56,7 @@ function Classes() {
               <th className="py-2">Section Name</th>
               <th className="py-2">Adviser</th>
               <th className="py-2">Education Level</th>
-              <th className="py-2">Actions</th> 
+              <th className="py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -64,15 +64,17 @@ function Classes() {
               <tr key={cls.id}>
                 <td className="border px-4 py-2">{cls.gradeLevel}</td>
                 <td className="border px-4 py-2">{cls.sectionName}</td>
-                <td className="border px-4 py-2">{cls.adviser}</td>
+                <td className="border px-4 py-2">
+                  {cls.adviser ? cls.adviser : "N/A"} 
+                </td>
                 <td className="border px-4 py-2">{cls.educationLevel}</td>
                 <td className="border px-4 py-2">
-                  <Link to={`/update-class/${cls.id}`}> 
+                  <Link to={`/update-class/${cls.id}`}>
                     <button className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
                       Update
                     </button>
                   </Link>
-                </td> 
+                </td>
               </tr>
             ))}
           </tbody>
