@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { LockClosedIcon, MailIcon } from "lucide-react";
 import {
   collection,
   query,
@@ -58,7 +59,7 @@ const SignIn = () => {
               navigate("/add-office-requirement");
               break;
             default:
-              navigate("/dashboard"); 
+              navigate("/dashboard");
           }
         } else {
           console.error("No such document!");
@@ -138,48 +139,86 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        transition={{ duration: 0.3 }}
-        className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full"
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 50 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full backdrop-filter backdrop-blur-lg bg-opacity-30"
       >
-        <h1 className="text-2xl font-bold mb-6 text-center">Sign In</h1>
-        {(error || localError) && (
-          <p className="text-red-500 text-center mb-4">
-            {localError || error.message}
-          </p>
-        )}
-        <form onSubmit={handleSignIn} className="space-y-4">
+        <motion.h1
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-3xl font-bold mb-6 text-center text-white"
+        >
+          Welcome Back
+        </motion.h1>
+        <AnimatePresence>
+          {(error || localError) && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="text-red-500 text-center mb-4 bg-red-100 p-2 rounded"
+            >
+              {localError || error.message}
+            </motion.p>
+          )}
+        </AnimatePresence>
+        <form onSubmit={handleSignIn} className="space-y-6">
           <div>
-            <label className="block text-gray-700">Email</label>
-            <input
-              type="email"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline focus:ring-indigo-500 focus:border-indigo-500"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <label className="block text-white text-sm font-semibold mb-2">
+              Email
+            </label>
+            <div className="relative">
+              <MailIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="email"
+                className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white bg-opacity-20 text-white placeholder-gray-300"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="Enter your email"
+              />
+            </div>
           </div>
           <div>
-            <label className="block text-gray-700">Password</label>
-            <input
-              type="password"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <label className="block text-white text-sm font-semibold mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="password"
+                className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white bg-opacity-20 text-white placeholder-gray-300"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="Enter your password"
+              />
+            </div>
           </div>
-          <button
+          <motion.button
             type="submit"
-            className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+            className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:scale-105"
             disabled={loading}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Signing in...
+              </span>
+            ) : (
+              "Sign In"
+            )}
+          </motion.button>
         </form>
       </motion.div>
     </div>

@@ -22,13 +22,19 @@ function Classes() {
     fetchClasses();
   }, []);
 
-  const filteredClasses = classes.filter(
-    (cls) =>
-      cls.gradeLevel.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cls.sectionName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (cls.adviser && cls.adviser.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      cls.educationLevel.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredClasses = classes.filter((cls) => {
+    const gradeLevel = cls.gradeLevel ? cls.gradeLevel.toLowerCase() : "";
+    const sectionName = cls.sectionName ? cls.sectionName.toLowerCase() : "";
+    const adviser = cls.adviser ? cls.adviser.toLowerCase() : "";
+    const educationLevel = cls.educationLevel ? cls.educationLevel.toLowerCase() : "";
+
+    return (
+      gradeLevel.includes(searchTerm.toLowerCase()) ||
+      sectionName.includes(searchTerm.toLowerCase()) ||
+      adviser.includes(searchTerm.toLowerCase()) ||
+      educationLevel.includes(searchTerm.toLowerCase())
+    );
+  });
 
   return (
     <Sidebar>
