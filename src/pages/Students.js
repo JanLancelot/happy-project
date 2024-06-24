@@ -10,7 +10,7 @@ import {
 import { db } from "../firebaseConfig";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import Modal from "../components/Modal"; 
+import Modal from "../components/Modal";
 
 function Students() {
   const [students, setStudents] = useState([]);
@@ -18,13 +18,15 @@ function Students() {
   const [selectedLevel, setSelectedLevel] = useState("");
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [studentToArchive, setStudentToArchive] = useState(null);
-  const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false); 
+  const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
   const [studentToPromote, setStudentToPromote] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [studentToEdit, setStudentToEdit] = useState(null);
 
   useEffect(() => {
     const fetchStudents = async () => {
       let q = query(collection(db, "students"));
-    
+
       if (searchQuery) {
         q = query(
           q,
@@ -35,18 +37,18 @@ function Students() {
       if (selectedLevel) {
         q = query(q, where("educationLevel", "==", selectedLevel));
       }
-    
+
       const studentsSnapshot = await getDocs(q);
       const studentsData = studentsSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-    
+
       const filteredStudents = studentsData.filter(
-        (student) => student.archived !== true 
+        (student) => student.archived !== true
       );
-    
-      setStudents(filteredStudents); 
+
+      setStudents(filteredStudents);
     };
 
     fetchStudents();
@@ -103,8 +105,8 @@ function Students() {
 
       await updateDoc(doc(db, "students", studentToPromote.id), {
         gradeLevel: newGradeLevel,
-        section: null, 
-        clearance: {}, 
+        section: null,
+        clearance: {},
       });
 
       setStudents((prevStudents) =>
@@ -127,6 +129,55 @@ function Students() {
     } catch (error) {
       console.error("Error promoting student: ", error);
       alert("Error promoting student. Please try again later.");
+    }
+  };
+
+  const handleOpenEditModal = (student) => {
+    setStudentToEdit({
+      ...student,
+      originalStudentId: student.studentId,
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setStudentToEdit(null);
+    setIsEditModalOpen(false);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      if (!studentToEdit) return;
+
+      if (studentToEdit.studentId !== studentToEdit.originalStudentId) {
+        const existingStudentQuery = query(
+          collection(db, "students"),
+          where("studentId", "==", studentToEdit.studentId)
+        );
+        const existingStudentSnapshot = await getDocs(existingStudentQuery);
+        if (!existingStudentSnapshot.empty) {
+          alert("Student ID already exists!");
+          return;
+        }
+      }
+
+      await updateDoc(doc(db, "students", studentToEdit.id), {
+        studentId: studentToEdit.studentId,
+        fullName: studentToEdit.fullName,
+        email: studentToEdit.email,
+      });
+
+      setStudents((prevStudents) =>
+        prevStudents.map((student) =>
+          student.id === studentToEdit.id ? studentToEdit : student
+        )
+      );
+
+      handleCloseEditModal();
+      alert("Student information updated successfully!");
+    } catch (error) {
+      console.error("Error updating student information:", error);
+      alert("Error updating student. Please try again later.");
     }
   };
 
@@ -175,7 +226,7 @@ function Students() {
               <th className="py-2">Education Level</th>
               <th className="py-2">Grade Level</th>
               <th className="py-2">Section</th>
-              <th className="py-2">Actions</th> 
+              <th className="py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -192,7 +243,7 @@ function Students() {
                 <td className="border px-4 py-2">
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); 
+                      e.stopPropagation();
                       setStudentToArchive(student);
                       setIsArchiveModalOpen(true);
                     }}
@@ -206,9 +257,18 @@ function Students() {
                       setStudentToPromote(student);
                       setIsPromoteModalOpen(true);
                     }}
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2"
                   >
                     Promote
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenEditModal(student);
+                    }}
+                    className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                  >
+                    Edit
                   </button>
                 </td>
               </tr>
@@ -221,9 +281,7 @@ function Students() {
           onClose={() => setIsArchiveModalOpen(false)}
         >
           <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              Confirm Archive
-            </h3>
+            <h3 className="text-lg font-semibold mb-4">Confirm Archive</h3>
             <p>
               Are you sure you want to archive student{" "}
               <strong>{studentToArchive?.fullName}</strong>?
@@ -250,14 +308,12 @@ function Students() {
           onClose={() => setIsPromoteModalOpen(false)}
         >
           <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              Confirm Promotion
-            </h3>
+            <h3 className="text-lg font-semibold mb-4">Confirm Promotion</h3>
             <p>
               Are you sure you want to promote student{" "}
-              <strong>{studentToPromote?.fullName}</strong> to the next
-              grade level? This will remove their current section
-              and reset their clearance.
+              <strong>{studentToPromote?.fullName}</strong> to the next grade
+              level? This will remove their current section and reset their
+              clearance.
             </p>
             <div className="mt-6 flex justify-end">
               <button
@@ -273,6 +329,77 @@ function Students() {
                 Promote
               </button>
             </div>
+          </div>
+        </Modal>
+        <Modal isOpen={isEditModalOpen} onClose={handleCloseEditModal}>
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Edit Student</h3>
+            {studentToEdit && (
+              <form className="space-y-4">
+                <div>
+                  <label className="block text-gray-700">Student ID:</label>
+                  <input
+                    type="text"
+                    value={studentToEdit.studentId}
+                    onChange={(e) =>
+                      setStudentToEdit({
+                        ...studentToEdit,
+                        studentId: e.target.value,
+                      })
+                    }
+                    required
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700">Full Name:</label>
+                  <input
+                    type="text"
+                    value={studentToEdit.fullName}
+                    onChange={(e) =>
+                      setStudentToEdit({
+                        ...studentToEdit,
+                        fullName: e.target.value,
+                      })
+                    }
+                    required
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700">Email:</label>
+                  <input
+                    type="email"
+                    value={studentToEdit.email}
+                    onChange={(e) =>
+                      setStudentToEdit({
+                        ...studentToEdit,
+                        email: e.target.value,
+                      })
+                    }
+                    required
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleCloseEditModal}
+                    className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveEdit}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </Modal>
       </div>
