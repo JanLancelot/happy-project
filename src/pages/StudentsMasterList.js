@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import Sidebar from "../components/Sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -28,15 +28,18 @@ function StudentsMasterList() {
 
         let studentsData = snapshot.docs.map((doc) => {
           const studentData = doc.data();
-          const totalRequirements = Object.keys(studentData.clearance).length;
-          const completedRequirements = Object.values(
-            studentData.clearance
-          ).filter((cleared) => cleared).length;
-          const completionPercentage = Math.round(
-            (completedRequirements / totalRequirements) * 100
-          );
+          const clearance = studentData.clearance || {};
+          const totalRequirements = Object.keys(clearance).length;
+          const completedRequirements = Object.values(clearance).filter(
+            (cleared) => cleared
+          ).length;
+          const completionPercentage =
+            totalRequirements > 0
+              ? Math.round((completedRequirements / totalRequirements) * 100)
+              : 0;
           return {
             ...studentData,
+            clearance,
             completionPercentage,
           };
         });
@@ -56,8 +59,7 @@ function StudentsMasterList() {
         setAvailableEducationLevels(uniqueEducationLevels);
       } catch (error) {
         console.error("Error fetching students:", error);
-      }
-    };
+      }    };
 
     fetchStudents();
   }, []);
