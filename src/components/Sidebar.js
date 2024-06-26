@@ -30,7 +30,7 @@ const db = getFirestore();
 
 const navigationOptions = {
   admin: [
-    { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
+    // { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
     {
       name: "Disciplinary Records",
       href: "/disciplinary-records",
@@ -54,7 +54,7 @@ const navigationOptions = {
     { name: "Settings", href: "#", icon: CogIcon, current: false },
   ],
   "super-admin": [
-    { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
+    // { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
     {
       name: "Disciplinary Records",
       href: "/disciplinary-records",
@@ -118,7 +118,7 @@ const navigationOptions = {
     },
   ],
   student: [
-    { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: false },
+    // { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: false },
     {
       name: "Clearance",
       href: "/student-clearance",
