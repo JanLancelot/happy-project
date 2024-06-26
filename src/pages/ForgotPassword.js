@@ -85,7 +85,7 @@ const ForgotPassword = () => {
         )}
         <div className="mt-6">
           <Link
-            to="/signin"
+            to="/"
             className="flex items-center justify-center text-sm text-blue-600 hover:text-blue-500"
           >
             <ArrowLeft size={16} className="mr-1" />
