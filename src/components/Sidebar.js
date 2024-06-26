@@ -23,7 +23,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { Spinner } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const auth = getAuth();
 const db = getFirestore();
@@ -179,6 +179,7 @@ export default function Sidebar({ children }) {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -230,6 +231,10 @@ export default function Sidebar({ children }) {
   if (userRole && navigationOptions[userRole]) {
     navigation = navigationOptions[userRole];
   }
+
+  const isNavItemActive = (href) => {
+    return location.pathname === href;
+  };
 
   return (
     <>
@@ -313,8 +318,8 @@ export default function Sidebar({ children }) {
                                       <a
                                         href={item.href}
                                         className={classNames(
-                                          item.current
-                                            ? "bg-gray-50 text-indigo-600"
+                                          isNavItemActive(item.href)
+                                            ? "bg-gray-100 text-indigo-600"
                                             : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
                                           "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                                         )}
@@ -471,7 +476,9 @@ export default function Sidebar({ children }) {
                               alt=""
                             />
                             <span className="sr-only">Your profile</span>
-                            <span aria-hidden="true">Jocelyn Tejada</span>
+                            <span aria-hidden="true">
+                              {currentUser?.email || "User"}{" "}
+                            </span>{" "}
                           </button>
                           {dropdownOpen && (
                             <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5">
