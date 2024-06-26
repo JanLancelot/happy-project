@@ -30,43 +30,49 @@ function ManageRequirements() {
     const fetchClasses = async () => {
       if (!currentUser) return;
 
-      const q = query(
-        collection(db, "classes"),
-        where("subjects", "array-contains-any", [
-          { teacherUid: currentUser.uid },
-        ])
-      );
+      try {
+        const allClassesSnapshot = await getDocs(collection(db, "classes"));
 
-      const classesSnapshot = await getDocs(q);
-      const classesData = classesSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setClasses(classesData);
+        const userClasses = allClassesSnapshot.docs.filter((classDoc) => {
+          const subjects = classDoc.data().subjects || [];
+          return subjects.some(
+            (subject) => subject.teacherUid === currentUser.uid
+          );
+        });
+
+        const classesData = userClasses.map((classDoc) => ({
+          id: classDoc.id,
+          ...classDoc.data(),
+        }));
+
+        setClasses(classesData);
+      } catch (error) {
+        console.error("Error fetching classes: ", error);
+      }
     };
 
     fetchClasses();
   }, [currentUser]);
 
-//   useEffect(() => {
-//     const fetchClassData = async () => {
-//       if (selectedClass) {
-//         try {
-//           const classDocRef = doc(db, "classes", selectedClass);
-//           const classDocSnapshot = await getDoc(classDocRef);
-//           if (classDocSnapshot.exists()) {
-//             setClassData(classDocSnapshot.data());
-//           } else {
-//             setClassData(null); 
-//           }
-//         } catch (error) {
-//           console.error("Error fetching class data: ", error);
-//         }
-//       }
-//     };
+  useEffect(() => {
+    const fetchClassData = async () => {
+      if (selectedClass) {
+        try {
+          const classDocRef = doc(db, "classes", selectedClass);
+          const classDocSnapshot = await getDoc(classDocRef);
+          if (classDocSnapshot.exists()) {
+            setClassData(classDocSnapshot.data());
+          } else {
+            setClassData(null); 
+          }
+        } catch (error) {
+          console.error("Error fetching class data: ", error);
+        }
+      }
+    };
 
-//     fetchClassData();
-//   }, [selectedClass]);
+    fetchClassData();
+  }, [selectedClass]);
 
   const handleClassChange = (e) => {
     setSelectedClass(e.target.value);
