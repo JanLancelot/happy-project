@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
 import {
   collection,
-  getDocs,
   query,
   where,
-  updateDoc,
+  getDocs,
   doc,
+  updateDoc,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import SidebarOffice from "../components/SidebarOffice"; 
+import Sidebar from "../components/Sidebar";
+import Modal from "../components/Modal";
+import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheckCircle,
@@ -17,9 +20,8 @@ import {
   faAngleDown,
   faAngleUp,
 } from "@fortawesome/free-solid-svg-icons";
-import moment from "moment";
 
-function OfficeClearanceManual() {
+function OfficeClearanceManagement() {
   const { currentUser } = useAuth();
   const [students, setStudents] = useState([]);
   const [originalStudents, setOriginalStudents] = useState([]);
@@ -30,6 +32,7 @@ function OfficeClearanceManual() {
   const [availableSections, setAvailableSections] = useState([]);
   const [availableEducationLevels, setAvailableEducationLevels] = useState([]);
   const [officeName, setOfficeName] = useState("");
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -55,7 +58,9 @@ function OfficeClearanceManual() {
           };
         });
 
-        studentsData = studentsData.filter((student) => student.section);
+        studentsData = studentsData.filter(
+          (student) => student.clearance[officeName] !== undefined
+        );
 
         setStudents(studentsData);
         setOriginalStudents(studentsData);
@@ -127,7 +132,7 @@ function OfficeClearanceManual() {
 
     fetchStudents();
     fetchUserRole();
-  }, [currentUser]);
+  }, [currentUser, officeName]);
 
   useEffect(() => {
     let filteredStudents = [...originalStudents];
@@ -166,7 +171,7 @@ function OfficeClearanceManual() {
     try {
       const studentDocRef = doc(db, "students", studentId);
       await updateDoc(studentDocRef, {
-        [`clearance.${officeName}`]: true, 
+        [`clearance.${officeName}`]: true,
       });
 
       setStudents((prevStudents) =>
@@ -188,6 +193,49 @@ function OfficeClearanceManual() {
     }
   };
 
+  const handleSelectAllStudents = () => {
+    const unclearedStudents = students.filter(
+      (student) => !student.clearance[officeName]
+    );
+    const allSelected = selectedStudentIds.length === unclearedStudents.length;
+
+    if (allSelected) {
+      setSelectedStudentIds([]);
+    } else {
+      setSelectedStudentIds(unclearedStudents.map((student) => student.uid));
+    }
+  };
+
+  const handleSelectStudent = (studentId) => {
+    if (selectedStudentIds.includes(studentId)) {
+      setSelectedStudentIds(
+        selectedStudentIds.filter((id) => id !== studentId)
+      );
+    } else {
+      setSelectedStudentIds([...selectedStudentIds, studentId]);
+    }
+  };
+
+  const handleClearSelectedStudents = async () => {
+    if (selectedStudentIds.length === 0) {
+      alert("Please select students to clear.");
+      return;
+    }
+
+    try {
+      const updatePromises = selectedStudentIds.map(async (studentId) => {
+        await handleClearStudent(studentId);
+      });
+      await Promise.all(updatePromises);
+
+      alert(`Selected students cleared for ${officeName} clearance.`);
+      setSelectedStudentIds([]);
+    } catch (error) {
+      console.error("Error clearing selected students: ", error);
+      alert("Error clearing students. Please try again later.");
+    }
+  };
+
   const calculateCompletionPercentage = (student) => {
     const totalRequirements = Object.keys(student.clearance).length;
     const completedRequirements = Object.values(student.clearance).filter(
@@ -197,13 +245,12 @@ function OfficeClearanceManual() {
   };
 
   return (
-    <SidebarOffice>
+    <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">
           Office Clearance Management ({officeName})
         </h2>
 
-        {/* Filtering and Search */}
         <div className="mb-4 flex space-x-4">
           <div>
             <label
@@ -260,17 +307,30 @@ function OfficeClearanceManual() {
           </div>
         </div>
 
-        {/* Students Table */}
+        <div className="mb-4">
+          <button
+            onClick={handleClearSelectedStudents}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+            disabled={selectedStudentIds.length === 0}
+          >
+            Clear Selected Students
+          </button>
+        </div>
+
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr>
+              <th className="py-2 border-b border-gray-200 w-8">
+                <input
+                  type="checkbox"
+                  onChange={handleSelectAllStudents}
+                />
+              </th>
               <th className="py-2 border-b border-gray-200">Student ID</th>
               <th className="py-2 border-b border-gray-200">Name</th>
               <th className="py-2 border-b border-gray-200">Email</th>
               <th className="py-2 border-b border-gray-200">Section</th>
-              <th className="py-2 border-b border-gray-200">
-                Grade Level
-              </th>
+              <th className="py-2 border-b border-gray-200">Grade Level</th>
               <th className="py-2 border-b border-gray-200">
                 Education Level
               </th>
@@ -289,6 +349,14 @@ function OfficeClearanceManual() {
                   onClick={() => handleStudentClick(student.uid)}
                   className="cursor-pointer hover:bg-gray-100"
                 >
+                  <td className="border px-4 py-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedStudentIds.includes(student.uid)}
+                      onChange={() => handleSelectStudent(student.uid)}
+                      disabled={student.clearance[officeName]}
+                    />
+                  </td>
                   <td className="border px-4 py-2">{student.studentId}</td>
                   <td className="border px-4 py-2">{student.fullName}</td>
                   <td className="border px-4 py-2">{student.email}</td>
@@ -300,7 +368,6 @@ function OfficeClearanceManual() {
                   <td className="border px-4 py-2 text-center">
                     {student.completionPercentage}%
                   </td>
-                  {/* "Clear" Button for Office Clearance */}
                   <td className="border px-4 py-2">
                     {!student.clearance[officeName] && (
                       <button
@@ -314,7 +381,6 @@ function OfficeClearanceManual() {
                       </button>
                     )}
                   </td>
-                  {/* Expand/Collapse Icon */}
                   <td className="border px-4 py-2 text-center">
                     <FontAwesomeIcon
                       icon={
@@ -326,12 +392,11 @@ function OfficeClearanceManual() {
                   </td>
                 </tr>
 
-                {/* Expandable Row */}
                 {expandedStudent === student.uid && (
                   <tr className="bg-gray-100">
                     <td colSpan={9} className="border px-4 py-2">
-                      {/* Disciplinary Records Table (Nested) */}
-                      {student.disciplinaryRecords.length > 0 && (
+                      {student.disciplinaryRecords &&
+                      student.disciplinaryRecords.length > 0 ? ( 
                         <div>
                           <h4 className="font-medium mb-2">
                             Disciplinary Records:
@@ -351,24 +416,28 @@ function OfficeClearanceManual() {
                               </tr>
                             </thead>
                             <tbody>
-                              {student.disciplinaryRecords.map((record) => (
-                                <tr key={record.timestamp}>
-                                  <td className="border px-4 py-2">
-                                    {moment(record.timestamp.toDate()).format(
-                                      "YYYY-MM-DD"
-                                    )}
-                                  </td>
-                                  <td className="border px-4 py-2">
-                                    {record.violations.join(", ")}
-                                  </td>
-                                  <td className="border px-4 py-2">
-                                    {record.sanctions.join(", ")}
-                                  </td>
-                                </tr>
-                              ))}
+                              {student.disciplinaryRecords.map(
+                                (record) => (
+                                  <tr key={record.timestamp}>
+                                    <td className="border px-4 py-2">
+                                      {moment(
+                                        record.timestamp.toDate()
+                                      ).format("YYYY-MM-DD")}
+                                    </td>
+                                    <td className="border px-4 py-2">
+                                      {record.violations.join(", ")}
+                                    </td>
+                                    <td className="border px-4 py-2">
+                                      {record.sanctions.join(", ")}
+                                    </td>
+                                  </tr>
+                                )
+                              )}
                             </tbody>
                           </table>
                         </div>
+                      ) : (
+                        <p>No disciplinary records found.</p>
                       )}
                     </td>
                   </tr>
@@ -378,8 +447,8 @@ function OfficeClearanceManual() {
           </tbody>
         </table>
       </div>
-    </SidebarOffice>
+    </Sidebar>
   );
 }
 
-export default OfficeClearanceManual;
+export default OfficeClearanceManagement;
