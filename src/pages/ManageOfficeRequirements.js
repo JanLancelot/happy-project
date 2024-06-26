@@ -6,7 +6,6 @@ import {
   where,
   doc,
   updateDoc,
-  arrayRemove,
   deleteDoc,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
@@ -79,43 +78,44 @@ function ManageOfficeRequirements() {
         const userData = userDoc.docs[0].data();
         const userRole = userData.role;
         setUserDepartment(userData.department || null);
+
         switch (userRole) {
-            case "librarian":
-              setOfficeName("Librarian"); 
-              break;
-            case "finance":
-              setOfficeName("Finance");
-              break;
-            case "registrarBasicEd":
-              setOfficeName("Basic Education Registrar");
-              break;
-            case "characterRenewalOfficer":
-              setOfficeName("Character Renewal Office");
-              break;
-            case "College Library":
-              setOfficeName("College Library");
-              break;
-            case "Guidance Office":
-              setOfficeName("Guidance Office");
-              break;
-            case "Office of The Dean":
-              setOfficeName("Office of The Dean");
-              break;
-            case "Office of the Finance Director":
-              setOfficeName("Office of the Finance Director");
-              break;
-            case "Office of the Registrar":
-              setOfficeName("Office of the Registrar");
-              break;
-            case "Property Custodian":
-              setOfficeName("Property Custodian");
-              break;
-            case "Student Council":
-              setOfficeName("Student Council");
-              break;
-            default:
-              setOfficeName("Unknown Office"); 
-          }
+          case "librarian":
+            setOfficeName("Librarian"); 
+            break;
+          case "finance":
+            setOfficeName("Finance");
+            break;
+          case "registrarBasicEd":
+            setOfficeName("Basic Education Registrar");
+            break;
+          case "characterRenewalOfficer":
+            setOfficeName("Character Renewal Office");
+            break;
+          case "College Library":
+            setOfficeName("College Library");
+            break;
+          case "Guidance Office":
+            setOfficeName("Guidance Office");
+            break;
+          case "Office of The Dean":
+            setOfficeName("Office of The Dean");
+            break;
+          case "Office of the Finance Director":
+            setOfficeName("Office of the Finance Director");
+            break;
+          case "Office of the Registrar":
+            setOfficeName("Office of the Registrar");
+            break;
+          case "Property Custodian":
+            setOfficeName("Property Custodian");
+            break;
+          case "Student Council":
+            setOfficeName("Student Council");
+            break;
+          default:
+            setOfficeName("Unknown Office"); 
+        }
       } catch (error) {
         console.error("Error fetching user role:", error);
       }
@@ -144,7 +144,9 @@ function ManageOfficeRequirements() {
     setSelectedEducationLevels([]); 
   };
 
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = async (event) => {
+    event.preventDefault(); 
+
     try {
       if (!requirementToEdit) return;
 
@@ -161,7 +163,12 @@ function ManageOfficeRequirements() {
       setOfficeRequirements((prevRequirements) =>
         prevRequirements.map((req) =>
           req.id === requirementToEdit.id
-            ? { ...req, educationLevels: updatedEducationLevels, name: requirementToEdit.name, description: requirementToEdit.description }
+            ? { 
+                ...req, 
+                educationLevels: updatedEducationLevels, 
+                name: requirementToEdit.name, 
+                description: requirementToEdit.description 
+              }
             : req
         )
       );
@@ -254,8 +261,8 @@ function ManageOfficeRequirements() {
             <h3 className="text-lg font-semibold mb-4">
               Edit Office Requirement
             </h3>
-            {requirementToEdit && (
-              <form className="space-y-4">
+            {requirementToEdit && ( 
+              <form onSubmit={handleSaveEdit} className="space-y-4"> 
                 <div>
                   <label className="block text-gray-700">
                     Education Levels:
@@ -310,8 +317,8 @@ function ManageOfficeRequirements() {
                   >
                     Cancel
                   </button>
-                  <button
-                    onClick={handleSaveEdit}
+                  <button 
+                    type="submit"
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                   >
                     Save Changes
