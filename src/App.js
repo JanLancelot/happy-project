@@ -28,6 +28,7 @@ import DisciplinaryRecords from "./pages/DisciplinaryRecords";
 import UpdateClass from "./pages/UpdateClass";
 import ManageRequirements from "./pages/ManageRequirements";
 import ManageOfficeRequirements from "./pages/ManageOfficeRequirements";
+import OfficeClearanceManual from "./pages/OfficeClearanceManual";
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
@@ -56,7 +57,8 @@ const router = createBrowserRouter([
   { path: "/disciplinary-records", element: <DisciplinaryRecords />},
   { path: "/update-class/:classId", element: <UpdateClass />},
   { path: "/manage-requirements", element: <ManageRequirements />},
-  { path: "/manage-office-requirements", element: <ManageOfficeRequirements />}
+  { path: "/manage-office-requirements", element: <ManageOfficeRequirements />},
+  { path: "/office-clearance-manual", element: <OfficeClearanceManual />}
 ]);
 
 function App() {
