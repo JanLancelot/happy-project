@@ -1,17 +1,21 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import {
-  Bars3Icon,
-  XMarkIcon,
-  HomeIcon,
-  DocumentDuplicateIcon,
+import { 
+  ClipboardDocumentListIcon,
   AcademicCapIcon,
-  CogIcon,
-  InboxIcon,
   UserGroupIcon,
+  ClipboardDocumentCheckIcon,
   ClockIcon,
-  LockClosedIcon,
-} from "@heroicons/react/24/outline";
+  InboxIcon,
+  Cog6ToothIcon,
+  ShieldCheckIcon,
+  HomeIcon,
+  DocumentCheckIcon,
+  UsersIcon,
+  UserIcon,
+  XMarkIcon,
+  Bars3Icon
+} from '@heroicons/react/24/outline';
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import {
   getFirestore,
@@ -30,112 +34,94 @@ const db = getFirestore();
 
 const navigationOptions = {
   admin: [
-    // { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
     {
-      name: "Disciplinary Records",
+      name: "Discipline Log",
       href: "/disciplinary-records",
-      icon: AcademicCapIcon,
-      current: false,
+      icon: ClipboardDocumentListIcon,
     },
-    { name: "Classes", href: "/classes", icon: UserGroupIcon, current: false },
+    { name: "Class Management", href: "/classes", icon: UserGroupIcon },
     {
-      name: "Student Master List",
+      name: "Student Directory",
       href: "/student-master-list",
-      icon: AcademicCapIcon,
-      current: false,
+      icon: UsersIcon,
     },
     {
-      name: "Audit Trail",
+      name: "Activity Log",
       href: "/audit-log",
       icon: ClockIcon,
-      current: false,
     },
-    { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
-    { name: "Settings", href: "#", icon: CogIcon, current: false },
+    { name: "Messages", href: "/view-messages", icon: InboxIcon },
+    { name: "System Settings", href: "#", icon: Cog6ToothIcon },
   ],
   "super-admin": [
-    // { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
     {
-      name: "Disciplinary Records",
+      name: "Discipline Log",
       href: "/disciplinary-records",
-      icon: AcademicCapIcon,
-      current: false,
+      icon: ClipboardDocumentListIcon,
     },
-    { name: "Classes", href: "/classes", icon: UserGroupIcon, current: false },
+    { name: "Class Management", href: "/classes", icon: UserGroupIcon },
     {
-      name: "Student Master List",
+      name: "Student Directory",
       href: "/student-master-list",
-      icon: AcademicCapIcon,
-      current: false,
+      icon: UsersIcon,
     },
     {
-      name: "User Management",
+      name: "User Administration",
       href: "/user-management",
-      icon: LockClosedIcon,
-      current: false,
+      icon: ShieldCheckIcon,
     },
     {
-      name: "Audit Trail",
+      name: "Activity Log",
       href: "/audit-log",
       icon: ClockIcon,
-      current: false,
     },
-    { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
-    { name: "Settings", href: "#", icon: CogIcon, current: false },
+    { name: "Messages", href: "/view-messages", icon: InboxIcon },
+    { name: "System Settings", href: "#", icon: Cog6ToothIcon },
   ],
   faculty: [
     {
       name: "Dashboard",
       href: "/approve-clearance-faculty",
       icon: HomeIcon,
-      current: true,
     },
     {
-      name: "Requirements",
+      name: "Course Requirements",
       href: "/manage-requirements",
-      icon: DocumentDuplicateIcon,
-      current: false,
+      icon: ClipboardDocumentCheckIcon,
     },
     {
-      name: "Classes",
+      name: "My Classes",
       href: "/view-classes",
       icon: UserGroupIcon,
-      current: false,
     },
-    { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
+    { name: "Messages", href: "/view-messages", icon: InboxIcon },
     {
-      name: "Student Master List",
+      name: "Student Directory",
       href: "/student-master-list",
-      icon: AcademicCapIcon,
-      current: false,
+      icon: UsersIcon,
     },
     {
-      name: "Settings",
+      name: "Account Settings",
       href: "#",
-      icon: CogIcon,
-      current: false,
+      icon: Cog6ToothIcon,
       children: [],
     },
   ],
   student: [
-    // { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: false },
     {
-      name: "Clearance",
+      name: "My Clearance",
       href: "/student-clearance",
-      icon: DocumentDuplicateIcon,
-      current: true,
+      icon: DocumentCheckIcon,
     },
     {
-      name: "Inbox",
+      name: "Messages",
       href: "/view-messages-student",
       icon: InboxIcon,
-      current: false,
     },
     {
-      name: "Settings",
+      name: "Account Settings",
       href: "#",
-      icon: CogIcon,
-      current: false,
+      icon: Cog6ToothIcon,
       children: [],
     },
   ],
@@ -146,27 +132,24 @@ const defaultNavigation = [
     name: "Dashboard",
     href: "/approve-clearance-office",
     icon: HomeIcon,
-    current: true,
   },
   {
-    name: "Requirements",
+    name: "Office Requirements",
     href: "/manage-office-requirements",
-    icon: DocumentDuplicateIcon,
-    current: false,
+    icon: ClipboardDocumentCheckIcon,
   },
-  { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
+  { name: "Messages", href: "/view-messages", icon: InboxIcon },
   {
-    name: "Student Master List",
+    name: "Student Clearance",
     href: "/office-clearance-manual",
     icon: AcademicCapIcon,
-    current: false,
   },
-  { name: "Settings", href: "#", icon: CogIcon, current: false },
+  { name: "Office Settings", href: "#", icon: Cog6ToothIcon },
 ];
 
 const teams = [
-  { id: 1, name: "Teachers", href: "/teachers", initial: "T", current: false },
-  { id: 2, name: "Students", href: "/students", initial: "S", current: false },
+  { id: 1, name: "Teachers", href: "/teachers", initial: "T" },
+  { id: 2, name: "Students", href: "/students", initial: "S" },
 ];
 
 function classNames(...classes) {
@@ -229,11 +212,19 @@ export default function Sidebar({ children }) {
 
   let navigation = defaultNavigation;
   if (userRole && navigationOptions[userRole]) {
-    navigation = navigationOptions[userRole];
+    navigation = navigationOptions[userRole].map((item) => ({
+      ...item,
+      current: location.pathname === item.href,
+    }));
   }
 
-  const isNavItemActive = (href) => {
-    return location.pathname === href;
+  const getInitials = (email) => {
+    if (!email) return "";
+    const names = email.split("@")[0].split(/\.|_|-/);
+    return names
+      .map((n) => n[0].toUpperCase())
+      .slice(0, 2)
+      .join(""); // Get up to 2 initials
   };
 
   return (
@@ -318,8 +309,8 @@ export default function Sidebar({ children }) {
                                       <a
                                         href={item.href}
                                         className={classNames(
-                                          isNavItemActive(item.href)
-                                            ? "bg-gray-100 text-indigo-600"
+                                          item.current
+                                            ? "bg-gray-50 text-indigo-600"
                                             : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
                                           "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                                         )}
@@ -470,11 +461,9 @@ export default function Sidebar({ children }) {
                             onClick={() => setDropdownOpen(!dropdownOpen)}
                             className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
                           >
-                            <img
-                              className="h-8 w-8 rounded-full bg-gray-50"
-                              src="https://scontent.fcrk3-2.fna.fbcdn.net/v/t39.30808-6/434160685_3684034858582066_7920754165546455039_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeGhBHbIAGejJ9X4kVIO8GJ_E7K8DJZKydYTsrwMlkrJ1okJf462xxpn1XdWPFBCtGI_UNMDSsljXOBo0iVVH51B&_nc_ohc=gTd2lOAtIMQQ7kNvgHc96QU&_nc_ht=scontent.fcrk3-2.fna&oh=00_AYABD6tOJ6q3oEMHpbOR1ypGoVLs9klEQEGaXXiM4ubxFQ&oe=6662D828"
-                              alt=""
-                            />
+                            <span className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-200 text-xl font-bold text-gray-600">
+                              {getInitials(currentUser?.email || "User")}
+                            </span>
                             <span className="sr-only">Your profile</span>
                             <span aria-hidden="true">
                               {currentUser?.email || "User"}{" "}
@@ -516,11 +505,9 @@ export default function Sidebar({ children }) {
                   className="flex items-center"
                 >
                   <span className="sr-only">Your profile</span>
-                  <img
-                    className="h-8 w-8 rounded-full bg-gray-50"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    alt=""
-                  />
+                  <span className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-200 text-xl font-bold text-gray-600">
+                    {getInitials(currentUser?.email || "User")}
+                  </span>
                 </button>
                 {dropdownOpen && (
                   <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5">
