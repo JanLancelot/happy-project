@@ -33,6 +33,7 @@ function OfficeClearanceManagement() {
   const [availableEducationLevels, setAvailableEducationLevels] = useState([]);
   const [officeName, setOfficeName] = useState("");
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+  const [userDepartment, setUserDepartment] = useState(null);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -62,6 +63,15 @@ function OfficeClearanceManagement() {
           (student) => student.clearance[officeName] !== undefined
         );
 
+        if (
+          officeName === "Office of The Dean" ||
+          officeName === "Student Council"
+        ) {
+          studentsData = studentsData.filter(
+            (student) => student.department === userDepartment
+          );
+        }
+
         setStudents(studentsData);
         setOriginalStudents(studentsData);
 
@@ -87,6 +97,7 @@ function OfficeClearanceManagement() {
         const userDoc = await getDocs(userQuery);
         const userData = userDoc.docs[0].data();
         const userRole = userData.role;
+        setUserDepartment(userData.department || null);
 
         switch (userRole) {
           case "librarian":
@@ -132,7 +143,7 @@ function OfficeClearanceManagement() {
 
     fetchStudents();
     fetchUserRole();
-  }, [currentUser, officeName]);
+  }, [currentUser, officeName, userDepartment]);
 
   useEffect(() => {
     let filteredStudents = [...originalStudents];
@@ -156,12 +167,7 @@ function OfficeClearanceManagement() {
     }
 
     setStudents(filteredStudents);
-  }, [
-    educationLevelFilter,
-    sectionFilter,
-    searchQuery,
-    originalStudents,
-  ]);
+  }, [educationLevelFilter, sectionFilter, searchQuery, originalStudents]);
 
   const handleStudentClick = (studentId) => {
     setExpandedStudent((prev) => (prev === studentId ? null : studentId));
@@ -321,19 +327,14 @@ function OfficeClearanceManagement() {
           <thead>
             <tr>
               <th className="py-2 border-b border-gray-200 w-8">
-                <input
-                  type="checkbox"
-                  onChange={handleSelectAllStudents}
-                />
+                <input type="checkbox" onChange={handleSelectAllStudents} />
               </th>
               <th className="py-2 border-b border-gray-200">Student ID</th>
               <th className="py-2 border-b border-gray-200">Name</th>
               <th className="py-2 border-b border-gray-200">Email</th>
               <th className="py-2 border-b border-gray-200">Section</th>
               <th className="py-2 border-b border-gray-200">Grade Level</th>
-              <th className="py-2 border-b border-gray-200">
-                Education Level
-              </th>
+              <th className="py-2 border-b border-gray-200">Education Level</th>
               <th className="py-2 border-b border-gray-200 text-center">
                 Completion (%)
               </th>
@@ -362,9 +363,7 @@ function OfficeClearanceManagement() {
                   <td className="border px-4 py-2">{student.email}</td>
                   <td className="border px-4 py-2">{student.section}</td>
                   <td className="border px-4 py-2">{student.gradeLevel}</td>
-                  <td className="border px-4 py-2">
-                    {student.educationLevel}
-                  </td>
+                  <td className="border px-4 py-2">{student.educationLevel}</td>
                   <td className="border px-4 py-2 text-center">
                     {student.completionPercentage}%
                   </td>
@@ -396,7 +395,7 @@ function OfficeClearanceManagement() {
                   <tr className="bg-gray-100">
                     <td colSpan={9} className="border px-4 py-2">
                       {student.disciplinaryRecords &&
-                      student.disciplinaryRecords.length > 0 ? ( 
+                      student.disciplinaryRecords.length > 0 ? (
                         <div>
                           <h4 className="font-medium mb-2">
                             Disciplinary Records:
@@ -416,23 +415,21 @@ function OfficeClearanceManagement() {
                               </tr>
                             </thead>
                             <tbody>
-                              {student.disciplinaryRecords.map(
-                                (record) => (
-                                  <tr key={record.timestamp}>
-                                    <td className="border px-4 py-2">
-                                      {moment(
-                                        record.timestamp.toDate()
-                                      ).format("YYYY-MM-DD")}
-                                    </td>
-                                    <td className="border px-4 py-2">
-                                      {record.violations.join(", ")}
-                                    </td>
-                                    <td className="border px-4 py-2">
-                                      {record.sanctions.join(", ")}
-                                    </td>
-                                  </tr>
-                                )
-                              )}
+                              {student.disciplinaryRecords.map((record) => (
+                                <tr key={record.timestamp}>
+                                  <td className="border px-4 py-2">
+                                    {moment(record.timestamp.toDate()).format(
+                                      "YYYY-MM-DD"
+                                    )}
+                                  </td>
+                                  <td className="border px-4 py-2">
+                                    {record.violations.join(", ")}
+                                  </td>
+                                  <td className="border px-4 py-2">
+                                    {record.sanctions.join(", ")}
+                                  </td>
+                                </tr>
+                              ))}
                             </tbody>
                           </table>
                         </div>

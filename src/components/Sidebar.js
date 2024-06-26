@@ -149,15 +149,15 @@ const defaultNavigation = [
     current: true,
   },
   {
-    name: "Clearances",
-    href: "/add-office-requirement",
+    name: "Requirements",
+    href: "/manage-office-requirements",
     icon: DocumentDuplicateIcon,
     current: false,
   },
   { name: "Inbox", href: "/view-messages", icon: InboxIcon, current: false },
   {
     name: "Student Master List",
-    href: "/student-master-list",
+    href: "/office-clearance-manual",
     icon: AcademicCapIcon,
     current: false,
   },

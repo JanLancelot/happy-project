@@ -1,22 +1,15 @@
 import React, { useState, useEffect } from "react";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  doc,
-  updateDoc,
-  arrayRemove,
-  deleteField,
-  getDoc,
-} from "firebase/firestore";
+import { collection, getDocs, query, where, doc, updateDoc, arrayRemove, getDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import SidebarFaculty from "../components/SidebarFaculty";
 import Modal from "../components/Modal";
+import { useNavigate } from "react-router-dom";
+import { PlusCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 function ManageRequirements() {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
   const [classData, setClassData] = useState(null);
@@ -29,28 +22,21 @@ function ManageRequirements() {
   useEffect(() => {
     const fetchClasses = async () => {
       if (!currentUser) return;
-
       try {
         const allClassesSnapshot = await getDocs(collection(db, "classes"));
-
         const userClasses = allClassesSnapshot.docs.filter((classDoc) => {
           const subjects = classDoc.data().subjects || [];
-          return subjects.some(
-            (subject) => subject.teacherUid === currentUser.uid
-          );
+          return subjects.some((subject) => subject.teacherUid === currentUser.uid);
         });
-
         const classesData = userClasses.map((classDoc) => ({
           id: classDoc.id,
           ...classDoc.data(),
         }));
-
         setClasses(classesData);
       } catch (error) {
         console.error("Error fetching classes: ", error);
       }
     };
-
     fetchClasses();
   }, [currentUser]);
 
@@ -70,7 +56,6 @@ function ManageRequirements() {
         }
       }
     };
-
     fetchClassData();
   }, [selectedClass]);
 
@@ -84,7 +69,7 @@ function ManageRequirements() {
   };
 
   const handleEditRequirement = (requirement) => {
-    setEditRequirement({ ...requirement });
+    setEditRequirement({ ...requirement, originalName: requirement.name });
     setIsEditing(true);
   };
 
@@ -92,22 +77,18 @@ function ManageRequirements() {
     try {
       const classDocRef = doc(db, "classes", selectedClass);
       const subjectRequirements = classData.requirements[selectedSubject];
-
       const requirementIndex = subjectRequirements.findIndex(
         (req) => req.name === editRequirement.originalName
       );
-
       if (requirementIndex !== -1) {
         subjectRequirements[requirementIndex] = {
           name: editRequirement.name,
           description: editRequirement.description,
           teacherUid: currentUser.uid,
         };
-
         await updateDoc(classDocRef, {
           [`requirements.${selectedSubject}`]: subjectRequirements,
         });
-
         setClassData((prevData) => ({
           ...prevData,
           requirements: {
@@ -115,16 +96,11 @@ function ManageRequirements() {
             [selectedSubject]: subjectRequirements,
           },
         }));
-
         setIsEditing(false);
         setEditRequirement(null);
-        alert("Requirement updated successfully!");
-      } else {
-        alert("Error finding requirement to update.");
       }
     } catch (error) {
       console.error("Error updating requirement:", error);
-      alert("Error updating requirement. Please try again later.");
     }
   };
 
@@ -153,7 +129,6 @@ function ManageRequirements() {
           teacherUid: currentUser.uid,
         }),
       });
-
       setClassData((prevData) => ({
         ...prevData,
         requirements: {
@@ -163,100 +138,99 @@ function ManageRequirements() {
           ),
         },
       }));
-
       closeDeleteModal();
-      alert("Requirement deleted successfully!");
     } catch (error) {
       console.error("Error deleting requirement:", error);
-      alert("Error deleting requirement. Please try again later.");
     }
   };
 
-  //   const classData = classes.find((c) => c.id === selectedClass);
-
   return (
     <SidebarFaculty>
-      <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">Manage Requirements</h2>
-
-        <div className="mb-4">
-          <label htmlFor="classSelect" className="block text-gray-700">
-            Select Class:
-          </label>
-          <select
-            id="classSelect"
-            value={selectedClass}
-            onChange={handleClassChange}
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+      <div className="container mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold text-gray-800">Manage Requirements</h2>
+          <button
+            onClick={() => navigate("/add-office-requirement")}
+            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
           >
-            <option value="">Select a class</option>
-            {classes.map((classItem) => (
-              <option key={classItem.id} value={classItem.id}>
-                {classItem.educationLevel} - {classItem.gradeLevel} -{" "}
-                {classItem.sectionName}
-              </option>
-            ))}
-          </select>
+            <PlusCircleIcon className="w-5 h-5 mr-2" />
+            Add Requirement
+          </button>
         </div>
 
-        <div className="mb-4">
-          <label htmlFor="subjectSelect" className="block text-gray-700">
-            Select Subject:
-          </label>
-          <select
-            id="subjectSelect"
-            value={selectedSubject}
-            onChange={handleSubjectChange}
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-            disabled={!selectedClass}
-          >
-            <option value="">Select a subject</option>
-            {selectedClass &&
-              classData?.subjects
-                .filter((subject) => subject.teacherUid === currentUser.uid)
-                .map((subject) => (
-                  <option key={subject.subject} value={subject.subject}>
-                    {subject.subject}
-                  </option>
-                ))}
-          </select>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label htmlFor="classSelect" className="block text-sm font-medium text-gray-700 mb-2">
+              Select Class
+            </label>
+            <select
+              id="classSelect"
+              value={selectedClass}
+              onChange={handleClassChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select a class</option>
+              {classes.map((classItem) => (
+                <option key={classItem.id} value={classItem.id}>
+                  {classItem.educationLevel} - {classItem.gradeLevel} - {classItem.sectionName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="subjectSelect" className="block text-sm font-medium text-gray-700 mb-2">
+              Select Subject
+            </label>
+            <select
+              id="subjectSelect"
+              value={selectedSubject}
+              onChange={handleSubjectChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={!selectedClass}
+            >
+              <option value="">Select a subject</option>
+              {selectedClass &&
+                classData?.subjects
+                  .filter((subject) => subject.teacherUid === currentUser.uid)
+                  .map((subject) => (
+                    <option key={subject.subject} value={subject.subject}>
+                      {subject.subject}
+                    </option>
+                  ))}
+            </select>
+          </div>
         </div>
 
         {selectedClass && selectedSubject && classData && (
-          <div>
-            <h3 className="text-xl font-semibold mb-2">Requirements:</h3>
-            <ul className="list-disc list-inside space-y-2">
+          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+              <h3 className="text-xl font-semibold text-gray-800">Requirements</h3>
+            </div>
+            <ul className="divide-y divide-gray-200">
               {(classData.requirements[selectedSubject] || [])
-                .filter(
-                  (requirement) => requirement.teacherUid === currentUser.uid
-                )
+                .filter((requirement) => requirement.teacherUid === currentUser.uid)
                 .map((requirement) => (
-                  <li
-                    key={requirement.name}
-                    className="flex items-center justify-between"
-                  >
-                    <div>
-                      <strong>{requirement.name}:</strong>{" "}
-                      {requirement.description}
-                    </div>
-                    <div className="space-x-2">
-                      <button
-                        onClick={() =>
-                          handleEditRequirement({
-                            ...requirement,
-                            originalName: requirement.name,
-                          })
-                        }
-                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => openDeleteModal(requirement)}
-                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
+                  <li key={requirement.name} className="px-6 py-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-lg font-medium text-gray-900">{requirement.name}</h4>
+                        <p className="text-sm text-gray-500">{requirement.description}</p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleEditRequirement(requirement)}
+                          className="p-2 text-blue-600 hover:text-blue-800 transition duration-300"
+                        >
+                          <PencilIcon className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => openDeleteModal(requirement)}
+                          className="p-2 text-red-600 hover:text-red-800 transition duration-300"
+                        >
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -270,49 +244,39 @@ function ManageRequirements() {
             {editRequirement && (
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="name" className="block text-gray-700">
-                    Requirement Name:
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                    Requirement Name
                   </label>
                   <input
                     type="text"
                     id="name"
                     value={editRequirement.name}
-                    onChange={(e) =>
-                      setEditRequirement({
-                        ...editRequirement,
-                        name: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-                    required
+                    onChange={(e) => setEditRequirement({ ...editRequirement, name: e.target.value })}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label htmlFor="description" className="block text-gray-700">
-                    Description:
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                    Description
                   </label>
                   <textarea
                     id="description"
                     value={editRequirement.description}
-                    onChange={(e) =>
-                      setEditRequirement({
-                        ...editRequirement,
-                        description: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                    onChange={(e) => setEditRequirement({ ...editRequirement, description: e.target.value })}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    rows="3"
                   />
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-end space-x-3">
                   <button
                     onClick={handleCancelEdit}
-                    className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSaveEdit}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     Save
                   </button>
@@ -325,20 +289,17 @@ function ManageRequirements() {
         <Modal isOpen={isDeleteModalOpen} onClose={closeDeleteModal}>
           <div className="p-6">
             <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
-            <p>
-              Are you sure you want to delete the requirement "
-              {requirementToDelete?.name}"?
-            </p>
-            <div className="mt-6 flex justify-end">
+            <p className="mb-4">Are you sure you want to delete the requirement "{requirementToDelete?.name}"?</p>
+            <div className="flex justify-end space-x-3">
               <button
                 onClick={closeDeleteModal}
-                className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteRequirement}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
                 Delete
               </button>
