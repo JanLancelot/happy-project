@@ -8,7 +8,7 @@ import {
   updateDoc,
   arrayRemove,
   deleteField,
-  getDoc
+  getDoc,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
@@ -63,7 +63,7 @@ function ManageRequirements() {
           if (classDocSnapshot.exists()) {
             setClassData(classDocSnapshot.data());
           } else {
-            setClassData(null); 
+            setClassData(null);
           }
         } catch (error) {
           console.error("Error fetching class data: ", error);
@@ -76,7 +76,7 @@ function ManageRequirements() {
 
   const handleClassChange = (e) => {
     setSelectedClass(e.target.value);
-    setSelectedSubject(""); 
+    setSelectedSubject("");
   };
 
   const handleSubjectChange = (e) => {
@@ -172,7 +172,7 @@ function ManageRequirements() {
     }
   };
 
-//   const classData = classes.find((c) => c.id === selectedClass);
+  //   const classData = classes.find((c) => c.id === selectedClass);
 
   return (
     <SidebarFaculty>
@@ -226,39 +226,40 @@ function ManageRequirements() {
           <div>
             <h3 className="text-xl font-semibold mb-2">Requirements:</h3>
             <ul className="list-disc list-inside space-y-2">
-              {classData.requirements && 
-               classData.requirements[selectedSubject] &&
-               Array.isArray(classData.requirements[selectedSubject]) ? (
-                classData.requirements[selectedSubject]
-                  .filter((requirement) => requirement.teacherUid === currentUser.uid)
-                  .map((requirement) => (
-                    <li key={requirement.name} className="flex items-center justify-between">
-                      <div>
-                        <strong>{requirement.name}:</strong> {requirement.description}
-                      </div>
-                      <div className="space-x-2">
-                        <button
-                          onClick={() =>
-                            handleEditRequirement({
-                              ...requirement,
-                              originalName: requirement.name, 
-                            })
-                          }
-                          className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => openDeleteModal(requirement)}
-                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </li>
-                  )              ) : (
-                <li>No requirements found for this subject.</li>
-              )}
+              {(classData.requirements[selectedSubject] || [])
+                .filter(
+                  (requirement) => requirement.teacherUid === currentUser.uid
+                )
+                .map((requirement) => (
+                  <li
+                    key={requirement.name}
+                    className="flex items-center justify-between"
+                  >
+                    <div>
+                      <strong>{requirement.name}:</strong>{" "}
+                      {requirement.description}
+                    </div>
+                    <div className="space-x-2">
+                      <button
+                        onClick={() =>
+                          handleEditRequirement({
+                            ...requirement,
+                            originalName: requirement.name,
+                          })
+                        }
+                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => openDeleteModal(requirement)}
+                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
             </ul>
           </div>
         )}
