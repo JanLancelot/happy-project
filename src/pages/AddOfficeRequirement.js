@@ -22,7 +22,8 @@ function AddOfficeRequirement() {
   const [officeName, setOfficeName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [userDepartment, setUserDepartment] = useState(null); 
+  const [userDepartment, setUserDepartment] = useState(null);
+  const [isOfficeOfTheDean, setIsOfficeOfTheDean] = useState(false);
 
   useEffect(() => {
     const fetchEducationLevels = async () => {
@@ -58,7 +59,7 @@ function AddOfficeRequirement() {
 
         switch (userRole) {
           case "librarian":
-            setOfficeName("Librarian"); 
+            setOfficeName("Librarian");
             break;
           case "finance":
             setOfficeName("Finance");
@@ -77,6 +78,10 @@ function AddOfficeRequirement() {
             break;
           case "Office of The Dean":
             setOfficeName("Office of The Dean");
+            setIsOfficeOfTheDean(true);
+            setSelectedEducationLevels([
+              { value: "college", label: "College" },
+            ]);
             break;
           case "Office of the Finance Director":
             setOfficeName("Office of the Finance Director");
@@ -91,7 +96,7 @@ function AddOfficeRequirement() {
             setOfficeName("Student Council");
             break;
           default:
-            setOfficeName("Unknown Office"); 
+            setOfficeName("Unknown Office");
         }
       } catch (error) {
         console.error("Error fetching user role:", error);
@@ -111,49 +116,6 @@ function AddOfficeRequirement() {
 
     setIsConfirmModalOpen(true);
   };
-  //   setIsConfirmModalOpen(false);
-  //   setIsAdding(true);
-
-  //   try {
-  //     const selectedLevelValues = selectedEducationLevels.map(
-  //       (level) => level.value
-  //     );
-
-  //     const addRequirementPromises = selectedLevelValues.map(async (level) => {
-
-  //       const classesRef = collection(db, "classes");
-  //       const q = query(classesRef, where("educationLevel", "==", level));
-  //       const classesSnapshot = await getDocs(q);
-
-  //       const officeRequirementsRef = collection(db, "officeRequirements");
-  //       const classAddPromises = classesSnapshot.docs.map(async (classDoc) => {
-  //         await addDoc(officeRequirementsRef, {
-  //           classId: classDoc.id,
-  //           educationLevel: level,
-  //           office: officeName,
-  //           name: requirementName,
-  //           description: requirementDescription,
-  //           addedBy: currentUser.uid,
-  //         });
-  //       });
-
-  //       await Promise.all(classAddPromises);
-  //     });
-
-  //     await Promise.all(addRequirementPromises);
-
-  //     setSelectedEducationLevels([]);
-  //     setRequirementName("");
-  //     setRequirementDescription("");
-
-  //     alert("Requirement added successfully to selected education levels!");
-  //   } catch (error) {
-  //     console.error("Error adding requirement: ", error);
-  //     alert("Error adding requirement. Please try again later.");
-  //   } finally {
-  //     setIsAdding(false);
-  //   }
-  // };
 
   const confirmAddRequirement = async () => {
     setIsConfirmModalOpen(false);
@@ -174,7 +136,9 @@ function AddOfficeRequirement() {
         department: userDepartment,
       });
 
-      setSelectedEducationLevels([]);
+      setSelectedEducationLevels(
+        isOfficeOfTheDean ? [{ value: "college", label: "College" }] : []
+      );
       setRequirementName("");
       setRequirementDescription("");
 
@@ -199,12 +163,17 @@ function AddOfficeRequirement() {
           <div>
             <label className="block text-gray-700">Education Levels:</label>
             <Select
-              isMulti
+              isMulti={!isOfficeOfTheDean}
               value={selectedEducationLevels}
               onChange={setSelectedEducationLevels}
-              options={educationLevels}
+              options={
+                isOfficeOfTheDean
+                  ? [{ value: "college", label: "College" }]
+                  : educationLevels
+              }
               className="basic-multi-select"
               classNamePrefix="select"
+              isDisabled={isOfficeOfTheDean}
             />
           </div>
 
