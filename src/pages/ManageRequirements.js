@@ -222,38 +222,43 @@ function ManageRequirements() {
           </select>
         </div>
 
-        {selectedClass && selectedSubject && (
+        {selectedClass && selectedSubject && classData && (
           <div>
             <h3 className="text-xl font-semibold mb-2">Requirements:</h3>
             <ul className="list-disc list-inside space-y-2">
-              {classData.requirements[selectedSubject]
-                .filter((requirement) => requirement.teacherUid === currentUser.uid)
-                .map((requirement) => (
-                  <li key={requirement.name} className="flex items-center justify-between">
-                    <div>
-                      <strong>{requirement.name}:</strong> {requirement.description}
-                    </div>
-                    <div className="space-x-2">
-                      <button
-                        onClick={() =>
-                          handleEditRequirement({
-                            ...requirement,
-                            originalName: requirement.name, 
-                          })
-                        }
-                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => openDeleteModal(requirement)}
-                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                ))}
+              {classData.requirements && 
+               classData.requirements[selectedSubject] &&
+               Array.isArray(classData.requirements[selectedSubject]) ? (
+                classData.requirements[selectedSubject]
+                  .filter((requirement) => requirement.teacherUid === currentUser.uid)
+                  .map((requirement) => (
+                    <li key={requirement.name} className="flex items-center justify-between">
+                      <div>
+                        <strong>{requirement.name}:</strong> {requirement.description}
+                      </div>
+                      <div className="space-x-2">
+                        <button
+                          onClick={() =>
+                            handleEditRequirement({
+                              ...requirement,
+                              originalName: requirement.name, 
+                            })
+                          }
+                          className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => openDeleteModal(requirement)}
+                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  )              ) : (
+                <li>No requirements found for this subject.</li>
+              )}
             </ul>
           </div>
         )}
