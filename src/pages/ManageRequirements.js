@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { collection, getDocs, query, where, doc, updateDoc, arrayRemove, getDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
-import SidebarFaculty from "../components/SidebarFaculty";
+import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
 import { useNavigate } from "react-router-dom";
 import { PlusCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -145,7 +145,7 @@ function ManageRequirements() {
   };
 
   return (
-    <SidebarFaculty>
+    <Sidebar>
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold text-gray-800">Manage Requirements</h2>
@@ -307,7 +307,7 @@ function ManageRequirements() {
           </div>
         </Modal>
       </div>
-    </SidebarFaculty>
+    </Sidebar>
   );
 }
 

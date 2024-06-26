@@ -91,8 +91,8 @@ const navigationOptions = {
       current: true,
     },
     {
-      name: "Clearances",
-      href: "/add-requirement",
+      name: "Requirements",
+      href: "/manage-requirements",
       icon: DocumentDuplicateIcon,
       current: false,
     },
