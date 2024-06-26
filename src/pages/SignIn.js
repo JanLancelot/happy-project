@@ -3,7 +3,7 @@ import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Mail } from "lucide-react";
+import { Lock, Mail, User, Key } from "lucide-react";
 import {
   collection,
   query,
@@ -139,44 +139,52 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 bg-opacity-50 bg-[url('/path/to/subtle-pattern.png')]">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.3 }}
-        className="bg-white p-8 rounded-lg shadow-md max-w-md w-full"
+        className="bg-white p-10 rounded-lg shadow-lg max-w-md w-full"
       >
+        <div className="flex justify-center mb-6">
+          <img src="https://dyci.edu.ph/img/DYCI.png" alt="DYCI Logo" className="h-16" />
+        </div>
         <motion.h1
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="text-2xl font-semibold mb-6 text-center text-gray-800"
+          className="text-3xl font-bold mb-6 text-center text-blue-800"
         >
           Sign In
         </motion.h1>
+        <p className="text-gray-600 text-center mb-6">
+          Welcome to the DYCIAN Clearance System
+        </p>
         <AnimatePresence>
           {(error || localError) && (
-            <motion.p
+            <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="text-red-600 text-center mb-4 text-sm"
+              className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6"
+              role="alert"
             >
-              {localError || error.message}
-            </motion.p>
+              <p className="font-bold">Error</p>
+              <p>{localError || error.message}</p>
+            </motion.div>
           )}
         </AnimatePresence>
-        <form onSubmit={handleSignIn} className="space-y-4">
+        <form onSubmit={handleSignIn} className="space-y-6">
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-1">
+            <label className="block text-gray-700 text-sm font-semibold mb-2">
               Email
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="email"
-                className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 text-lg"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -185,14 +193,14 @@ const SignIn = () => {
             </div>
           </div>
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-1">
+            <label className="block text-gray-700 text-sm font-semibold mb-2">
               Password
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="password"
-                className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 text-lg"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -200,12 +208,19 @@ const SignIn = () => {
               />
             </div>
           </div>
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+                Forgot your password?
+              </a>
+            </div>
+          </div>
           <motion.button
             type="submit"
-            className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+            className="w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors text-lg"
             disabled={loading}
-            whileHover={{ backgroundColor: "#2563EB" }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             {loading ? (
               <span className="flex items-center justify-center">
