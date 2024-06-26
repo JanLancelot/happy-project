@@ -48,25 +48,25 @@ function ManageRequirements() {
     fetchClasses();
   }, [currentUser]);
 
-  useEffect(() => {
-    const fetchClassData = async () => {
-      if (selectedClass) {
-        try {
-          const classDocRef = doc(db, "classes", selectedClass);
-          const classDocSnapshot = await getDoc(classDocRef);
-          if (classDocSnapshot.exists()) {
-            setClassData(classDocSnapshot.data());
-          } else {
-            setClassData(null); 
-          }
-        } catch (error) {
-          console.error("Error fetching class data: ", error);
-        }
-      }
-    };
+//   useEffect(() => {
+//     const fetchClassData = async () => {
+//       if (selectedClass) {
+//         try {
+//           const classDocRef = doc(db, "classes", selectedClass);
+//           const classDocSnapshot = await getDoc(classDocRef);
+//           if (classDocSnapshot.exists()) {
+//             setClassData(classDocSnapshot.data());
+//           } else {
+//             setClassData(null); 
+//           }
+//         } catch (error) {
+//           console.error("Error fetching class data: ", error);
+//         }
+//       }
+//     };
 
-    fetchClassData();
-  }, [selectedClass]);
+//     fetchClassData();
+//   }, [selectedClass]);
 
   const handleClassChange = (e) => {
     setSelectedClass(e.target.value);
