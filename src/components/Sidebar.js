@@ -35,7 +35,7 @@ const db = getFirestore();
 const navigationOptions = {
   admin: [
     {
-      name: "Discipline Log",
+      name: "Disciplinary Records",
       href: "/disciplinary-records",
       icon: ClipboardDocumentListIcon,
     },
@@ -55,7 +55,7 @@ const navigationOptions = {
   ],
   "super-admin": [
     {
-      name: "Discipline Log",
+      name: "Disciplinary Records",
       href: "/disciplinary-records",
       icon: ClipboardDocumentListIcon,
     },
@@ -80,7 +80,7 @@ const navigationOptions = {
   ],
   faculty: [
     {
-      name: "Dashboard",
+      name: "Clearance Requests",
       href: "/approve-clearance-faculty",
       icon: HomeIcon,
     },
@@ -129,7 +129,7 @@ const navigationOptions = {
 
 const defaultNavigation = [
   {
-    name: "Dashboard",
+    name: "Clearance Requests",
     href: "/approve-clearance-office",
     icon: HomeIcon,
   },
