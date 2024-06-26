@@ -28,6 +28,57 @@ function CreateClass() {
 
   const navigate = useNavigate();
 
+  const collegeDepartments = [
+    "College of Health Sciences",
+    "College of Business Administration",
+    "College of Computer Studies",
+    "College of Accountancy",
+    "College of Education",
+    "College of Arts and Sciences",
+    "College of Hospitality Management and Tourism",
+    "College of Maritime Education",
+    "School of Mechanical Engineering",
+  ];
+
+  const coursesByDepartment = {
+    "College of Health Sciences": ["BS Health Sciences"],
+    "College of Business Administration": [
+      "BS Business Administration Major in Human Resource Development",
+      "BS Business Administration Major in Management",
+      "BS Business Administration Major in Financial Management",
+      "BS Business Administration Major in Operations Management",
+      "BS Business Administration Major in Marketing Management",
+    ],
+    "College of Computer Studies": [
+      "BS Computer Science",
+      "BS Information Technology",
+      "BS Computer Engineering",
+    ],
+    "College of Accountancy": [
+      "BS Accountancy (5 years)",
+      "BS in Accounting Information System",
+    ],
+    "College of Education": [
+      "Bachelor of Elementary Education",
+      "Bachelor of Secondary Education - Major in Mathematics",
+      "Bachelor of Secondary Education - Major in English",
+      "Bachelor of Secondary Education - Major in Biology",
+    ],
+    "College of Arts and Sciences": [
+      "Bachelor of Arts in Psychology",
+      "Bachelor of Arts in Political Science",
+    ],
+    "College of Hospitality Management and Tourism": [
+      "BS Hotel and Restaurant Management",
+      "BS Tourism",
+    ],
+    "College of Maritime Education": [
+      "BS Marine Transportation",
+      "BS Marine Engineering",
+    ],
+    "School of Mechanical Engineering": ["BS Mechanical Engineering"],
+  };
+
   useEffect(() => {
     const fetchTeachers = async () => {
       const teachersSnapshot = await getDocs(collection(db, "teachers"));
@@ -58,15 +109,17 @@ function CreateClass() {
     e.preventDefault();
 
     try {
-      const selectedAdviser = teachers.find((teacher) => teacher.name === adviser);
+      const selectedAdviser = teachers.find(
+        (teacher) => teacher.name === adviser
+      );
       const adviserUid = selectedAdviser ? selectedAdviser.uid : null;
 
       const classDocRef = await addDoc(collection(db, "classes"), {
         educationLevel,
         gradeLevel,
         sectionName,
-        adviser: educationLevel === "college" ? null : adviser, 
-        adviserUid: educationLevel === "college" ? null : adviserUid, 
+        adviser: educationLevel === "college" ? null : adviser,
+        adviserUid: educationLevel === "college" ? null : adviserUid,
         department: educationLevel === "college" ? department : null,
         course: educationLevel === "college" ? course : null,
         subjects,
@@ -105,7 +158,7 @@ function CreateClass() {
             "Finance",
             "Basic Education Registrar",
             "Class Adviser",
-            "Director/Principal"
+            "Director/Principal",
           ];
 
           additionalClearances.forEach((role) => {
@@ -222,29 +275,44 @@ function CreateClass() {
           </div>
 
           {educationLevel === "college" && (
-            <div>
-              <label className="block text-gray-700">Department</label>
-              <input
-                type="text"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                required
-                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-              />
-            </div>
-          )}
+            <>
+              <div>
+                <label className="block text-gray-700">Department</label>
+                <select
+                  value={department}
+                  onChange={(e) => {
+                    setDepartment(e.target.value);
+                    setCourse("");
+                  }}
+                  required
+                  className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                >
+                  <option value="">Select Department</option>
+                  {collegeDepartments.map((dept) => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          {educationLevel === "college" && (
-            <div>
-              <label className="block text-gray-700">Course</label>
-              <input
-                type="text"
-                value={course}
-                onChange={(e) => setCourse(e.target.value)}
-                required
-                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-              />
-            </div>
+              <div>
+                <label className="block text-gray-700">Course</label>
+                <select
+                  value={course}
+                  onChange={(e) => setCourse(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                >
+                  <option value="">Select Course</option>
+                  {coursesByDepartment[department]?.map((courseOption) => (
+                    <option key={courseOption} value={courseOption}>
+                      {courseOption}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
           )}
 
           {educationLevel !== "college" && (
@@ -285,9 +353,7 @@ function CreateClass() {
                   />
                   <select
                     value={subject.teacherUid}
-                    onChange={(e) =>
-                      handleTeacherChange(index, e.target.value)
-                    }
+                    onChange={(e) => handleTeacherChange(index, e.target.value)}
                     required
                     className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                   >
