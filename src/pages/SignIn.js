@@ -56,7 +56,7 @@ const SignIn = () => {
             case "Property Custodian":
             case "Student Council":
             case "directorPrincipal":
-              navigate("/add-office-requirement");
+              navigate("/approve-clearance-office");
               break;
             default:
               navigate("/dashboard");
