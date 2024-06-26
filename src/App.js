@@ -27,6 +27,7 @@ import ViewMessagesStudent from "./pages/ViewMessagesStudent"
 import DisciplinaryRecords from "./pages/DisciplinaryRecords";
 import UpdateClass from "./pages/UpdateClass";
 import ManageRequirements from "./pages/ManageRequirements";
+import ManageOfficeRequirements from "./pages/ManageOfficeRequirements";
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
@@ -54,7 +55,8 @@ const router = createBrowserRouter([
   { path: "/view-messages-student", element: <ViewMessagesStudent />},
   { path: "/disciplinary-records", element: <DisciplinaryRecords />},
   { path: "/update-class/:classId", element: <UpdateClass />},
-  { path: "/manage-requirements", element: <ManageRequirements />}
+  { path: "/manage-requirements", element: <ManageRequirements />},
+  { path: "/manage-office-requirements", element: <ManageOfficeRequirements />}
 ]);
 
 function App() {
