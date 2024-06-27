@@ -303,6 +303,7 @@ function DisciplinaryRecords() {
           section: doc.data().section,
           gradeLevel: doc.data().gradeLevel,
           uid: doc.data().uid,
+          studentNo: doc.data().studentId
         }));
         setStudentOptions(studentsData);
 
@@ -523,7 +524,7 @@ function DisciplinaryRecords() {
     setNewRecord({
       ...newRecord,
       studentId: selectedOption ? selectedOption.uid : "",
-      studentNo: selectedOption ? selectedOption.studentId : "",
+      studentNo: selectedOption ? selectedOption.studentNo : "",
       studentFullName: selectedOption ? selectedOption.fullName : "",
       studentSection: selectedOption ? selectedOption.section : "",
       studentGradeLevel: selectedOption ? selectedOption.gradeLevel : "",
