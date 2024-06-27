@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import Sidebar from "../components/Sidebar";
 import moment from "moment";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 function AuditLogs() {
   const [logs, setLogs] = useState([]);
   const [originalLogs, setOriginalLogs] = useState([]);
   const [filterAction, setFilterAction] = useState("all");
-  const [filterUser, setFilterUser] = useState("");
   const [searchEmail, setSearchEmail] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -41,79 +47,122 @@ function AuditLogs() {
       );
     }
 
-    if (filterUser) {
-      filteredLogs = filteredLogs.filter((log) => log.userId === filterUser);
-    }
-
     if (searchEmail) {
       filteredLogs = filteredLogs.filter((log) =>
         log.email.toLowerCase().includes(searchEmail.toLowerCase())
       );
     }
 
+    if (startDate) {
+      filteredLogs = filteredLogs.filter(
+        (log) => log.timestamp.toDate() >= startDate.toDate()
+      );
+    }
+
+    if (endDate) {
+      filteredLogs = filteredLogs.filter(
+        (log) => log.timestamp.toDate() <= endDate.toDate()
+      );
+    }
+
     setLogs(filteredLogs);
-  }, [filterAction, filterUser, searchEmail, originalLogs]);
+  }, [filterAction, searchEmail, startDate, endDate, originalLogs]);
+
+  const handleReset = () => {
+    setFilterAction("all");
+    setSearchEmail("");
+    setStartDate(null);
+    setEndDate(null);
+  };
 
   return (
     <Sidebar>
-      <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">Audit Logs</h2>
+      <div className="container mx-auto p-6">
+        <h2 className="text-3xl font-bold mb-6">Audit Logs</h2>
 
-        <div className="mb-4 flex space-x-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div>
-            <label htmlFor="filterAction" className="block text-gray-700 mb-1">
-              Filter by Action:
+            <label htmlFor="filterAction" className="block text-sm font-medium text-gray-700 mb-1">
+              Filter by Action
             </label>
-            <select
+            <Select
               id="filterAction"
               value={filterAction}
-              onChange={(e) => setFilterAction(e.target.value)}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+              onValueChange={(value) => setFilterAction(value)}
             >
-              <option value="all">All Actions</option>
-              <option value="login_success">Successful Login</option>
-              <option value="login_failed">Failed Login</option>
-            </select>
+              <Select.Option value="all">All Actions</Select.Option>
+              <Select.Option value="login_success">Successful Login</Select.Option>
+              <Select.Option value="login_failed">Failed Login</Select.Option>
+            </Select>
           </div>
 
           <div>
-            <label htmlFor="searchEmail" className="block text-gray-700 mb-1">
-              Search by Email:
+            <label htmlFor="searchEmail" className="block text-sm font-medium text-gray-700 mb-1">
+              Search by Email
             </label>
-            <input
+            <Input
               type="text"
               id="searchEmail"
               value={searchEmail}
               onChange={(e) => setSearchEmail(e.target.value)}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+              placeholder="Enter email"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+              Start Date
+            </label>
+            <DatePicker
+              id="startDate"
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+              End Date
+            </label>
+            <DatePicker
+              id="endDate"
+              selected={endDate}
+              onChange={(date) => setEndDate(date)}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              minDate={startDate}
             />
           </div>
         </div>
 
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead>
-            <tr>
-              <th className="py-2 border-b border-gray-200">Timestamp</th>
-              <th className="py-2 border-b border-gray-200">User ID</th>
-              <th className="py-2 border-b border-gray-200">Action Type</th>
-              <th className="py-2 border-b border-gray-200">Email</th>
-            </tr>
-          </thead>
-          <tbody>
+        <div className="mb-6">
+          <Button onClick={handleReset} variant="outline">Reset Filters</Button>
+        </div>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Timestamp</TableHead>
+              <TableHead>User ID</TableHead>
+              <TableHead>Action Type</TableHead>
+              <TableHead>Email</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {logs.map((log) => (
-              <tr key={log.id}>
-                <td className="border px-4 py-2 text-center">
-                  {moment(log.timestamp.toDate()).format("YYYY-MM-DD HH:mm:ss")}
-                </td>
-                <td className="border px-4 py-2 text-center">{log.userId}</td>
-                <td className="border px-4 py-2 text-center">
-                  {log.actionType}
-                </td>
-                <td className="border px-4 py-2 text-center">{log.email}</td>
-              </tr>
+              <TableRow key={log.id}>
+                <TableCell>{moment(log.timestamp.toDate()).format("YYYY-MM-DD HH:mm:ss")}</TableCell>
+                <TableCell>{log.userId}</TableCell>
+                <TableCell>{log.actionType}</TableCell>
+                <TableCell>{log.email}</TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </Sidebar>
   );
