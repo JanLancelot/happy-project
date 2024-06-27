@@ -224,7 +224,7 @@ export default function Sidebar({ children }) {
     return names
       .map((n) => n[0].toUpperCase())
       .slice(0, 2)
-      .join(""); // Get up to 2 initials
+      .join(""); 
   };
 
   return (
