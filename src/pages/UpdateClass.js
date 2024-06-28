@@ -143,26 +143,32 @@ function UpdateClass() {
         return clearance;
       };
 
-      const studentUpdatePromises = allStudentOptions.map(async (student) => {
-        const studentDocRef = doc(db, "students", student.value);
+      const studentUpdatePromises = allStudentOptions.map(
+        async (student) => {
+          const studentDocRef = doc(db, "students", student.value);
 
-        if (currentSelectedStudentIds.includes(student.value)) {
-          await updateDoc(studentDocRef, {
-            section: sectionName,
-            department: educationLevel === "college" ? department : null,
-            clearance: generateClearance(),
-          });
-        } else if (
-          originalSelectedStudentIds.includes(student.value) &&
-          student.section === sectionName
-        ) {
-          await updateDoc(studentDocRef, {
-            section: null,
-            department: null,
-            clearance: {}, 
-          });
+          if (currentSelectedStudentIds.includes(student.value)) {
+
+            const studentDocSnapshot = await getDoc(studentDocRef);
+            const existingClearance = studentDocSnapshot.data().clearance || {};
+
+            await updateDoc(studentDocRef, {
+              section: sectionName,
+              department: educationLevel === "college" ? department : null,
+              clearance: { ...existingClearance, ...generateClearance() },
+            });
+          } else if (
+            originalSelectedStudentIds.includes(student.value) &&
+            student.section === sectionName
+          ) {
+            await updateDoc(studentDocRef, {
+              section: null,
+              department: null,
+              clearance: {}, 
+            });
+          }
         }
-      });
+      );
 
       await Promise.all(studentUpdatePromises);
 
