@@ -118,6 +118,48 @@ function ClassDetails() {
     },
   ];
 
+  // const handleExportExcel = () => {
+  //   const filteredData = getFilteredStudents().map((student) => ({
+  //     "Student ID": student.studentId,
+  //     "Full Name": student.fullName,
+  //     "Cleared": student.clearance[selectedSubject] ? "Yes" : "No",
+  //   }));
+  
+  //   const wb = XLSX.utils.book_new();
+  //   const ws = XLSX.utils.json_to_sheet([]);
+  
+  //   XLSX.utils.sheet_add_aoa(ws, [[`${classData.sectionName} - ${selectedSubject} Clearance Report`]], { origin: "A1" });
+  
+  //   XLSX.utils.sheet_add_aoa(ws, [[`Generated on: ${new Date().toLocaleDateString()}`]], { origin: "A2" });
+  
+  //   XLSX.utils.sheet_add_json(ws, filteredData, { origin: "A4", skipHeader: false });
+  
+  //   const range = XLSX.utils.decode_range(ws["!ref"]);
+  //   for (let C = range.s.c; C <= range.e.c; ++C) {
+  //     const address = XLSX.utils.encode_col(C) + "4"; 
+  //     if (!ws[address]) continue;
+  //     ws[address].s = {
+  //       font: { bold: true, color: { rgb: "FFFFFF" } },
+  //       fill: { fgColor: { rgb: "4472C4" } },
+  //       alignment: { horizontal: "center" }
+  //     };
+  //   }
+  
+  //   const colWidths = filteredData.reduce((acc, row) => {
+  //     Object.keys(row).forEach((key, i) => {
+  //       const cellValue = row[key] ? row[key].toString() : '';
+  //       acc[i] = Math.max(acc[i] || 0, cellValue.length);
+  //     });
+  //     return acc;
+  //   }, {});
+  
+  //   ws['!cols'] = Object.keys(colWidths).map(i => ({ wch: colWidths[i] }));
+  
+  //   XLSX.utils.book_append_sheet(wb, ws, "Clearance Status");
+  
+  //   XLSX.writeFile(wb, `${classData.sectionName}_${selectedSubject}_clearance_report.xlsx`);
+  // };
+
   const handleExportExcel = () => {
     const filteredData = getFilteredStudents().map((student) => ({
       "Student ID": student.studentId,
@@ -128,36 +170,76 @@ function ClassDetails() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet([]);
   
-    XLSX.utils.sheet_add_aoa(ws, [[`${classData.sectionName} - ${selectedSubject} Clearance Report`]], { origin: "A1" });
+    XLSX.utils.sheet_add_aoa(ws, [[`${classData.sectionName}- ${selectedSubject} Clearance Report`]], { origin: "A1" });
   
     XLSX.utils.sheet_add_aoa(ws, [[`Generated on: ${new Date().toLocaleDateString()}`]], { origin: "A2" });
   
     XLSX.utils.sheet_add_json(ws, filteredData, { origin: "A4", skipHeader: false });
   
     const range = XLSX.utils.decode_range(ws["!ref"]);
+    
+    ws["A1"].s = {
+      font: { bold: true, color: { rgb: "000000" }, sz: 16 },
+      alignment: { horizontal: "left" }
+    };
+  
+    ws["A2"].s = {
+      font: { italic: true, color: { rgb: "666666" }, sz: 10 },
+      alignment: { horizontal: "left" }
+    };
+  
     for (let C = range.s.c; C <= range.e.c; ++C) {
-      const address = XLSX.utils.encode_col(C) + "4"; 
+      const address = XLSX.utils.encode_col(C) + "4";
       if (!ws[address]) continue;
       ws[address].s = {
-        font: { bold: true, color: { rgb: "FFFFFF" } },
+        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 12 },
         fill: { fgColor: { rgb: "4472C4" } },
-        alignment: { horizontal: "center" }
+        alignment: { horizontal: "center", vertical: "center" },
+        border: {
+          top: { style: "thin", color: { rgb: "000000" } },
+          bottom: { style: "thin", color: { rgb: "000000" } },
+          left: { style: "thin", color: { rgb: "000000" } },
+          right: { style: "thin", color: { rgb: "000000" } }
+        }
       };
+    }
+  
+    for (let R = 5; R <= range.e.r; ++R) {
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const address = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!ws[address]) continue;
+        ws[address].s = {
+          font: { sz: 11 },
+          alignment: { horizontal: "left", vertical: "center" },
+          border: {
+            top: { style: "thin", color: { rgb: "E0E0E0" } },
+            bottom: { style: "thin", color: { rgb: "E0E0E0" } },
+            left: { style: "thin", color: { rgb: "E0E0E0" } },
+            right: { style: "thin", color: { rgb: "E0E0E0" } }
+          }
+        };
+        if (C === 2) {
+          ws[address].s.font.color = { rgb: ws[address].v === "Yes" ? "008000" : "FF0000" };
+          ws[address].s.alignment.horizontal = "center";
+        }
+      }
     }
   
     const colWidths = filteredData.reduce((acc, row) => {
       Object.keys(row).forEach((key, i) => {
         const cellValue = row[key] ? row[key].toString() : '';
-        acc[i] = Math.max(acc[i] || 0, cellValue.length);
+        acc[i] = Math.max(acc[i] || 0, cellValue.length, key.length);
       });
       return acc;
     }, {});
   
-    ws['!cols'] = Object.keys(colWidths).map(i => ({ wch: colWidths[i] }));
+    ws['!cols'] = Object.keys(colWidths).map(i => ({ wch: colWidths[i] + 2 }));
+  
+    ws['!rows'] = [{ hpt: 30 }, { hpt: 25 }, { hpt: 15 }, { hpt: 25 }];
   
     XLSX.utils.book_append_sheet(wb, ws, "Clearance Status");
   
-    XLSX.writeFile(wb, `${classData.sectionName}_${selectedSubject}_clearance_report.xlsx`);
+    XLSX.writeFile(wb, `${classData.sectionName}_${selectedSubject}_Clearance_Report_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`);
   };
 
 const handleClearStudent = async (studentId) => {
