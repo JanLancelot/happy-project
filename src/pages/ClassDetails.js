@@ -123,93 +123,94 @@ function ClassDetails() {
   const handleExportExcel = async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Clearance Status');
-  
-    worksheet.addRow([`${classData.sectionName} - English Clearance Status`]);
+
+    const headerStyle = {
+      font: { bold: true },
+      fill: {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD3D3D3' } 
+      },
+      border: {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      }
+    };
+
+    const dataCellStyle = {
+      border: {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      }
+    };
+
+    const clearedCellStyle = {
+      ...dataCellStyle,
+      fill: {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF90EE90' }
+      }
+    };
+
+    const unclearedCellStyle = {
+      ...dataCellStyle,
+      fill: {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFFA07A' } 
+      }
+    };
+
+    worksheet.addRow([`${classData.sectionName} - ${selectedSubject} Clearance Status`]);
     worksheet.mergeCells('A1:C1');
     const titleCell = worksheet.getCell('A1');
-    titleCell.font = { size: 18, bold: true, color: { argb: '000000' } };
-    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-    titleCell.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFD9E1F2' }
-    };
-    worksheet.getRow(1).height = 30;
-  
-    worksheet.addRow([]);
-  
+    titleCell.font = { size: 16, bold: true, color: { argb: 'FF002060' } };
+    titleCell.alignment = { horizontal: 'center' };
+
     const headerRow = worksheet.addRow(['Student ID', 'Name', 'Cleared']);
-    headerRow.font = { bold: true, color: { argb: 'FFFFFF' } };
-    headerRow.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: '4472C4' }
-    };
-    headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
-    worksheet.getRow(headerRow.number).height = 25;
-  
+    headerRow.eachCell((cell) => {
+      Object.assign(cell.style, headerStyle);
+    });
+
     const filteredStudents = getFilteredStudents();
-    filteredStudents.forEach((student, index) => {
+    filteredStudents.forEach((student) => {
       const row = worksheet.addRow([
         student.studentId,
         student.fullName,
         student.clearance[selectedSubject] ? 'Yes' : 'No'
       ]);
-      
-      row.alignment = { vertical: 'middle' };
-      row.height = 22;
-  
-      const clearedCell = row.getCell(3);
-      clearedCell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: student.clearance[selectedSubject] ? 'C6EFCE' : 'FFC7CE' }
-      };
-      clearedCell.font = { color: { argb: student.clearance[selectedSubject] ? '006100' : '9C0006' } };
-      clearedCell.alignment = { horizontal: 'center' };
-  
-      if (index % 2 !== 0) {
-        row.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'F2F2F2' }
-        };
-      }
-    });
-  
-    worksheet.columns = [
-      { width: 15 }, 
-      { width: 30 }, 
-      { width: 15 }  
-    ];
-  
-    worksheet.eachRow((row, rowNumber) => {
-      row.eachCell((cell) => {
-        cell.border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          bottom: { style: 'thin' },
-          right: { style: 'thin' }
-        };
+
+      row.eachCell((cell, colNumber) => {
+        if (colNumber === 3) { 
+          Object.assign(cell.style, student.clearance[selectedSubject] ? clearedCellStyle : unclearedCellStyle);
+        } else {
+          Object.assign(cell.style, dataCellStyle);
+        }
       });
     });
-  
+
     worksheet.addRow([]);
-    const currentDateTime = new Date();
-    const formattedDate = currentDateTime.toLocaleDateString();
-    worksheet.addRow(['Generated On:', formattedDate]);
-    worksheet.addRow(['Prepared By:', currentUser.email]);
-  
-    ['A', 'B'].forEach(col => {
-      worksheet.getCell(`${col}${worksheet.rowCount - 1}`).font = { italic: true };
-      worksheet.getCell(`${col}${worksheet.rowCount}`).font = { italic: true };
+
+    worksheet.addRow(['', 'Generated On:', new Date().toLocaleDateString()]); 
+    worksheet.addRow(['', 'Prepared By:', currentUser.email]);
+
+    worksheet.columns.forEach(column => {
+      let maxLength = 0;
+      column.eachCell((cell) => {
+        maxLength = Math.max(maxLength, cell.value ? cell.value.toString().length : 0);
+      });
+      column.width = maxLength + 2; 
     });
-  
+
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, `${classData.sectionName}_English_clearance.xlsx`);
-  };
-  
+    saveAs(blob, `${classData.sectionName}_${selectedSubject}_clearance.xlsx`);
+  };  
 
   const handleClearStudent = async (studentId) => {
     if (!selectedSubject) return;
