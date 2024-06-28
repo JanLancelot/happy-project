@@ -79,32 +79,22 @@ function Students() {
     try {
       if (!studentToPromote) return;
 
-      const currentGrade = studentToPromote.gradeLevel;
-      let newGradeLevel = "";
-      if (studentToPromote.educationLevel === "college") {
-        switch (currentGrade) {
-          case "Freshman":
-            newGradeLevel = "Sophomore";
-            break;
-          case "Sophomore":
-            newGradeLevel = "Junior";
-            break;
-          case "Junior":
-            newGradeLevel = "Senior";
-            break;
-          case "Senior":
-            alert("This student is already a Senior.");
-            return;
-          default:
-            alert("Invalid grade level.");
-            return;
-        }
-      } else {
-        newGradeLevel = (parseInt(currentGrade) + 1).toString();
+      const currentGrade = parseInt(studentToPromote.gradeLevel);
+      let newGradeLevel = currentGrade + 1;
+      let newEducationLevel = studentToPromote.educationLevel;
+
+      if (newGradeLevel === 7) {
+        newEducationLevel = "juniorHighschool";
+      } else if (newGradeLevel === 11) {
+        newEducationLevel = "seniorHighschool";
+      } else if (newGradeLevel > 12) {
+        newGradeLevel = "Freshman";
+        newEducationLevel = "college";
       }
 
       await updateDoc(doc(db, "students", studentToPromote.id), {
-        gradeLevel: newGradeLevel,
+        gradeLevel: newGradeLevel.toString(),
+        educationLevel: newEducationLevel,
         section: null,
         clearance: {},
       });
@@ -114,7 +104,8 @@ function Students() {
           student.id === studentToPromote.id
             ? {
                 ...student,
-                gradeLevel: newGradeLevel,
+                gradeLevel: newGradeLevel.toString(),
+                educationLevel: newEducationLevel,
                 section: null,
                 clearance: {},
               }

@@ -120,17 +120,44 @@ function ClassDetails() {
 
   const handleExportExcel = () => {
     const filteredData = getFilteredStudents().map((student) => ({
-      Name: student.fullName,
-      Cleared: student.clearance[selectedSubject] ? "Yes" : "No",
+      "Student ID": student.studentId,
+      "Full Name": student.fullName,
+      "Cleared": student.clearance[selectedSubject] ? "Yes" : "No",
     }));
-
-    const ws = XLSX.utils.json_to_sheet(filteredData);
+  
     const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet([]);
+  
+    XLSX.utils.sheet_add_aoa(ws, [[`${classData.sectionName} - ${selectedSubject} Clearance Report`]], { origin: "A1" });
+  
+    XLSX.utils.sheet_add_aoa(ws, [[`Generated on: ${new Date().toLocaleDateString()}`]], { origin: "A2" });
+  
+    XLSX.utils.sheet_add_json(ws, filteredData, { origin: "A4", skipHeader: false });
+  
+    const range = XLSX.utils.decode_range(ws["!ref"]);
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const address = XLSX.utils.encode_col(C) + "4"; 
+      if (!ws[address]) continue;
+      ws[address].s = {
+        font: { bold: true, color: { rgb: "FFFFFF" } },
+        fill: { fgColor: { rgb: "4472C4" } },
+        alignment: { horizontal: "center" }
+      };
+    }
+  
+    const colWidths = filteredData.reduce((acc, row) => {
+      Object.keys(row).forEach((key, i) => {
+        const cellValue = row[key] ? row[key].toString() : '';
+        acc[i] = Math.max(acc[i] || 0, cellValue.length);
+      });
+      return acc;
+    }, {});
+  
+    ws['!cols'] = Object.keys(colWidths).map(i => ({ wch: colWidths[i] }));
+  
     XLSX.utils.book_append_sheet(wb, ws, "Clearance Status");
-    XLSX.writeFile(
-      wb,
-      `${classData.sectionName}_${selectedSubject}_clearance.xlsx`
-    );
+  
+    XLSX.writeFile(wb, `${classData.sectionName}_${selectedSubject}_clearance_report.xlsx`);
   };
 
 const handleClearStudent = async (studentId) => {
