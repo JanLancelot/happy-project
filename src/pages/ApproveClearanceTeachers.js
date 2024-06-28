@@ -6,11 +6,22 @@ import {
   getDocs,
   doc,
   updateDoc,
+  orderBy,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
 import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
+import moment from "moment";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCheckCircle,
+  faTimesCircle,
+  faAngleDown,
+  faAngleUp,
+} from "@fortawesome/free-solid-svg-icons";
 
 function ApproveClearanceTeachers() {
   const { currentUser } = useAuth();
@@ -23,6 +34,8 @@ function ApproveClearanceTeachers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [availableSections, setAvailableSections] = useState([]);
   const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [expandedRequestId, setExpandedRequestId] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState("");
 
   useEffect(() => {
     const fetchClearanceRequests = async () => {
@@ -36,10 +49,30 @@ function ApproveClearanceTeachers() {
         );
 
         const requestsSnapshot = await getDocs(q);
-        const requestsData = requestsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const requestsData = await Promise.all(
+          requestsSnapshot.docs.map(async (doc) => {
+            const requestData = doc.data();
+
+            const disciplinaryRecordsRef = collection(
+              db,
+              "disciplinaryRecords"
+            );
+            const disciplinaryQuery = query(
+              disciplinaryRecordsRef,
+              where("studentId", "==", requestData.studentId)
+            );
+            const disciplinarySnapshot = await getDocs(disciplinaryQuery);
+            const disciplinaryRecords = disciplinarySnapshot.docs.map(
+              (recordDoc) => recordDoc.data()
+            );
+
+            return {
+              id: doc.id,
+              ...requestData,
+              disciplinaryRecords,
+            };
+          })
+        );
 
         setClearanceRequests(requestsData);
         setOriginalRequests(requestsData);
@@ -90,10 +123,6 @@ function ApproveClearanceTeachers() {
         status: "approved",
       });
 
-      // await updateDoc(doc(db, "students", studentId), {
-      //   [`clearance.${subject}`]: true,
-      // });
-
       const studentsRef = collection(db, "students");
       const q = query(studentsRef, where("uid", "==", studentId));
       const querySnapshot = await getDocs(q);
@@ -104,7 +133,9 @@ function ApproveClearanceTeachers() {
           [`clearance.${subject}`]: true,
         });
 
-        console.log(`Student clearance for ${subject} updated successfully.`);
+        console.log(
+          `Student clearance for ${subject} updated successfully.`
+        );
       } else {
         console.log(`No student found with uid ${studentId}.`);
       }
@@ -115,6 +146,15 @@ function ApproveClearanceTeachers() {
         )
       );
 
+      const notificationsRef = collection(db, "studentNotification");
+      await addDoc(notificationsRef, {
+        isRead: false,
+        notifTimestamp: serverTimestamp(),
+        status: "approved",
+        studentId: studentId,
+        subject: subject,
+      });
+
       alert("Clearance approved!");
     } catch (error) {
       console.error("Error approving clearance:", error);
@@ -124,16 +164,21 @@ function ApproveClearanceTeachers() {
 
   const openRejectModal = (request) => {
     setRequestToReject(request);
+    setRejectionReason("");
     setIsModalOpen(true);
   };
 
   const closeRejectModal = () => {
     setRequestToReject(null);
+    setRejectionReason("");
     setIsModalOpen(false);
   };
 
   const handleReject = async () => {
-    if (!requestToReject) return;
+    if (!requestToReject || !rejectionReason) {
+      alert("Please provide a reason for rejection.");
+      return;
+    }
 
     try {
       await updateDoc(doc(db, "clearanceRequests", requestToReject.id), {
@@ -142,9 +187,21 @@ function ApproveClearanceTeachers() {
 
       setClearanceRequests((prevRequests) =>
         prevRequests.map((req) =>
-          req.id === requestToReject.id ? { ...req, status: "rejected" } : req
+          req.id === requestToReject.id
+            ? { ...req, status: "rejected" }
+            : req
         )
       );
+
+      const notificationsRef = collection(db, "studentNotification");
+      await addDoc(notificationsRef, {
+        isRead: false,
+        notifTimestamp: serverTimestamp(),
+        status: "rejected",
+        reason: rejectionReason,
+        studentId: requestToReject.studentId,
+        subject: requestToReject.subject,
+      });
 
       closeRejectModal();
       alert("Clearance request rejected.");
@@ -152,6 +209,10 @@ function ApproveClearanceTeachers() {
       console.error("Error rejecting clearance:", error);
       alert("Error rejecting clearance. Please try again later.");
     }
+  };
+
+  const handleExpandRow = (requestId) => {
+    setExpandedRequestId((prevId) => (prevId === requestId ? null : requestId));
   };
 
   return (
@@ -217,68 +278,166 @@ function ApproveClearanceTeachers() {
           <table className="min-w-full bg-white border border-gray-200">
             <thead>
               <tr>
-                <th className="py-2 border-b border-gray-200">Student ID</th>
-                <th className="py-2 border-b border-gray-200">Student Name</th>
-                <th className="py-2 border-b border-gray-200">Subject</th>
-                <th className="py-2 border-b border-gray-200">Section</th>
-                <th className="py-2 border-b border-gray-200">Status</th>
-                <th className="py-2 border-b border-gray-200">Files</th>
-                <th className="py-2 border-b border-gray-200">Actions</th>
+                <th className="py-2 border-b border-gray-200">
+                  Student ID
+                </th>
+                <th className="py-2 border-b border-gray-200">
+                  Student Name
+                </th>
+                <th className="py-2 border-b border-gray-200">
+                  Subject
+                </th>
+                <th className="py-2 border-b border-gray-200">
+                  Section
+                </th>
+                <th className="py-2 border-b border-gray-200">
+                  Status
+                </th>
+                <th className="py-2 border-b border-gray-200">
+                  Disciplinary Records
+                </th>
+                <th className="py-2 border-b border-gray-200">
+                  Files
+                </th>
+                <th className="py-2 border-b border-gray-200">
+                  Actions
+                </th>
+                <th className="py-2 border-b border-gray-200"></th>
               </tr>
             </thead>
             <tbody>
               {clearanceRequests.map((request) => (
-                <tr key={request.id}>
-                  <td className="border px-4 py-2">{request.studentNo}</td>
-                  <td className="border px-4 py-2">{request.studentName}</td>
-                  <td className="border px-4 py-2">{request.subject}</td>
-                  <td className="border px-4 py-2">{request.section}</td>
-                  <td className="border px-4 py-2">{request.status}</td>
-                  <td className="border px-4 py-2">
-                    {request.fileURLs && request.fileURLs.length > 0 ? (
-                      <ul>
-                        {request.fileURLs.map((url, index) => (
-                          <li key={index}>
-                            <a
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-500 hover:underline"
-                            >
-                              File {index + 1}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      "No files submitted"
-                    )}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {request.status === "pending" && (
-                      <>
-                        <button
-                          onClick={() =>
-                            handleApprove(
-                              request.id,
-                              request.studentId,
-                              request.subject
-                            )
-                          }
-                          className="mr-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => openRejectModal(request)}
-                          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
+                <React.Fragment key={request.id}>
+                  <tr
+                    key={request.id}
+                    onClick={() => handleExpandRow(request.id)}
+                    className="cursor-pointer hover:bg-gray-100"
+                  >
+                    <td className="border px-4 py-2">
+                      {request.studentNo}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {request.studentName}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {request.subject}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {request.section}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {request.status}
+                    </td>
+                    <td className="border px-4 py-2 text-center">
+                      {request.disciplinaryRecords.length}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {request.fileURLs &&
+                      request.fileURLs.length > 0 ? (
+                        <ul>
+                          {request.fileURLs.map((url, index) => (
+                            <li key={index}>
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:underline"
+                              >
+                                File {index + 1}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        "No files submitted"
+                      )}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {request.status === "pending" && (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleApprove(
+                                request.id,
+                                request.studentId,
+                                request.subject
+                              )
+                            }
+                            className="mr-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => openRejectModal(request)}
+                            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                    </td>
+                    <td className="border px-4 py-2 text-center">
+                      <FontAwesomeIcon
+                        icon={
+                          expandedRequestId === request.id
+                            ? faAngleUp
+                            : faAngleDown
+                        }
+                      />
+                    </td>
+                  </tr>
+
+                  {expandedRequestId === request.id && (
+                    <tr className="bg-gray-100">
+                      <td colSpan={9} className="border px-4 py-2">
+                        {request.disciplinaryRecords &&
+                        request.disciplinaryRecords.length > 0 ? (
+                          <div>
+                            <h4 className="font-medium mb-2">
+                              Disciplinary Records:
+                            </h4>
+                            <table className="min-w-full">
+                              <thead>
+                                <tr>
+                                  <th className="py-2 border-b border-gray-200">
+                                    Date
+                                  </th>
+                                  <th className="py-2 border-b border-gray-200">
+                                    Violations
+                                  </th>
+                                  <th className="py-2 border-b border-gray-200">
+                                    Sanctions
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {request.disciplinaryRecords.map(
+                                  (record) => (
+                                    <tr key={record.timestamp}>
+                                      <td className="border px-4 py-2">
+                                        {moment(
+                                          record.timestamp.toDate()
+                                        ).format("YYYY-MM-DD")}
+                                      </td>
+                                      <td className="border px-4 py-2">
+                                        {record.violations.join(", ")}
+                                      </td>
+                                      <td className="border px-4 py-2">
+                                        {record.sanctions.join(", ")}
+                                      </td>
+                                    </tr>
+                                  )
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <p>No disciplinary records found.</p>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
@@ -295,6 +454,23 @@ function ApproveClearanceTeachers() {
             <strong>{requestToReject?.studentName}</strong> for{" "}
             <strong>{requestToReject?.subject}</strong>?
           </p>
+
+          <div className="mt-4">
+            <label
+              htmlFor="rejectionReason"
+              className="block text-gray-700 mb-1"
+            >
+              Reason for Rejection:
+            </label>
+            <textarea
+              id="rejectionReason"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+              required
+            />
+          </div>
+
           <div className="mt-6 flex justify-end">
             <button
               onClick={closeRejectModal}
@@ -305,6 +481,7 @@ function ApproveClearanceTeachers() {
             <button
               onClick={handleReject}
               className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              disabled={!rejectionReason}
             >
               Reject
             </button>
