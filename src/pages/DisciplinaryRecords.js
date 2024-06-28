@@ -303,7 +303,7 @@ function DisciplinaryRecords() {
           section: doc.data().section,
           gradeLevel: doc.data().gradeLevel,
           uid: doc.data().uid,
-          studentNo: doc.data().studentId
+          studentNo: doc.data().studentId,
         }));
         setStudentOptions(studentsData);
 
@@ -416,10 +416,18 @@ function DisciplinaryRecords() {
       classes.split("/").forEach((classKey) => {
         classKey = classKey.trim();
         if (SANCTIONS[classKey]) {
-          applicableSanctions = [
-            ...applicableSanctions,
-            ...SANCTIONS[classKey],
-          ];
+          const previousOffensesCount = originalRecords.filter(
+            (record) =>
+              record.studentId === newRecord.studentId &&
+              record.violations.some((v) => v.includes(classKey))
+          ).length;
+
+          const nextOffenseIndex = previousOffensesCount;
+          const nextSanction = SANCTIONS[classKey][nextOffenseIndex];
+
+          if (nextSanction) {
+            applicableSanctions.push(nextSanction);
+          }
         }
       });
     });

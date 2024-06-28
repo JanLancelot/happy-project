@@ -245,12 +245,12 @@ function UserManagement() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 border border-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 border-gray-300">
+              <thead className="bg-gray-200 border">
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
                   >
                     <input
                       type="checkbox"
@@ -261,19 +261,19 @@ function UserManagement() {
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
                   >
                     Email
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                   >
                     Role
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer"
                     onClick={handleSortStatus}
                   >
                     Status{" "}
@@ -290,7 +290,7 @@ function UserManagement() {
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
                   >
                     Actions
                   </th>
