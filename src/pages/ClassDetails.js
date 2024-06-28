@@ -20,8 +20,6 @@ import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
-
-
 function ClassDetails() {
   const { currentUser } = useAuth();
   const { classId } = useParams();
@@ -127,7 +125,7 @@ function ClassDetails() {
     const worksheet = workbook.addWorksheet('Clearance Status');
   
     worksheet.addRow([`${classData.sectionName} - ${selectedSubject} Clearance Status`]);
-    worksheet.mergeCells('A1:C1');
+    worksheet.mergeCells('A1:C1'); 
     const titleCell = worksheet.getCell('A1');
     titleCell.font = { size: 16, bold: true };
     titleCell.alignment = { horizontal: 'center' };
@@ -137,7 +135,7 @@ function ClassDetails() {
     headerRow.fill = {
       type: 'pattern',
       pattern: 'solid',
-      fgColor: { argb: 'FFD3D3D3' }
+      fgColor: { argb: 'FFD3D3D3' } 
     };
   
     const filteredStudents = getFilteredStudents();
@@ -170,6 +168,12 @@ function ClassDetails() {
         };
       });
     });
+
+    const currentDateTime = new Date();
+    const formattedDate = currentDateTime.toLocaleDateString(); 
+    worksheet.addRow(['Generated On:', formattedDate]); 
+    worksheet.addRow(['Prepared By:', currentUser.email]); 
+
   
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -177,42 +181,42 @@ function ClassDetails() {
   };
   
 
-const handleClearStudent = async (studentId) => {
-  if (!selectedSubject) return;
+  const handleClearStudent = async (studentId) => {
+    if (!selectedSubject) return;
 
-  try {
-    const q = query(collection(db, "students"), where("uid", "==", studentId));
-    
-    const querySnapshot = await getDocs(q);
+    try {
+      const q = query(collection(db, "students"), where("uid", "==", studentId));
+      
+      const querySnapshot = await getDocs(q);
 
-    if (!querySnapshot.empty) {
-      querySnapshot.forEach(async (doc) => {
-        await updateDoc(doc.ref, {
-          [`clearance.${selectedSubject}`]: true,
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach(async (doc) => {
+          await updateDoc(doc.ref, {
+            [`clearance.${selectedSubject}`]: true,
+          });
         });
-      });
 
-      setStudents((prevStudents) =>
-        prevStudents.map((student) =>
-          student.uid === studentId
-            ? {
-                ...student,
-                clearance: { ...student.clearance, [selectedSubject]: true },
-              }
-            : student
-        )
-      );
+        setStudents((prevStudents) =>
+          prevStudents.map((student) =>
+            student.uid === studentId
+              ? {
+                  ...student,
+                  clearance: { ...student.clearance, [selectedSubject]: true },
+                }
+              : student
+          )
+        );
 
-      alert("Student clearance updated successfully!");
-    } else {
-      console.error("No student found with the given ID");
-      alert("No student found with the given ID");
+        alert("Student clearance updated successfully!");
+      } else {
+        console.error("No student found with the given ID");
+        alert("No student found with the given ID");
+      }
+    } catch (error) {
+      console.error("Error updating student clearance: ", error);
+      alert("Error updating clearance. Please try again later.");
     }
-  } catch (error) {
-    console.error("Error updating student clearance: ", error);
-    alert("Error updating clearance. Please try again later.");
-  }
-};
+  };
 
   const handleSelectAllStudents = () => {
     if (selectedStudentIds.length === getFilteredStudents().length) {
