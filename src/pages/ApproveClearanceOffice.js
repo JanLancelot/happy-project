@@ -146,7 +146,7 @@ function ApproveClearanceOffice() {
         )
       );
 
-      const notificationsRef = collection(db, "studentNotifications");
+      const notificationsRef = collection(db, "studentNotification");
       await addDoc(notificationsRef, {
         isRead: false,
         notifTimestamp: serverTimestamp(),
@@ -193,7 +193,7 @@ function ApproveClearanceOffice() {
         )
       );
 
-      const notificationsRef = collection(db, "studentNotifications");
+      const notificationsRef = collection(db, "studentNotification");
       await addDoc(notificationsRef, {
         isRead: false,
         notifTimestamp: serverTimestamp(),
