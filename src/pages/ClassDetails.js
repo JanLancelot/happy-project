@@ -17,6 +17,8 @@ import { useParams } from "react-router-dom";
 import { PieChart, Pie, Cell, Legend } from "recharts";
 import ReactToPrint from "react-to-print";
 import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
+
 
 function ClassDetails() {
   const { currentUser } = useAuth();
@@ -118,62 +120,62 @@ function ClassDetails() {
     },
   ];
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     const filteredData = getFilteredStudents().map((student) => ({
       Name: student.fullName,
       Cleared: student.clearance[selectedSubject] ? "Yes" : "No",
     }));
   
-    const ws = XLSX.utils.json_to_sheet(filteredData);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Clearance Status');
   
-    const headerCellStyle = {
-      font: { bold: true },
-      alignment: { horizontal: "center", vertical: "center" },
-      fill: { fgColor: { rgb: "FFFF00" } },
-      border: {
-        top: { style: "thin", color: { rgb: "000000" } },
-        bottom: { style: "thin", color: { rgb: "000000" } },
-        left: { style: "thin", color: { rgb: "000000" } },
-        right: { style: "thin", color: { rgb: "000000" } },
-      },
-    };
+    worksheet.columns = [
+      { header: 'Name', key: 'name', width: 30 },
+      { header: 'Cleared', key: 'cleared', width: 15 }
+    ];
   
-    const bodyCellStyle = {
-      border: {
-        top: { style: "thin", color: { rgb: "000000" } },
-        bottom: { style: "thin", color: { rgb: "000000" } },
-        left: { style: "thin", color: { rgb: "000000" } },
-        right: { style: "thin", color: { rgb: "000000" } },
-      },
-    };
-  
-    const headers = ["A1", "B1"];
-    headers.forEach((header) => {
-      ws[header].s = headerCellStyle;
+    filteredData.forEach(student => {
+      worksheet.addRow(student);
     });
   
-    const range = XLSX.utils.decode_range(ws["!ref"]);
-    for (let R = range.s.r + 1; R <= range.e.r; ++R) {
-      for (let C = range.s.c; C <= range.e.c; ++C) {
-        const cell_address = { c: C, r: R };
-        const cell_ref = XLSX.utils.encode_cell(cell_address);
-        if (!ws[cell_ref]) continue;
-        ws[cell_ref].s = bodyCellStyle;
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getRow(1).eachCell(cell => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFF00' } 
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+  
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber !== 1) {
+        row.eachCell(cell => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
       }
-    }
+    });
   
-    const wscols = [
-      { wpx: 200 }, 
-      { wpx: 100 }, 
-    ];
-    ws["!cols"] = wscols;
-  
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Clearance Status");
-    XLSX.writeFile(
-      wb,
-      `${classData.sectionName}_${selectedSubject}_clearance.xlsx`
-    );
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/octet-stream' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${classData.sectionName}_${selectedSubject}_clearance.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
   
 
