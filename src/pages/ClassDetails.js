@@ -18,6 +18,8 @@ import { PieChart, Pie, Cell, Legend } from "recharts";
 import ReactToPrint from "react-to-print";
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+
 
 
 function ClassDetails() {
@@ -121,61 +123,57 @@ function ClassDetails() {
   ];
 
   const handleExportExcel = async () => {
-    const filteredData = getFilteredStudents().map((student) => ({
-      Name: student.fullName,
-      Cleared: student.clearance[selectedSubject] ? "Yes" : "No",
-    }));
-  
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Clearance Status');
   
-    worksheet.columns = [
-      { header: 'Name', key: 'name', width: 30 },
-      { header: 'Cleared', key: 'cleared', width: 15 }
-    ];
+    worksheet.addRow([`${classData.sectionName} - ${selectedSubject} Clearance Status`]);
+    worksheet.mergeCells('A1:C1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.font = { size: 16, bold: true };
+    titleCell.alignment = { horizontal: 'center' };
   
-    filteredData.forEach(student => {
-      worksheet.addRow(student);
-    });
+    const headerRow = worksheet.addRow(['Student ID', 'Name', 'Cleared']);
+    headerRow.font = { bold: true };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD3D3D3' }
+    };
   
-    worksheet.getRow(1).font = { bold: true };
-    worksheet.getRow(1).alignment = { horizontal: 'center', vertical: 'middle' };
-    worksheet.getRow(1).eachCell(cell => {
-      cell.fill = {
+    const filteredStudents = getFilteredStudents();
+    filteredStudents.forEach((student) => {
+      const row = worksheet.addRow([
+        student.studentId,
+        student.fullName,
+        student.clearance[selectedSubject] ? 'Yes' : 'No'
+      ]);
+      
+      const clearedCell = row.getCell(3);
+      clearedCell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FFFF00' } 
-      };
-      cell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' }
+        fgColor: { argb: student.clearance[selectedSubject] ? 'FF90EE90' : 'FFFFA07A' }
       };
     });
   
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber !== 1) {
-        row.eachCell(cell => {
-          cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-          };
-        });
-      }
+    worksheet.columns.forEach((column) => {
+      column.width = Math.max(12, ...filteredStudents.map(s => s.fullName.length));
+    });
+  
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: {style:'thin'},
+          left: {style:'thin'},
+          bottom: {style:'thin'},
+          right: {style:'thin'}
+        };
+      });
     });
   
     const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/octet-stream' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${classData.sectionName}_${selectedSubject}_clearance.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `${classData.sectionName}_${selectedSubject}_clearance.xlsx`);
   };
   
 
