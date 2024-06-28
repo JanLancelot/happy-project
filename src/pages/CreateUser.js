@@ -27,11 +27,11 @@ function CreateUser() {
   ];
 
   const otherRoles = [
-    "librarian",
-    "characterRenewalOfficer",
-    "finance",
-    "registrarBasicEd",
-    "directorPrincipal",
+    "Librarian",
+    "Character Renewal Office",
+    "Finance",
+    "Basic Education Registrar",
+    "Director/Principal",
   ];
 
   const collegeDepartments = [

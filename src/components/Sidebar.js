@@ -125,6 +125,48 @@ const navigationOptions = {
       children: [],
     },
   ],
+  "Character Renewal Office": [
+    {
+      name: "Disciplinary Records",
+      href: "/disciplinary-records",
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      name: "Student Directory",
+      href: "/student-master-list",
+      icon: UsersIcon,
+    },
+    { name: "Messages", href: "/view-messages", icon: InboxIcon },
+    { name: "Account Settings", href: "#", icon: Cog6ToothIcon },
+  ],
+  "Guidance Office": [
+    {
+      name: "Disciplinary Records",
+      href: "/disciplinary-records",
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      name: "Student Directory",
+      href: "/student-master-list",
+      icon: UsersIcon,
+    },
+    { name: "Messages", href: "/view-messages", icon: InboxIcon },
+    { name: "Account Settings", href: "#", icon: Cog6ToothIcon },
+  ],
+  "Office of The Dean": [
+    {
+      name: "Disciplinary Records",
+      href: "/disciplinary-records",
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      name: "Student Directory",
+      href: "/student-master-list",
+      icon: UsersIcon,
+    },
+    { name: "Messages", href: "/view-messages", icon: InboxIcon },
+    { name: "Account Settings", href: "#", icon: Cog6ToothIcon },
+  ],
 };
 
 const defaultNavigation = [

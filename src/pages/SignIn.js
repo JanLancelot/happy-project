@@ -44,10 +44,10 @@ const SignIn = () => {
             case "super-admin":
               navigate("/user-management");
               break;
-            case "librarian":
-            case "characterRenewalOfficer":
-            case "finance":
-            case "registrarBasicEd":
+            case "Librarian":
+            case "Character Renewal Office":
+            case "Finance":
+            case "Basic Education Registrar":
             case "College Library":
             case "Guidance Office":
             case "Office of The Dean":
@@ -55,7 +55,7 @@ const SignIn = () => {
             case "Office of the Registrar":
             case "Property Custodian":
             case "Student Council":
-            case "directorPrincipal":
+            case "Director/Principal":
               navigate("/approve-clearance-office");
               break;
             default:

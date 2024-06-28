@@ -187,9 +187,7 @@ function ApproveClearanceOffice() {
 
       setClearanceRequests((prevRequests) =>
         prevRequests.map((req) =>
-          req.id === requestToReject.id
-            ? { ...req, status: "rejected" }
-            : req
+          req.id === requestToReject.id ? { ...req, status: "rejected" } : req
         )
       );
 
@@ -198,7 +196,7 @@ function ApproveClearanceOffice() {
         isRead: false,
         notifTimestamp: serverTimestamp(),
         status: "rejected",
-        reason: rejectionReason, 
+        reason: rejectionReason,
         studentId: requestToReject.studentId,
         subject: requestToReject.subject,
       });
@@ -413,7 +411,9 @@ function ApproveClearanceOffice() {
 
       <Modal isOpen={isModalOpen} onClose={closeRejectModal}>
         <div className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Reject Clearance Request</h3>
+          <h3 className="text-lg font-semibold mb-4">
+            Reject Clearance Request
+          </h3>
           <p>
             Are you sure you want to reject this clearance request from{" "}
             <strong>{requestToReject?.studentName}</strong> for{" "}
@@ -421,7 +421,10 @@ function ApproveClearanceOffice() {
           </p>
 
           <div className="mt-4">
-            <label htmlFor="rejectionReason" className="block text-gray-700 mb-1">
+            <label
+              htmlFor="rejectionReason"
+              className="block text-gray-700 mb-1"
+            >
               Reason for Rejection:
             </label>
             <textarea
@@ -441,7 +444,11 @@ function ApproveClearanceOffice() {
             </button>
             <button
               onClick={handleReject}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              className={`px-4 py-2 rounded  text-white ${
+                !rejectionReason
+                  ? "bg-gray-400 cursor-not-allowed" 
+                  : "bg-red-500 hover:bg-red-600"
+              }`}
               disabled={!rejectionReason}
             >
               Reject

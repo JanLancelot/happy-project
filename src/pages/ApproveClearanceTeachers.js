@@ -133,9 +133,7 @@ function ApproveClearanceTeachers() {
           [`clearance.${subject}`]: true,
         });
 
-        console.log(
-          `Student clearance for ${subject} updated successfully.`
-        );
+        console.log(`Student clearance for ${subject} updated successfully.`);
       } else {
         console.log(`No student found with uid ${studentId}.`);
       }
@@ -187,9 +185,7 @@ function ApproveClearanceTeachers() {
 
       setClearanceRequests((prevRequests) =>
         prevRequests.map((req) =>
-          req.id === requestToReject.id
-            ? { ...req, status: "rejected" }
-            : req
+          req.id === requestToReject.id ? { ...req, status: "rejected" } : req
         )
       );
 
@@ -278,30 +274,16 @@ function ApproveClearanceTeachers() {
           <table className="min-w-full bg-white border border-gray-200">
             <thead>
               <tr>
-                <th className="py-2 border-b border-gray-200">
-                  Student ID
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Student Name
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Subject
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Section
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Status
-                </th>
+                <th className="py-2 border-b border-gray-200">Student ID</th>
+                <th className="py-2 border-b border-gray-200">Student Name</th>
+                <th className="py-2 border-b border-gray-200">Subject</th>
+                <th className="py-2 border-b border-gray-200">Section</th>
+                <th className="py-2 border-b border-gray-200">Status</th>
                 <th className="py-2 border-b border-gray-200">
                   Disciplinary Records
                 </th>
-                <th className="py-2 border-b border-gray-200">
-                  Files
-                </th>
-                <th className="py-2 border-b border-gray-200">
-                  Actions
-                </th>
+                <th className="py-2 border-b border-gray-200">Files</th>
+                <th className="py-2 border-b border-gray-200">Actions</th>
                 <th className="py-2 border-b border-gray-200"></th>
               </tr>
             </thead>
@@ -313,27 +295,16 @@ function ApproveClearanceTeachers() {
                     onClick={() => handleExpandRow(request.id)}
                     className="cursor-pointer hover:bg-gray-100"
                   >
-                    <td className="border px-4 py-2">
-                      {request.studentNo}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {request.studentName}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {request.subject}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {request.section}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {request.status}
-                    </td>
+                    <td className="border px-4 py-2">{request.studentNo}</td>
+                    <td className="border px-4 py-2">{request.studentName}</td>
+                    <td className="border px-4 py-2">{request.subject}</td>
+                    <td className="border px-4 py-2">{request.section}</td>
+                    <td className="border px-4 py-2">{request.status}</td>
                     <td className="border px-4 py-2 text-center">
                       {request.disciplinaryRecords.length}
                     </td>
                     <td className="border px-4 py-2">
-                      {request.fileURLs &&
-                      request.fileURLs.length > 0 ? (
+                      {request.fileURLs && request.fileURLs.length > 0 ? (
                         <ul>
                           {request.fileURLs.map((url, index) => (
                             <li key={index}>
@@ -411,23 +382,21 @@ function ApproveClearanceTeachers() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {request.disciplinaryRecords.map(
-                                  (record) => (
-                                    <tr key={record.timestamp}>
-                                      <td className="border px-4 py-2">
-                                        {moment(
-                                          record.timestamp.toDate()
-                                        ).format("YYYY-MM-DD")}
-                                      </td>
-                                      <td className="border px-4 py-2">
-                                        {record.violations.join(", ")}
-                                      </td>
-                                      <td className="border px-4 py-2">
-                                        {record.sanctions.join(", ")}
-                                      </td>
-                                    </tr>
-                                  )
-                                )}
+                                {request.disciplinaryRecords.map((record) => (
+                                  <tr key={record.timestamp}>
+                                    <td className="border px-4 py-2">
+                                      {moment(record.timestamp.toDate()).format(
+                                        "YYYY-MM-DD"
+                                      )}
+                                    </td>
+                                    <td className="border px-4 py-2">
+                                      {record.violations.join(", ")}
+                                    </td>
+                                    <td className="border px-4 py-2">
+                                      {record.sanctions.join(", ")}
+                                    </td>
+                                  </tr>
+                                ))}
                               </tbody>
                             </table>
                           </div>
@@ -480,7 +449,11 @@ function ApproveClearanceTeachers() {
             </button>
             <button
               onClick={handleReject}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              className={`px-4 py-2 rounded  text-white ${
+                !rejectionReason
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-red-500 hover:bg-red-600"
+              }`}
               disabled={!rejectionReason}
             >
               Reject

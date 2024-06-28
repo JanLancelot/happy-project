@@ -57,17 +57,59 @@ function AddOfficeRequirement() {
         const userRole = userData.role;
         setUserDepartment(userData.department || null);
 
+        // switch (userRole) {
+        //   case "librarian":
+        //     setOfficeName("Librarian");
+        //     break;
+        //   case "finance":
+        //     setOfficeName("Finance");
+        //     break;
+        //   case "registrarBasicEd":
+        //     setOfficeName("Basic Education Registrar");
+        //     break;
+        //   case "characterRenewalOfficer":
+        //     setOfficeName("Character Renewal Office");
+        //     break;
+        //   case "College Library":
+        //     setOfficeName("College Library");
+        //     break;
+        //   case "Guidance Office":
+        //     setOfficeName("Guidance Office");
+        //     break;
+        //   case "Office of The Dean":
+        //     setOfficeName("Office of The Dean");
+        //     setIsOfficeOfTheDean(true);
+        //     setSelectedEducationLevels([
+        //       { value: "college", label: "College" },
+        //     ]);
+        //     break;
+        //   case "Office of the Finance Director":
+        //     setOfficeName("Office of the Finance Director");
+        //     break;
+        //   case "Office of the Registrar":
+        //     setOfficeName("Office of the Registrar");
+        //     break;
+        //   case "Property Custodian":
+        //     setOfficeName("Property Custodian");
+        //     break;
+        //   case "Student Council":
+        //     setOfficeName("Student Council");
+        //     break;
+        //   default:
+        //     setOfficeName("Unknown Office");
+        // }
+
         switch (userRole) {
-          case "librarian":
+          case "Librarian":
             setOfficeName("Librarian");
             break;
-          case "finance":
+          case "Finance":
             setOfficeName("Finance");
             break;
-          case "registrarBasicEd":
+          case "Basic Education Registrar":
             setOfficeName("Basic Education Registrar");
             break;
-          case "characterRenewalOfficer":
+          case "Character Renewal Office":
             setOfficeName("Character Renewal Office");
             break;
           case "College Library":
@@ -94,6 +136,9 @@ function AddOfficeRequirement() {
             break;
           case "Student Council":
             setOfficeName("Student Council");
+            break;
+          case "Director/Principal":
+            setOfficeName("Director/Principal");
             break;
           default:
             setOfficeName("Unknown Office");
