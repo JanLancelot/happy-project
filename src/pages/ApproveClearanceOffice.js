@@ -6,6 +6,8 @@ import {
   getDocs,
   doc,
   updateDoc,
+  addDoc,
+  serverTimestamp,
   orderBy,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
@@ -33,6 +35,8 @@ function ApproveClearanceOffice() {
   const [availableSections, setAvailableSections] = useState([]);
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [expandedRequestId, setExpandedRequestId] = useState(null);
+
+  const [rejectionReason, setRejectionReason] = useState("");
 
   useEffect(() => {
     const fetchClearanceRequests = async () => {
@@ -142,6 +146,15 @@ function ApproveClearanceOffice() {
         )
       );
 
+      const notificationsRef = collection(db, "studentNotifications");
+      await addDoc(notificationsRef, {
+        isRead: false,
+        notifTimestamp: serverTimestamp(),
+        status: "approved",
+        studentId: studentId,
+        subject: subject,
+      });
+
       alert("Clearance approved!");
     } catch (error) {
       console.error("Error approving clearance:", error);
@@ -151,16 +164,21 @@ function ApproveClearanceOffice() {
 
   const openRejectModal = (request) => {
     setRequestToReject(request);
+    setRejectionReason("");
     setIsModalOpen(true);
   };
 
   const closeRejectModal = () => {
     setRequestToReject(null);
+    setRejectionReason("");
     setIsModalOpen(false);
   };
 
   const handleReject = async () => {
-    if (!requestToReject) return;
+    if (!requestToReject || !rejectionReason) {
+      alert("Please provide a reason for rejection.");
+      return;
+    }
 
     try {
       await updateDoc(doc(db, "clearanceRequests", requestToReject.id), {
@@ -169,9 +187,21 @@ function ApproveClearanceOffice() {
 
       setClearanceRequests((prevRequests) =>
         prevRequests.map((req) =>
-          req.id === requestToReject.id ? { ...req, status: "rejected" } : req
+          req.id === requestToReject.id
+            ? { ...req, status: "rejected" }
+            : req
         )
       );
+
+      const notificationsRef = collection(db, "studentNotifications");
+      await addDoc(notificationsRef, {
+        isRead: false,
+        notifTimestamp: serverTimestamp(),
+        status: "rejected",
+        reason: rejectionReason, 
+        studentId: requestToReject.studentId,
+        subject: requestToReject.subject,
+      });
 
       closeRejectModal();
       alert("Clearance request rejected.");
@@ -383,14 +413,25 @@ function ApproveClearanceOffice() {
 
       <Modal isOpen={isModalOpen} onClose={closeRejectModal}>
         <div className="p-6">
-          <h3 className="text-lg font-semibold mb-4">
-            Reject Clearance Request
-          </h3>
+          <h3 className="text-lg font-semibold mb-4">Reject Clearance Request</h3>
           <p>
             Are you sure you want to reject this clearance request from{" "}
             <strong>{requestToReject?.studentName}</strong> for{" "}
             <strong>{requestToReject?.subject}</strong>?
           </p>
+
+          <div className="mt-4">
+            <label htmlFor="rejectionReason" className="block text-gray-700 mb-1">
+              Reason for Rejection:
+            </label>
+            <textarea
+              id="rejectionReason"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+              required
+            />
+          </div>
           <div className="mt-6 flex justify-end">
             <button
               onClick={closeRejectModal}
@@ -401,6 +442,7 @@ function ApproveClearanceOffice() {
             <button
               onClick={handleReject}
               className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              disabled={!rejectionReason}
             >
               Reject
             </button>
