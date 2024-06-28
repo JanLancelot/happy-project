@@ -143,32 +143,37 @@ function UpdateClass() {
         return clearance;
       };
 
-      const studentUpdatePromises = allStudentOptions.map(
-        async (student) => {
-          const studentDocRef = doc(db, "students", student.value);
+      const studentUpdatePromises = allStudentOptions.map(async (student) => {
+        const studentDocRef = doc(db, "students", student.value);
+        const studentDoc = await getDoc(studentDocRef);
+        const currentStudentData = studentDoc.data();
 
-          if (currentSelectedStudentIds.includes(student.value)) {
-
-            const studentDocSnapshot = await getDoc(studentDocRef);
-            const existingClearance = studentDocSnapshot.data().clearance || {};
-
+        if (currentSelectedStudentIds.includes(student.value)) {
+          if (student.section !== sectionName) {
+            // This is a newly added student to the class
             await updateDoc(studentDocRef, {
               section: sectionName,
               department: educationLevel === "college" ? department : null,
-              clearance: { ...existingClearance, ...generateClearance() },
+              clearance: generateClearance(),
             });
-          } else if (
-            originalSelectedStudentIds.includes(student.value) &&
-            student.section === sectionName
-          ) {
+          } else {
             await updateDoc(studentDocRef, {
-              section: null,
-              department: null,
-              clearance: {}, 
+              section: sectionName,
+              department: educationLevel === "college" ? department : null,
+              clearance: currentStudentData.clearance || {},
             });
           }
+        } else if (
+          originalSelectedStudentIds.includes(student.value) &&
+          student.section === sectionName
+        ) {
+          await updateDoc(studentDocRef, {
+            section: null,
+            department: null,
+            clearance: currentStudentData.clearance || {},
+          });
         }
-      );
+      });
 
       await Promise.all(studentUpdatePromises);
 
