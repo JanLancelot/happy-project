@@ -81,9 +81,9 @@ function CreateStudent() {
     switch (educationLevel) {
       case "elementary":
         return ["1", "2", "3", "4", "5", "6"];
-      case "juniorHighschool":
+      case "junior high school":
         return ["7", "8", "9", "10"];
-      case "seniorHighschool":
+      case "senior high school":
         return ["11", "12"];
       case "college":
         return ["Freshman", "Sophomore", "Junior", "Senior"];
@@ -230,8 +230,8 @@ function CreateStudent() {
                 Select education level
               </option>
               <option value="elementary">Elementary</option>
-              <option value="juniorHighschool">Junior High School</option>
-              <option value="seniorHighschool">Senior High School</option>
+              <option value="junior high school">Junior High School</option>
+              <option value="senior high school">Senior High School</option>
               <option value="college">College</option>
             </select>
           </div>

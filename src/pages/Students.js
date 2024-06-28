@@ -84,9 +84,9 @@ function Students() {
       let newEducationLevel = studentToPromote.educationLevel;
 
       if (newGradeLevel === 7) {
-        newEducationLevel = "juniorHighschool";
+        newEducationLevel = "junior high school";
       } else if (newGradeLevel === 11) {
-        newEducationLevel = "seniorHighschool";
+        newEducationLevel = "senior high school";
       } else if (newGradeLevel > 12) {
         newGradeLevel = "Freshman";
         newEducationLevel = "college";

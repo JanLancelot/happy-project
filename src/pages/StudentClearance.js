@@ -102,15 +102,21 @@ const StudentClearance = () => {
     const fetchOfficeRequirements = async () => {
       try {
         const officeReqsRef = collection(db, "officeRequirements");
-        const officeReqsSnapshot = await getDocs(officeReqsRef);
+        const officeReqsQuery = query(
+          officeReqsRef,
+          where("educationLevels", "array-contains", studentData.educationLevel)
+        );
+        const officeReqsSnapshot = await getDocs(officeReqsQuery);
         setOfficeRequirements(officeReqsSnapshot.docs.map((doc) => doc.data()));
       } catch (error) {
         console.error("Error fetching office requirements:", error);
       }
     };
 
-    fetchOfficeRequirements();
-  }, []);
+    if (studentData) {
+      fetchOfficeRequirements();
+    }
+  }, [studentData]);
 
   useEffect(() => {
     const fetchClearanceRequests = async () => {
