@@ -150,7 +150,6 @@ function UpdateClass() {
 
         if (currentSelectedStudentIds.includes(student.value)) {
           if (student.section !== sectionName) {
-            // This is a newly added student to the class
             await updateDoc(studentDocRef, {
               section: sectionName,
               department: educationLevel === "college" ? department : null,
@@ -170,14 +169,13 @@ function UpdateClass() {
           await updateDoc(studentDocRef, {
             section: null,
             department: null,
-            clearance: currentStudentData.clearance || {},
+            clearance: {},
           });
         }
       });
 
       await Promise.all(studentUpdatePromises);
 
-      alert("Class updated successfully!");
       navigate("/classes");
     } catch (error) {
       console.error("Error updating class:", error);
@@ -368,9 +366,7 @@ function UpdateClass() {
                   />
                   <select
                     value={subject.teacherUid}
-                    onChange={(e) =>
-                      handleTeacherChange(index, e.target.value)
-                    }
+                    onChange={(e) => handleTeacherChange(index, e.target.value)}
                     required
                     className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                   >
