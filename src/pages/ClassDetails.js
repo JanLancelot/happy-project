@@ -124,60 +124,90 @@ function ClassDetails() {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Clearance Status');
   
-    worksheet.addRow([`${classData.sectionName} - ${selectedSubject} Clearance Status`]);
-    worksheet.mergeCells('A1:C1'); 
+    worksheet.addRow([`${classData.sectionName} - English Clearance Status`]);
+    worksheet.mergeCells('A1:C1');
     const titleCell = worksheet.getCell('A1');
-    titleCell.font = { size: 16, bold: true };
-    titleCell.alignment = { horizontal: 'center' };
+    titleCell.font = { size: 18, bold: true, color: { argb: '000000' } };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    titleCell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD9E1F2' }
+    };
+    worksheet.getRow(1).height = 30;
+  
+    worksheet.addRow([]);
   
     const headerRow = worksheet.addRow(['Student ID', 'Name', 'Cleared']);
-    headerRow.font = { bold: true };
+    headerRow.font = { bold: true, color: { argb: 'FFFFFF' } };
     headerRow.fill = {
       type: 'pattern',
       pattern: 'solid',
-      fgColor: { argb: 'FFD3D3D3' } 
+      fgColor: { argb: '4472C4' }
     };
+    headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getRow(headerRow.number).height = 25;
   
     const filteredStudents = getFilteredStudents();
-    filteredStudents.forEach((student) => {
+    filteredStudents.forEach((student, index) => {
       const row = worksheet.addRow([
         student.studentId,
         student.fullName,
         student.clearance[selectedSubject] ? 'Yes' : 'No'
       ]);
       
+      row.alignment = { vertical: 'middle' };
+      row.height = 22;
+  
       const clearedCell = row.getCell(3);
       clearedCell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: student.clearance[selectedSubject] ? 'FF90EE90' : 'FFFFA07A' }
+        fgColor: { argb: student.clearance[selectedSubject] ? 'C6EFCE' : 'FFC7CE' }
       };
+      clearedCell.font = { color: { argb: student.clearance[selectedSubject] ? '006100' : '9C0006' } };
+      clearedCell.alignment = { horizontal: 'center' };
+  
+      if (index % 2 !== 0) {
+        row.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'F2F2F2' }
+        };
+      }
     });
   
-    worksheet.columns.forEach((column) => {
-      column.width = Math.max(12, ...filteredStudents.map(s => s.fullName.length));
-    });
+    worksheet.columns = [
+      { width: 15 }, 
+      { width: 30 }, 
+      { width: 15 }  
+    ];
   
-    worksheet.eachRow((row) => {
+    worksheet.eachRow((row, rowNumber) => {
       row.eachCell((cell) => {
         cell.border = {
-          top: {style:'thin'},
-          left: {style:'thin'},
-          bottom: {style:'thin'},
-          right: {style:'thin'}
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
         };
       });
     });
-
+  
+    worksheet.addRow([]);
     const currentDateTime = new Date();
-    const formattedDate = currentDateTime.toLocaleDateString(); 
-    worksheet.addRow(['Generated On:', formattedDate]); 
-    worksheet.addRow(['Prepared By:', currentUser.email]); 
-
+    const formattedDate = currentDateTime.toLocaleDateString();
+    worksheet.addRow(['Generated On:', formattedDate]);
+    worksheet.addRow(['Prepared By:', currentUser.email]);
+  
+    ['A', 'B'].forEach(col => {
+      worksheet.getCell(`${col}${worksheet.rowCount - 1}`).font = { italic: true };
+      worksheet.getCell(`${col}${worksheet.rowCount}`).font = { italic: true };
+    });
   
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, `${classData.sectionName}_${selectedSubject}_clearance.xlsx`);
+    saveAs(blob, `${classData.sectionName}_English_clearance.xlsx`);
   };
   
 
