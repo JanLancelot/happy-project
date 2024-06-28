@@ -175,11 +175,21 @@ function OfficeClearanceManagement() {
 
   const handleClearStudent = async (studentId) => {
     try {
-      const studentDocRef = doc(db, "students", studentId);
+      const q = query(collection(db, "students"), where("uid", "==", studentId));
+      const querySnapshot = await getDocs(q);
+  
+      if (querySnapshot.empty) {
+        console.error("No student found with uid:", studentId);
+        alert("Error: Student not found.");
+        return;
+      }
+  
+      const studentDocRef = doc(db, "students", querySnapshot.docs[0].id);
+  
       await updateDoc(studentDocRef, {
         [`clearance.${officeName}`]: true,
       });
-
+  
       setStudents((prevStudents) =>
         prevStudents.map((student) =>
           student.uid === studentId
@@ -191,7 +201,7 @@ function OfficeClearanceManagement() {
             : student
         )
       );
-
+  
       alert(`${officeName} clearance marked for the student.`);
     } catch (error) {
       console.error("Error updating student clearance: ", error);
