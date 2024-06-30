@@ -30,7 +30,7 @@ import ManageRequirements from "./pages/ManageRequirements";
 import ManageOfficeRequirements from "./pages/ManageOfficeRequirements";
 import OfficeClearanceManual from "./pages/OfficeClearanceManual";
 import ForgotPassword from "./pages/ForgotPassword";
-import SendPaymentConfirmationSMS from "./pages/SendPaymentConfirmationSMS.JS";
+import SendPaymentConfirmationSMS from "./pages/SendPaymentConfirmationSMS";
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
