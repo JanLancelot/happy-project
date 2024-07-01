@@ -50,6 +50,7 @@ function SchoolEvents() {
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: "",
     date: "",
@@ -61,6 +62,8 @@ function SchoolEvents() {
     gradeLevels: [],
   });
   const [eventToEdit, setEventToEdit] = useState(null);
+  const [eventToImport, setEventToImport] = useState(null);
+  const [eventToView, setEventToView] = useState(null);
   const [filter, setFilter] = useState("");
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -95,7 +98,7 @@ function SchoolEvents() {
 
       setNewEvent({
         ...newEvent,
-        id: docRef.id, 
+        id: docRef.id,
       });
 
       setIsAddEventModalOpen(false);
@@ -160,12 +163,19 @@ function SchoolEvents() {
         educationLevel: row[5],
       }));
 
-      await updateDoc(doc(db, "events", newEvent.id), {
-        attendees: arrayUnion(...attendees),
-      });
+      if (eventToImport) {
+        await updateDoc(doc(db, "events", eventToImport.id), {
+          attendees: arrayUnion(...attendees),
+        });
 
-      setIsImportModalOpen(false);
-      alert("Attendees imported successfully!");
+        setEventToImport(null);
+        setIsImportModalOpen(false);
+        alert("Attendees imported successfully!");
+        fetchEvents();
+      } else {
+        console.error("Error: No event selected for import.");
+        alert("Error importing attendees: No event selected.");
+      }
     } catch (error) {
       console.error("Error importing attendees:", error);
       alert("Error importing attendees. Please try again later.");
@@ -260,12 +270,24 @@ function SchoolEvents() {
                   >
                     Delete
                   </button>
-                  <Link
-                    to={`/event-attendees/${event.id}`}
+                  <button
+                    onClick={() => {
+                      setEventToImport(event);
+                      setIsImportModalOpen(true);
+                    }}
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 ml-2"
+                  >
+                    Import Attendees
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEventToView(event);
+                      setIsAttendeesModalOpen(true);
+                    }}
                     className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 ml-2"
                   >
                     View Attendees
-                  </Link>
+                  </button>
                 </td>
               </tr>
             ))}
@@ -595,9 +617,7 @@ function SchoolEvents() {
                     onChange={(selected) =>
                       setEventToEdit({
                         ...eventToEdit,
-                        educationLevels: selected.map(
-                          (option) => option.value
-                        ),
+                        educationLevels: selected.map((option) => option.value),
                       })
                     }
                   />
@@ -650,8 +670,14 @@ function SchoolEvents() {
         >
           <div className="p-6">
             <h3 className="text-lg font-semibold mb-4">Import Attendees</h3>
+            {eventToImport && (
+              <p className="mb-4">
+                Importing attendees for event:{" "}
+                <strong>{eventToImport.title}</strong>
+              </p>
+            )}
             <CSVReader
-              onUploadAccepted={(results) => handleImportCSV(results)}
+              onUploadAccepted={handleImportCSV}
               onDragOver={(event) => event.preventDefault()}
               onDragLeave={(event) => event.preventDefault()}
             >
@@ -684,6 +710,32 @@ function SchoolEvents() {
                 </>
               )}
             </CSVReader>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={isAttendeesModalOpen}
+          onClose={() => setIsAttendeesModalOpen(false)}
+        >
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Attendees</h3>
+            {eventToView ? (
+              <ul>
+                {eventToView.attendees && eventToView.attendees.length > 0 ? (
+                  eventToView.attendees.map((attendee, index) => (
+                    <li key={index}>
+                      {attendee.studentName} (ID: {attendee.studentId}, UID:{" "}
+                      {attendee.studentUid}, Email: {attendee.email}, Grade:{" "}
+                      {attendee.gradeLevel}, Level: {attendee.educationLevel})
+                    </li>
+                  ))
+                ) : (
+                  <p>No attendees found for this event.</p>
+                )}
+              </ul>
+            ) : (
+              <p>Loading attendees...</p>
+            )}
           </div>
         </Modal>
       </div>
