@@ -30,7 +30,7 @@ import ManageRequirements from "./pages/ManageRequirements";
 import ManageOfficeRequirements from "./pages/ManageOfficeRequirements";
 import OfficeClearanceManual from "./pages/OfficeClearanceManual";
 import ForgotPassword from "./pages/ForgotPassword";
-import SendPaymentConfirmationSMS from "./pages/SendPaymentConfirmationSMS";
+import SchoolEvents from "./pages/SchoolEvents";
 
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
@@ -62,7 +62,7 @@ const router = createBrowserRouter([
   { path: "/manage-office-requirements", element: <ManageOfficeRequirements />},
   { path: "/office-clearance-manual", element: <OfficeClearanceManual />},
   { path: "/forgot-password", element: <ForgotPassword />},
-  { path: "/send-confirmation-sms", element: <SendPaymentConfirmationSMS />}
+  { path: "/school-events", element: <SchoolEvents />}
 ]);
 
 function App() {
