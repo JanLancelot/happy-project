@@ -235,7 +235,7 @@ function SchoolEvents() {
           </div>
         </div>
 
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <div className="bg-white overflow-hidden">
           <table className="min-w-full">
             <thead className="bg-gray-100">
               <tr>
@@ -245,6 +245,7 @@ function SchoolEvents() {
                 <th className="py-3 px-4 text-left">Location</th>
                 <th className="py-3 px-4 text-left">Education Levels</th>
                 <th className="py-3 px-4 text-left">Grade Levels</th>
+                <th className="py-3 px-4 text-left">Attendees</th>
                 <th className="py-3 px-4 text-left">Actions</th>
               </tr>
             </thead>
@@ -275,6 +276,9 @@ function SchoolEvents() {
                   </td>
                   <td className="py-4 px-4">
                     {event.gradeLevels?.join(", ") || "N/A"}
+                  </td>
+                  <td className="py-4 px-4">
+                    {event.attendees ? event.attendees.length : 0}
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex space-x-2">
@@ -794,7 +798,7 @@ function SchoolEvents() {
           isOpen={isAttendeesModalOpen}
           onClose={() => setIsAttendeesModalOpen(false)}
         >
-          <div className="p-6">
+          <div className="p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-2xl font-semibold">Attendees</h3>
               <button
@@ -824,7 +828,7 @@ function SchoolEvents() {
                           Grade: {attendee.gradeLevel} | Level:{" "}
                           {attendee.educationLevel}
                         </p>
-                      </li>
+                        </li>
                     ))}
                   </ul>
                 ) : (
