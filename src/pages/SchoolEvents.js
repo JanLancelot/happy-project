@@ -9,12 +9,41 @@ import {
   deleteDoc,
   updateDoc,
   serverTimestamp,
+  arrayUnion,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
 import moment from "moment";
 import { useCSVReader } from "react-papaparse";
+import Select from "react-select";
+import { Link } from "react-router-dom";
+
+const educationLevels = [
+  { value: "elementary", label: "Elementary" },
+  { value: "junior", label: "Junior High School" },
+  { value: "senior", label: "High School" },
+  { value: "college", label: "College" },
+];
+
+const gradeLevels = [
+  { value: "1", label: "1st Grade" },
+  { value: "2", label: "2nd Grade" },
+  { value: "3", label: "3rd Grade" },
+  { value: "4", label: "4th Grade" },
+  { value: "5", label: "5th Grade" },
+  { value: "6", label: "6th Grade" },
+  { value: "7", label: "7th Grade" },
+  { value: "8", label: "8th Grade" },
+  { value: "9", label: "9th Grade" },
+  { value: "10", label: "10th Grade" },
+  { value: "11", label: "11th Grade" },
+  { value: "12", label: "12th Grade" },
+  { value: "freshman", label: "Freshman" },
+  { value: "sophomore", label: "Sophomore" },
+  { value: "junior", label: "Junior" },
+  { value: "senior", label: "Senior" },
+];
 
 function SchoolEvents() {
   const [events, setEvents] = useState([]);
@@ -28,7 +57,8 @@ function SchoolEvents() {
     endTime: "",
     description: "",
     location: "",
-    attendees: [],
+    educationLevels: [],
+    gradeLevels: [],
   });
   const [eventToEdit, setEventToEdit] = useState(null);
   const [filter, setFilter] = useState("");
@@ -58,9 +88,14 @@ function SchoolEvents() {
 
   const handleAddEvent = async () => {
     try {
-      await addDoc(collection(db, "events"), {
+      const docRef = await addDoc(collection(db, "events"), {
         ...newEvent,
         timestamp: serverTimestamp(),
+      });
+
+      setNewEvent({
+        ...newEvent,
+        id: docRef.id, 
       });
 
       setIsAddEventModalOpen(false);
@@ -71,7 +106,8 @@ function SchoolEvents() {
         endTime: "",
         description: "",
         location: "",
-        attendees: [],
+        educationLevels: [],
+        gradeLevels: [],
       });
 
       alert("Event added successfully!");
@@ -113,11 +149,27 @@ function SchoolEvents() {
     }
   };
 
-  const handleImportCSV = (results) => {
-    const attendees = results.data.map((row) => row[0]);
-    setNewEvent({ ...newEvent, attendees });
-    setIsImportModalOpen(false);
-    alert("Attendees imported successfully!");
+  const handleImportCSV = async (results) => {
+    try {
+      const attendees = results.data.slice(1).map((row) => ({
+        email: row[0],
+        studentId: row[1],
+        studentUid: row[2],
+        studentName: row[3],
+        gradeLevel: row[4],
+        educationLevel: row[5],
+      }));
+
+      await updateDoc(doc(db, "events", newEvent.id), {
+        attendees: arrayUnion(...attendees),
+      });
+
+      setIsImportModalOpen(false);
+      alert("Attendees imported successfully!");
+    } catch (error) {
+      console.error("Error importing attendees:", error);
+      alert("Error importing attendees. Please try again later.");
+    }
   };
 
   const filteredEvents = events.filter((event) =>
@@ -168,7 +220,10 @@ function SchoolEvents() {
               <th className="py-2 border-b border-gray-200">Date</th>
               <th className="py-2 border-b border-gray-200">Time</th>
               <th className="py-2 border-b border-gray-200">Location</th>
-              <th className="py-2 border-b border-gray-200">Attendees</th>
+              <th className="py-2 border-b border-gray-200">
+                Education Levels
+              </th>
+              <th className="py-2 border-b border-gray-200">Grade Levels</th>
               <th className="py-2 border-b border-gray-200">Actions</th>
             </tr>
           </thead>
@@ -184,7 +239,10 @@ function SchoolEvents() {
                 </td>
                 <td className="border px-4 py-2">{event.location}</td>
                 <td className="border px-4 py-2">
-                  {event.attendees?.length || 0}
+                  {event.educationLevels?.join(", ") || "N/A"}
+                </td>
+                <td className="border px-4 py-2">
+                  {event.gradeLevels?.join(", ") || "N/A"}
                 </td>
                 <td className="border px-4 py-2">
                   <button
@@ -202,6 +260,12 @@ function SchoolEvents() {
                   >
                     Delete
                   </button>
+                  <Link
+                    to={`/event-attendees/${event.id}`}
+                    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 ml-2"
+                  >
+                    View Attendees
+                  </Link>
                 </td>
               </tr>
             ))}
@@ -325,18 +389,47 @@ function SchoolEvents() {
                   }
                 />
               </div>
+
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Attendees:
+                  Education Levels:
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setIsImportModalOpen(true)}
-                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                  Import Attendees
-                </button>
+                <Select
+                  isMulti
+                  options={educationLevels}
+                  value={newEvent.educationLevels.map((level) => ({
+                    value: level,
+                    label: level,
+                  }))}
+                  onChange={(selected) =>
+                    setNewEvent({
+                      ...newEvent,
+                      educationLevels: selected.map((option) => option.value),
+                    })
+                  }
+                />
               </div>
+
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Grade Levels:
+                </label>
+                <Select
+                  isMulti
+                  options={gradeLevels}
+                  value={newEvent.gradeLevels.map((level) => ({
+                    value: level,
+                    label: level,
+                  }))}
+                  onChange={(selected) =>
+                    setNewEvent({
+                      ...newEvent,
+                      gradeLevels: selected.map((option) => option.value),
+                    })
+                  }
+                />
+              </div>
+
               <div className="flex justify-end">
                 <button
                   type="button"
@@ -462,6 +555,69 @@ function SchoolEvents() {
                       setEventToEdit({
                         ...eventToEdit,
                         description: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="location"
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                  >
+                    Location:
+                  </label>
+                  <input
+                    type="text"
+                    id="location"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={eventToEdit.location}
+                    onChange={(e) =>
+                      setEventToEdit({
+                        ...eventToEdit,
+                        location: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Education Levels:
+                  </label>
+                  <Select
+                    isMulti
+                    options={educationLevels}
+                    value={eventToEdit.educationLevels.map((level) => ({
+                      value: level,
+                      label: level,
+                    }))}
+                    onChange={(selected) =>
+                      setEventToEdit({
+                        ...eventToEdit,
+                        educationLevels: selected.map(
+                          (option) => option.value
+                        ),
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Grade Levels:
+                  </label>
+                  <Select
+                    isMulti
+                    options={gradeLevels}
+                    value={eventToEdit.gradeLevels.map((level) => ({
+                      value: level,
+                      label: level,
+                    }))}
+                    onChange={(selected) =>
+                      setEventToEdit({
+                        ...eventToEdit,
+                        gradeLevels: selected.map((option) => option.value),
                       })
                     }
                   />
