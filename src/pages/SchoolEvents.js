@@ -14,7 +14,7 @@ import { db } from "../firebaseConfig";
 import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
 import moment from "moment";
-import { CSVReader } from "react-papaparse";
+import { useCSVReader } from "react-papaparse";
 
 function SchoolEvents() {
   const [events, setEvents] = useState([]);
@@ -34,6 +34,8 @@ function SchoolEvents() {
   const [filter, setFilter] = useState("");
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState("asc");
+
+  const { CSVReader } = useCSVReader();
 
   useEffect(() => {
     fetchEvents();
@@ -111,8 +113,8 @@ function SchoolEvents() {
     }
   };
 
-  const handleImportCSV = (data) => {
-    const attendees = data.map((row) => row.data[0]);
+  const handleImportCSV = (results) => {
+    const attendees = results.data.map((row) => row[0]);
     setNewEvent({ ...newEvent, attendees });
     setIsImportModalOpen(false);
     alert("Attendees imported successfully!");
@@ -493,16 +495,38 @@ function SchoolEvents() {
           <div className="p-6">
             <h3 className="text-lg font-semibold mb-4">Import Attendees</h3>
             <CSVReader
-              onDrop={handleImportCSV}
-              onError={(err) => console.error(err)}
-              addRemoveButton
-              removeButtonColor="#659cef"
-              config={{
-                header: true,
-                skipEmptyLines: true,
-              }}
+              onUploadAccepted={(results) => handleImportCSV(results)}
+              onDragOver={(event) => event.preventDefault()}
+              onDragLeave={(event) => event.preventDefault()}
             >
-              <span>Drop CSV file here or click to upload.</span>
+              {({
+                getRootProps,
+                acceptedFile,
+                ProgressBar,
+                getRemoveFileProps,
+              }) => (
+                <>
+                  <div
+                    {...getRootProps()}
+                    className="border-2 border-dashed border-gray-300 p-4 text-center cursor-pointer"
+                  >
+                    {acceptedFile ? (
+                      <div>{acceptedFile.name}</div>
+                    ) : (
+                      <p>Drop CSV file here or click to upload.</p>
+                    )}
+                    <ProgressBar />
+                  </div>
+                  {acceptedFile && (
+                    <button
+                      {...getRemoveFileProps()}
+                      className="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </>
+              )}
             </CSVReader>
           </div>
         </Modal>
