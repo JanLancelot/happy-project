@@ -78,6 +78,7 @@ function SchoolEvents() {
   const [filter, setFilter] = useState("");
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [attendeeFilter, setAttendeeFilter] = useState("");
 
   const { CSVReader } = useCSVReader();
 
@@ -808,15 +809,31 @@ function SchoolEvents() {
                 <X size={24} />
               </button>
             </div>
+
             {eventToView ? (
               <div>
                 <h4 className="text-lg font-semibold mb-2">
                   {eventToView.title}
                 </h4>
+
+                <div className="mb-4"> 
+                  <input
+                    type="text"
+                    placeholder="Search attendees..."
+                    className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                    value={attendeeFilter}
+                    onChange={(e) => setAttendeeFilter(e.target.value)}
+                  />
+                </div>
+
                 {eventToView.attendees && eventToView.attendees.length > 0 ? (
                   <ul className="space-y-2">
-                    {eventToView.attendees.map((attendee, index) => (
-                      <li key={index} className="bg-gray-100 p-3 rounded-lg">
+                    {eventToView.attendees
+                      .filter((attendee) =>
+                        attendee.studentName.toLowerCase().includes(attendeeFilter.toLowerCase())
+                      ) 
+                      .map((attendee, index) => (
+                        <li key={index} className="bg-gray-100 p-3 rounded-lg">
                         <p className="font-semibold">{attendee.studentName}</p>
                         <p className="text-sm text-gray-600">
                           ID: {attendee.studentId} | UID: {attendee.studentUid}
