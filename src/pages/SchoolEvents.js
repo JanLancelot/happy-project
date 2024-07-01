@@ -18,6 +18,17 @@ import moment from "moment";
 import { useCSVReader } from "react-papaparse";
 import Select from "react-select";
 import { Link } from "react-router-dom";
+import {
+  X,
+  Plus,
+  Edit,
+  Trash,
+  Upload,
+  Eye,
+  Calendar,
+  Clock,
+  MapPin,
+} from "lucide-react";
 
 const educationLevels = [
   { value: "elementary", label: "Elementary" },
@@ -189,25 +200,26 @@ function SchoolEvents() {
   return (
     <Sidebar>
       <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">School Events</h2>
+        <h2 className="text-3xl font-bold mb-6 text-gray-800">School Events</h2>
 
-        <div className="flex justify-between mb-4">
+        <div className="flex justify-between mb-6">
           <button
             onClick={() => setIsAddEventModalOpen(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out flex items-center"
           >
+            <Plus className="mr-2" size={18} />
             Add Event
           </button>
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
             <input
               type="text"
               placeholder="Filter events..."
-              className="px-2 py-1 border rounded mr-2"
+              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             />
             <select
-              className="px-2 py-1 border rounded mr-2"
+              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
@@ -216,90 +228,115 @@ function SchoolEvents() {
             </select>
             <button
               onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-              className="px-2 py-1 bg-gray-200 rounded"
+              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-300 ease-in-out"
             >
               {sortOrder === "asc" ? "↑" : "↓"}
             </button>
           </div>
         </div>
 
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead>
-            <tr>
-              <th className="py-2 border-b border-gray-200">Title</th>
-              <th className="py-2 border-b border-gray-200">Date</th>
-              <th className="py-2 border-b border-gray-200">Time</th>
-              <th className="py-2 border-b border-gray-200">Location</th>
-              <th className="py-2 border-b border-gray-200">
-                Education Levels
-              </th>
-              <th className="py-2 border-b border-gray-200">Grade Levels</th>
-              <th className="py-2 border-b border-gray-200">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredEvents.map((event) => (
-              <tr key={event.id}>
-                <td className="border px-4 py-2">{event.title}</td>
-                <td className="border px-4 py-2">
-                  {moment(new Date(event.date)).format("LL")}
-                </td>
-                <td className="border px-4 py-2">
-                  {event.startTime} - {event.endTime}
-                </td>
-                <td className="border px-4 py-2">{event.location}</td>
-                <td className="border px-4 py-2">
-                  {event.educationLevels?.join(", ") || "N/A"}
-                </td>
-                <td className="border px-4 py-2">
-                  {event.gradeLevels?.join(", ") || "N/A"}
-                </td>
-                <td className="border px-4 py-2">
-                  <button
-                    onClick={() => {
-                      setEventToEdit({ ...event });
-                      setIsEditModalOpen(true);
-                    }}
-                    className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 mr-2"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteEvent(event.id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEventToImport(event);
-                      setIsImportModalOpen(true);
-                    }}
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 ml-2"
-                  >
-                    Import Attendees
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEventToView(event);
-                      setIsAttendeesModalOpen(true);
-                    }}
-                    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 ml-2"
-                  >
-                    View Attendees
-                  </button>
-                </td>
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <table className="min-w-full">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="py-3 px-4 text-left">Title</th>
+                <th className="py-3 px-4 text-left">Date</th>
+                <th className="py-3 px-4 text-left">Time</th>
+                <th className="py-3 px-4 text-left">Location</th>
+                <th className="py-3 px-4 text-left">Education Levels</th>
+                <th className="py-3 px-4 text-left">Grade Levels</th>
+                <th className="py-3 px-4 text-left">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredEvents.map((event) => (
+                <tr key={event.id} className="border-b hover:bg-gray-50">
+                  <td className="py-4 px-4">{event.title}</td>
+                  <td className="py-4 px-4">
+                    <div className="flex items-center">
+                      <Calendar className="mr-2" size={16} />
+                      {moment(new Date(event.date)).format("LL")}
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex items-center">
+                      <Clock className="mr-2" size={16} />
+                      {event.startTime} - {event.endTime}
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex items-center">
+                      <MapPin className="mr-2" size={16} />
+                      {event.location}
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    {event.educationLevels?.join(", ") || "N/A"}
+                  </td>
+                  <td className="py-4 px-4">
+                    {event.gradeLevels?.join(", ") || "N/A"}
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => {
+                          setEventToEdit({ ...event });
+                          setIsEditModalOpen(true);
+                        }}
+                        className="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition duration-300 ease-in-out"
+                        title="Edit"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteEvent(event.id)}
+                        className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition duration-300 ease-in-out"
+                        title="Delete"
+                      >
+                        <Trash size={16} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEventToImport(event);
+                          setIsImportModalOpen(true);
+                        }}
+                        className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300 ease-in-out"
+                        title="Import Attendees"
+                      >
+                        <Upload size={16} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEventToView(event);
+                          setIsAttendeesModalOpen(true);
+                        }}
+                        className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300 ease-in-out"
+                        title="View Attendees"
+                      >
+                        <Eye size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         <Modal
           isOpen={isAddEventModalOpen}
           onClose={() => setIsAddEventModalOpen(false)}
         >
           <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Add New Event</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-semibold">Add New Event</h3>
+              <button
+                onClick={() => setIsAddEventModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
             <form className="space-y-4">
               <div>
                 <label
@@ -311,7 +348,7 @@ function SchoolEvents() {
                 <input
                   type="text"
                   id="title"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={newEvent.title}
                   onChange={(e) =>
                     setNewEvent({ ...newEvent, title: e.target.value })
@@ -320,61 +357,83 @@ function SchoolEvents() {
                 />
               </div>
 
-              <div>
-                <label
-                  htmlFor="date"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
-                  Date:
-                </label>
-                <input
-                  type="date"
-                  id="date"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newEvent.date}
-                  onChange={(e) =>
-                    setNewEvent({ ...newEvent, date: e.target.value })
-                  }
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="date"
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                  >
+                    Date:
+                  </label>
+                  <input
+                    type="date"
+                    id="date"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={newEvent.date}
+                    onChange={(e) =>
+                      setNewEvent({ ...newEvent, date: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="location"
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                  >
+                    Location:
+                  </label>
+                  <input
+                    type="text"
+                    id="location"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={newEvent.location}
+                    onChange={(e) =>
+                      setNewEvent({ ...newEvent, location: e.target.value })
+                    }
+                  />
+                </div>
               </div>
 
-              <div>
-                <label
-                  htmlFor="startTime"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
-                  Start Time:
-                </label>
-                <input
-                  type="time"
-                  id="startTime"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newEvent.startTime}
-                  onChange={(e) =>
-                    setNewEvent({ ...newEvent, startTime: e.target.value })
-                  }
-                  required
-                />
-              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="startTime"
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                  >
+                    Start Time:
+                  </label>
+                  <input
+                    type="time"
+                    id="startTime"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={newEvent.startTime}
+                    onChange={(e) =>
+                      setNewEvent({ ...newEvent, startTime: e.target.value })
+                    }
+                    required
+                  />
+                </div>
 
-              <div>
-                <label
-                  htmlFor="endTime"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
-                  End Time:
-                </label>
-                <input
-                  type="time"
-                  id="endTime"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newEvent.endTime}
-                  onChange={(e) =>
-                    setNewEvent({ ...newEvent, endTime: e.target.value })
-                  }
-                  required
-                />
+                <div>
+                  <label
+                    htmlFor="endTime"
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                  >
+                    End Time:
+                  </label>
+                  <input
+                    type="time"
+                    id="endTime"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={newEvent.endTime}
+                    onChange={(e) =>
+                      setNewEvent({ ...newEvent, endTime: e.target.value })
+                    }
+                    required
+                  />
+                </div>
               </div>
 
               <div>
@@ -386,29 +445,12 @@ function SchoolEvents() {
                 </label>
                 <textarea
                   id="description"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={newEvent.description}
                   onChange={(e) =>
                     setNewEvent({ ...newEvent, description: e.target.value })
                   }
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="location"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
-                  Location:
-                </label>
-                <input
-                  type="text"
-                  id="location"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={newEvent.location}
-                  onChange={(e) =>
-                    setNewEvent({ ...newEvent, location: e.target.value })
-                  }
+                  rows="4"
                 />
               </div>
 
@@ -429,6 +471,8 @@ function SchoolEvents() {
                       educationLevels: selected.map((option) => option.value),
                     })
                   }
+                  className="basic-multi-select"
+                  classNamePrefix="select"
                 />
               </div>
 
@@ -449,6 +493,8 @@ function SchoolEvents() {
                       gradeLevels: selected.map((option) => option.value),
                     })
                   }
+                  className="basic-multi-select"
+                  classNamePrefix="select"
                 />
               </div>
 
@@ -456,14 +502,14 @@ function SchoolEvents() {
                 <button
                   type="button"
                   onClick={() => setIsAddEventModalOpen(false)}
-                  className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                  className="mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-300 ease-in-out"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleAddEvent}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out"
                 >
                   Add Event
                 </button>
@@ -477,7 +523,15 @@ function SchoolEvents() {
           onClose={() => setIsEditModalOpen(false)}
         >
           <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Edit Event</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-semibold">Edit Event</h3>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
             {eventToEdit && (
               <form className="space-y-4">
                 <div>
@@ -490,7 +544,7 @@ function SchoolEvents() {
                   <input
                     type="text"
                     id="title"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={eventToEdit.title}
                     onChange={(e) =>
                       setEventToEdit({ ...eventToEdit, title: e.target.value })
@@ -499,67 +553,92 @@ function SchoolEvents() {
                   />
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="date"
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                  >
-                    Date:
-                  </label>
-                  <input
-                    type="date"
-                    id="date"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    value={eventToEdit.date}
-                    onChange={(e) =>
-                      setEventToEdit({ ...eventToEdit, date: e.target.value })
-                    }
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="date"
+                      className="block text-gray-700 text-sm font-bold mb-2"
+                    >
+                      Date:
+                    </label>
+                    <input
+                      type="date"
+                      id="date"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={eventToEdit.date}
+                      onChange={(e) =>
+                        setEventToEdit({ ...eventToEdit, date: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="location"
+                      className="block text-gray-700 text-sm font-bold mb-2"
+                    >
+                      Location:
+                    </label>
+                    <input
+                      type="text"
+                      id="location"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={eventToEdit.location}
+                      onChange={(e) =>
+                        setEventToEdit({
+                          ...eventToEdit,
+                          location: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="startTime"
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                  >
-                    Start Time:
-                  </label>
-                  <input
-                    type="time"
-                    id="startTime"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    value={eventToEdit.startTime}
-                    onChange={(e) =>
-                      setEventToEdit({
-                        ...eventToEdit,
-                        startTime: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="startTime"
+                      className="block text-gray-700 text-sm font-bold mb-2"
+                    >
+                      Start Time:
+                    </label>
+                    <input
+                      type="time"
+                      id="startTime"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={eventToEdit.startTime}
+                      onChange={(e) =>
+                        setEventToEdit({
+                          ...eventToEdit,
+                          startTime: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
 
-                <div>
-                  <label
-                    htmlFor="endTime"
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                  >
-                    End Time:
-                  </label>
-                  <input
-                    type="time"
-                    id="endTime"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    value={eventToEdit.endTime}
-                    onChange={(e) =>
-                      setEventToEdit({
-                        ...eventToEdit,
-                        endTime: e.target.value,
-                      })
-                    }
-                    required
-                  />
+                  <div>
+                    <label
+                      htmlFor="endTime"
+                      className="block text-gray-700 text-sm font-bold mb-2"
+                    >
+                      End Time:
+                    </label>
+                    <input
+                      type="time"
+                      id="endTime"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={eventToEdit.endTime}
+                      onChange={(e) =>
+                        setEventToEdit({
+                          ...eventToEdit,
+                          endTime: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -571,7 +650,7 @@ function SchoolEvents() {
                   </label>
                   <textarea
                     id="description"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={eventToEdit.description}
                     onChange={(e) =>
                       setEventToEdit({
@@ -579,27 +658,7 @@ function SchoolEvents() {
                         description: e.target.value,
                       })
                     }
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="location"
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                  >
-                    Location:
-                  </label>
-                  <input
-                    type="text"
-                    id="location"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    value={eventToEdit.location}
-                    onChange={(e) =>
-                      setEventToEdit({
-                        ...eventToEdit,
-                        location: e.target.value,
-                      })
-                    }
+                    rows="4"
                   />
                 </div>
 
@@ -620,6 +679,8 @@ function SchoolEvents() {
                         educationLevels: selected.map((option) => option.value),
                       })
                     }
+                    className="basic-multi-select"
+                    classNamePrefix="select"
                   />
                 </div>
 
@@ -640,6 +701,8 @@ function SchoolEvents() {
                         gradeLevels: selected.map((option) => option.value),
                       })
                     }
+                    className="basic-multi-select"
+                    classNamePrefix="select"
                   />
                 </div>
 
@@ -647,14 +710,14 @@ function SchoolEvents() {
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                    className="mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-300 ease-in-out"
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={handleEditEvent}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out"
                   >
                     Save Changes
                   </button>
@@ -669,7 +732,15 @@ function SchoolEvents() {
           onClose={() => setIsImportModalOpen(false)}
         >
           <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Import Attendees</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-semibold">Import Attendees</h3>
+              <button
+                onClick={() => setIsImportModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
             {eventToImport && (
               <p className="mb-4">
                 Importing attendees for event:{" "}
@@ -690,22 +761,28 @@ function SchoolEvents() {
                 <>
                   <div
                     {...getRootProps()}
-                    className="border-2 border-dashed border-gray-300 p-4 text-center cursor-pointer"
+                    className="border-2 border-dashed border-gray-300 p-8 text-center cursor-pointer rounded-lg hover:border-blue-500 transition duration-300 ease-in-out"
                   >
                     {acceptedFile ? (
-                      <div>{acceptedFile.name}</div>
+                      <div className="text-green-600 font-semibold">
+                        {acceptedFile.name}
+                      </div>
                     ) : (
-                      <p>Drop CSV file here or click to upload.</p>
+                      <p className="text-gray-500">
+                        Drop CSV file here or click to upload.
+                      </p>
                     )}
                     <ProgressBar />
                   </div>
                   {acceptedFile && (
-                    <button
-                      {...getRemoveFileProps()}
-                      className="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                    >
-                      Remove
-                    </button>
+                    <div className="mt-4 flex justify-center">
+                      <button
+                        {...getRemoveFileProps()}
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 ease-in-out"
+                      >
+                        Remove File
+                      </button>
+                    </div>
                   )}
                 </>
               )}
@@ -718,23 +795,46 @@ function SchoolEvents() {
           onClose={() => setIsAttendeesModalOpen(false)}
         >
           <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Attendees</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-semibold">Attendees</h3>
+              <button
+                onClick={() => setIsAttendeesModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
             {eventToView ? (
-              <ul>
+              <div>
+                <h4 className="text-lg font-semibold mb-2">
+                  {eventToView.title}
+                </h4>
                 {eventToView.attendees && eventToView.attendees.length > 0 ? (
-                  eventToView.attendees.map((attendee, index) => (
-                    <li key={index}>
-                      {attendee.studentName} (ID: {attendee.studentId}, UID:{" "}
-                      {attendee.studentUid}, Email: {attendee.email}, Grade:{" "}
-                      {attendee.gradeLevel}, Level: {attendee.educationLevel})
-                    </li>
-                  ))
+                  <ul className="space-y-2">
+                    {eventToView.attendees.map((attendee, index) => (
+                      <li key={index} className="bg-gray-100 p-3 rounded-lg">
+                        <p className="font-semibold">{attendee.studentName}</p>
+                        <p className="text-sm text-gray-600">
+                          ID: {attendee.studentId} | UID: {attendee.studentUid}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Email: {attendee.email}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Grade: {attendee.gradeLevel} | Level:{" "}
+                          {attendee.educationLevel}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
                 ) : (
-                  <p>No attendees found for this event.</p>
+                  <p className="text-gray-500">
+                    No attendees found for this event.
+                  </p>
                 )}
-              </ul>
+              </div>
             ) : (
-              <p>Loading attendees...</p>
+              <p className="text-gray-500">Loading attendees...</p>
             )}
           </div>
         </Modal>
