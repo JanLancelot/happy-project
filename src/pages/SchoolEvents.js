@@ -138,7 +138,7 @@ function SchoolEvents() {
               <tr key={event.id}>
                 <td className="border px-4 py-2">{event.title}</td>
                 <td className="border px-4 py-2">
-                  {moment(event.date.toDate()).format("LL")}
+                  {moment(new Date(event.date)).format("LL")}{" "}
                 </td>
                 <td className="border px-4 py-2">{event.startTime}</td>
                 <td className="border px-4 py-2">{event.endTime}</td>
