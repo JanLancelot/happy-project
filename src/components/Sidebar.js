@@ -14,7 +14,8 @@ import {
   UsersIcon,
   UserIcon,
   XMarkIcon,
-  Bars3Icon
+  Bars3Icon,
+  CalendarIcon
 } from '@heroicons/react/24/outline';
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import {
@@ -46,6 +47,11 @@ const navigationOptions = {
       icon: UsersIcon,
     },
     {
+      name: "School Events",
+      href: "/school-events",
+      icon: CalendarIcon,
+    },
+    {
       name: "Activity Log",
       href: "/audit-log",
       icon: ClockIcon,
@@ -66,6 +72,11 @@ const navigationOptions = {
       icon: UsersIcon,
     },
     {
+      name: "School Events",
+      href: "/school-events",
+      icon: CalendarIcon,
+    },
+    {
       name: "User Administration",
       href: "/user-management",
       icon: ShieldCheckIcon,
@@ -83,6 +94,11 @@ const navigationOptions = {
       name: "Clearance Requests",
       href: "/approve-clearance-faculty",
       icon: HomeIcon,
+    },
+    {
+      name: "School Events",
+      href: "/school-events",
+      icon: CalendarIcon,
     },
     {
       name: "Course Requirements",
@@ -127,6 +143,16 @@ const navigationOptions = {
   ],
   "Character Renewal Office": [
     {
+      name: "Clearance Requests",
+      href: "/approve-clearance-office",
+      icon: HomeIcon,
+    },
+    {
+      name: "Office Requirements",
+      href: "/manage-office-requirements",
+      icon: ClipboardDocumentCheckIcon,
+    },
+    {
       name: "Disciplinary Records",
       href: "/disciplinary-records",
       icon: ClipboardDocumentListIcon,
@@ -140,6 +166,16 @@ const navigationOptions = {
     { name: "Account Settings", href: "#", icon: Cog6ToothIcon },
   ],
   "Guidance Office": [
+    {
+      name: "Clearance Requests",
+      href: "/approve-clearance-office",
+      icon: HomeIcon,
+    },
+    {
+      name: "Office Requirements",
+      href: "/manage-office-requirements",
+      icon: ClipboardDocumentCheckIcon,
+    },
     {
       name: "Disciplinary Records",
       href: "/disciplinary-records",
@@ -155,6 +191,16 @@ const navigationOptions = {
   ],
   "Office of The Dean": [
     {
+      name: "Clearance Requests",
+      href: "/approve-clearance-office",
+      icon: HomeIcon,
+    },
+    {
+      name: "Office Requirements",
+      href: "/manage-office-requirements",
+      icon: ClipboardDocumentCheckIcon,
+    },
+    {
       name: "Disciplinary Records",
       href: "/disciplinary-records",
       icon: ClipboardDocumentListIcon,
@@ -164,9 +210,33 @@ const navigationOptions = {
       href: "/student-master-list",
       icon: UsersIcon,
     },
+    {
+      name: "School Events",
+      href: "/school-events",
+      icon: CalendarIcon,
+    },
     { name: "Messages", href: "/view-messages", icon: InboxIcon },
     { name: "Account Settings", href: "#", icon: Cog6ToothIcon },
   ],
+  "Student Council": [
+    {
+      name: "Clearance Requests",
+      href: "/approve-clearance-office",
+      icon: HomeIcon,
+    },
+    {
+      name: "Office Requirements",
+      href: "/manage-office-requirements",
+      icon: ClipboardDocumentCheckIcon,
+    },
+    {
+      name: "School Events",
+      href: "/school-events",
+      icon: CalendarIcon,
+    },
+    { name: "Messages", href: "/view-messages", icon: InboxIcon },
+    { name: "Account Settings", href: "#", icon: Cog6ToothIcon },
+  ]
 };
 
 const defaultNavigation = [

@@ -14,38 +14,45 @@ import { db } from "../firebaseConfig";
 import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
 import moment from "moment";
+import { CSVReader } from "react-papaparse";
 
 function SchoolEvents() {
   const [events, setEvents] = useState([]);
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: "",
     date: "",
     startTime: "",
     endTime: "",
     description: "",
+    location: "",
+    attendees: [],
   });
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState(null);
+  const [filter, setFilter] = useState("");
+  const [sortBy, setSortBy] = useState("date");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const eventsRef = collection(db, "events");
-        const q = query(eventsRef, orderBy("date", "asc"));
-        const querySnapshot = await getDocs(q);
-        const eventsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setEvents(eventsData);
-      } catch (error) {
-        console.error("Error fetching events: ", error);
-      }
-    };
-
     fetchEvents();
-  }, []);
+  }, [sortBy, sortOrder]);
+
+  const fetchEvents = async () => {
+    try {
+      const eventsRef = collection(db, "events");
+      const q = query(eventsRef, orderBy(sortBy, sortOrder));
+      const querySnapshot = await getDocs(q);
+      const eventsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setEvents(eventsData);
+    } catch (error) {
+      console.error("Error fetching events: ", error);
+    }
+  };
 
   const handleAddEvent = async () => {
     try {
@@ -61,9 +68,12 @@ function SchoolEvents() {
         startTime: "",
         endTime: "",
         description: "",
+        location: "",
+        attendees: [],
       });
 
       alert("Event added successfully!");
+      fetchEvents();
     } catch (error) {
       console.error("Error adding event: ", error);
       alert("Error adding event. Please try again later.");
@@ -78,15 +88,10 @@ function SchoolEvents() {
         ...eventToEdit,
       });
 
-      setEvents((prevEvents) =>
-        prevEvents.map((event) =>
-          event.id === eventToEdit.id ? eventToEdit : event
-        )
-      );
-
       setIsEditModalOpen(false);
       setEventToEdit(null);
       alert("Event updated successfully!");
+      fetchEvents();
     } catch (error) {
       console.error("Error updating event: ", error);
       alert("Error updating event. Please try again later.");
@@ -97,12 +102,8 @@ function SchoolEvents() {
     if (window.confirm("Are you sure you want to delete this event?")) {
       try {
         await deleteDoc(doc(db, "events", eventId));
-
-        setEvents((prevEvents) =>
-          prevEvents.filter((event) => event.id !== eventId)
-        );
-
         alert("Event deleted successfully!");
+        fetchEvents();
       } catch (error) {
         console.error("Error deleting event: ", error);
         alert("Error deleting event. Please try again later.");
@@ -110,46 +111,86 @@ function SchoolEvents() {
     }
   };
 
+  const handleImportCSV = (data) => {
+    const attendees = data.map((row) => row.data[0]);
+    setNewEvent({ ...newEvent, attendees });
+    setIsImportModalOpen(false);
+    alert("Attendees imported successfully!");
+  };
+
+  const filteredEvents = events.filter((event) =>
+    event.title.toLowerCase().includes(filter.toLowerCase())
+  );
+
   return (
     <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">School Events</h2>
 
-        <button
-          onClick={() => setIsAddEventModalOpen(true)}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mb-4"
-        >
-          Add Event
-        </button>
+        <div className="flex justify-between mb-4">
+          <button
+            onClick={() => setIsAddEventModalOpen(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Add Event
+          </button>
+          <div className="flex items-center">
+            <input
+              type="text"
+              placeholder="Filter events..."
+              className="px-2 py-1 border rounded mr-2"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+            <select
+              className="px-2 py-1 border rounded mr-2"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="date">Sort by Date</option>
+              <option value="title">Sort by Title</option>
+            </select>
+            <button
+              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+              className="px-2 py-1 bg-gray-200 rounded"
+            >
+              {sortOrder === "asc" ? "↑" : "↓"}
+            </button>
+          </div>
+        </div>
 
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr>
               <th className="py-2 border-b border-gray-200">Title</th>
               <th className="py-2 border-b border-gray-200">Date</th>
-              <th className="py-2 border-b border-gray-200">Start Time</th>
-              <th className="py-2 border-b border-gray-200">End Time</th>
-              <th className="py-2 border-b border-gray-200">Description</th>
+              <th className="py-2 border-b border-gray-200">Time</th>
+              <th className="py-2 border-b border-gray-200">Location</th>
+              <th className="py-2 border-b border-gray-200">Attendees</th>
               <th className="py-2 border-b border-gray-200">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {events.map((event) => (
+            {filteredEvents.map((event) => (
               <tr key={event.id}>
                 <td className="border px-4 py-2">{event.title}</td>
                 <td className="border px-4 py-2">
-                  {moment(new Date(event.date)).format("LL")}{" "}
+                  {moment(new Date(event.date)).format("LL")}
                 </td>
-                <td className="border px-4 py-2">{event.startTime}</td>
-                <td className="border px-4 py-2">{event.endTime}</td>
-                <td className="border px-4 py-2">{event.description}</td>{" "}
+                <td className="border px-4 py-2">
+                  {event.startTime} - {event.endTime}
+                </td>
+                <td className="border px-4 py-2">{event.location}</td>
+                <td className="border px-4 py-2">
+                  {event.attendees?.length || 0}
+                </td>
                 <td className="border px-4 py-2">
                   <button
                     onClick={() => {
                       setEventToEdit({ ...event });
                       setIsEditModalOpen(true);
                     }}
-                    className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 mr-2" // Added margin-right for spacing
+                    className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 mr-2"
                   >
                     Edit
                   </button>
@@ -265,6 +306,35 @@ function SchoolEvents() {
                 />
               </div>
 
+              <div>
+                <label
+                  htmlFor="location"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Location:
+                </label>
+                <input
+                  type="text"
+                  id="location"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={newEvent.location}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, location: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Attendees:
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsImportModalOpen(true)}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                >
+                  Import Attendees
+                </button>
+              </div>
               <div className="flex justify-end">
                 <button
                   type="button"
@@ -413,6 +483,27 @@ function SchoolEvents() {
                 </div>
               </form>
             )}
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+        >
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Import Attendees</h3>
+            <CSVReader
+              onDrop={handleImportCSV}
+              onError={(err) => console.error(err)}
+              addRemoveButton
+              removeButtonColor="#659cef"
+              config={{
+                header: true,
+                skipEmptyLines: true,
+              }}
+            >
+              <span>Drop CSV file here or click to upload.</span>
+            </CSVReader>
           </div>
         </Modal>
       </div>
