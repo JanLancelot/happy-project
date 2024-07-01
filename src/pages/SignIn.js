@@ -56,6 +56,7 @@ const SignIn = () => {
             case "Property Custodian":
             case "Student Council":
             case "Director/Principal":
+            case "OSAS":
               navigate("/approve-clearance-office");
               break;
             default:

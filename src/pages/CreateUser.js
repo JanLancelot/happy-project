@@ -24,6 +24,7 @@ function CreateUser() {
     "Office of the Registrar",
     "Property Custodian",
     "Student Council",
+    "OSAS"
   ];
 
   const otherRoles = [
@@ -32,6 +33,7 @@ function CreateUser() {
     "Finance",
     "Basic Education Registrar",
     "Director/Principal",
+    "OSAS"
   ];
 
   const collegeDepartments = [

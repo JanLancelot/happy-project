@@ -236,6 +236,35 @@ const navigationOptions = {
     },
     { name: "Messages", href: "/view-messages", icon: InboxIcon },
     { name: "Account Settings", href: "#", icon: Cog6ToothIcon },
+  ],
+  "OSAS": [
+    {
+      name: "Clearance Requests",
+      href: "/approve-clearance-office",
+      icon: HomeIcon,
+    },
+    {
+      name: "Office Requirements",
+      href: "/manage-office-requirements",
+      icon: ClipboardDocumentCheckIcon,
+    },
+    {
+      name: "Disciplinary Records",
+      href: "/disciplinary-records",
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      name: "Student Directory",
+      href: "/student-master-list",
+      icon: UsersIcon,
+    },
+    {
+      name: "School Events",
+      href: "/school-events",
+      icon: CalendarIcon,
+    },
+    { name: "Messages", href: "/view-messages", icon: InboxIcon },
+    { name: "Account Settings", href: "#", icon: Cog6ToothIcon },
   ]
 };
 
