@@ -13,6 +13,15 @@ const SendPaymentConfirmationEmail = () => {
   const [isCanceled, setIsCanceled] = useState(false);
   const fileInputRef = useRef(null);
 
+  const COLUMNS = [
+    "Student ID",
+    "Student Name",
+    "Parent's Email",
+    "Amount",
+    "Items",
+    "Remaining Balance",
+  ];
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type === "text/csv") {
@@ -144,7 +153,7 @@ const SendPaymentConfirmationEmail = () => {
             <table className="min-w-full bg-white border border-gray-200">
               <thead className="bg-gray-100">
                 <tr>
-                  {Object.keys(previewData[0]).map((key) => (
+                  {COLUMNS.map((key) => (
                     <th key={key} className="py-2 px-4 border-b">
                       {key}
                     </th>
@@ -152,7 +161,7 @@ const SendPaymentConfirmationEmail = () => {
                 </tr>
               </thead>
               <tbody>
-                {previewData.slice(0, 5).map((row, index) => (
+                {previewData.map((row, index) => (
                   <tr key={index} className="border-b">
                     {Object.values(row).map((value, idx) => (
                       <td key={idx} className="py-2 px-4">
@@ -163,7 +172,6 @@ const SendPaymentConfirmationEmail = () => {
                 ))}
               </tbody>
             </table>
-            <p className="text-sm text-gray-500 mt-2">Showing first 5 rows</p>
           </div>
         )}
 
@@ -171,14 +179,14 @@ const SendPaymentConfirmationEmail = () => {
           <button
             onClick={handleSendEmails}
             disabled={isLoading || !csvFile}
-            className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
           >
             {isLoading ? "Sending..." : "Send Emails"}
           </button>
           {isLoading && (
             <button
               onClick={handleCancel}
-              className="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
             >
               Cancel
             </button>
