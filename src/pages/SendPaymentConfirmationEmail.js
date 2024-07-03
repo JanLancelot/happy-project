@@ -144,7 +144,7 @@ const SendPaymentConfirmationEmail = () => {
             ref={fileInputRef}
           />
           <p className="text-sm text-gray-500 mt-2">
-            Upload a CSV file with columns: studentId, studentName, parentEmail, amount, items, remainingBalance
+            Upload a CSV file with columns: studentId, studentName, parentEmail, amount, items, remainingBalance; here
           </p>
         </div>
 

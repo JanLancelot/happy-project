@@ -15,7 +15,8 @@ import {
   UserIcon,
   XMarkIcon,
   Bars3Icon,
-  CalendarIcon
+  CalendarIcon,
+  CreditCardIcon
 } from '@heroicons/react/24/outline';
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import {
@@ -52,6 +53,11 @@ const navigationOptions = {
       icon: CalendarIcon,
     },
     {
+      name: "Payment Confirmation",
+      href: "/send-payment-confirmation",
+      icon: CreditCardIcon,  
+    },
+    {
       name: "Activity Log",
       href: "/audit-log",
       icon: ClockIcon,
@@ -75,6 +81,11 @@ const navigationOptions = {
       name: "School Events",
       href: "/school-events",
       icon: CalendarIcon,
+    },
+    {
+      name: "Payment Confirmation",
+      href: "/send-payment-confirmation",
+      icon: CreditCardIcon,  
     },
     {
       name: "User Administration",
@@ -156,6 +167,30 @@ const navigationOptions = {
       name: "Disciplinary Records",
       href: "/disciplinary-records",
       icon: ClipboardDocumentListIcon,
+    },
+    {
+      name: "Student Directory",
+      href: "/student-master-list",
+      icon: UsersIcon,
+    },
+    { name: "Messages", href: "/view-messages", icon: InboxIcon },
+    { name: "Account Settings", href: "#", icon: Cog6ToothIcon },
+  ],
+  "Finance": [
+    {
+      name: "Clearance Requests",
+      href: "/approve-clearance-office",
+      icon: HomeIcon,
+    },
+    {
+      name: "Office Requirements",
+      href: "/manage-office-requirements",
+      icon: ClipboardDocumentCheckIcon,
+    },
+    {
+      name: "Payment Confirmation",
+      href: "/send-payment-confirmation",
+      icon: CreditCardIcon,  
     },
     {
       name: "Student Directory",
