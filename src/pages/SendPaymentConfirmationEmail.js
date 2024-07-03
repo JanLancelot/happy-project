@@ -58,7 +58,7 @@ const SendPaymentConfirmationEmail = () => {
             setError("Email sending canceled.");
             break;
           }
-          
+
           const data = paymentData[i];
           const {
             studentId,
@@ -121,8 +121,8 @@ const SendPaymentConfirmationEmail = () => {
 
   return (
     <Sidebar>
-      <div className="container mx-auto p-4 max-w-2xl bg-white rounded shadow-lg">
-        <h2 className="text-3xl font-semibold mb-6 text-center text-blue-600">
+      <div className="container mx-auto p-4 max-w-2xl">
+        <h2 className="text-2xl font-semibold mb-4">
           Send Payment Confirmation Emails
         </h2>
 
