@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import Papa from "papaparse";
 import emailjs from "@emailjs/browser";
+import Sidebar from "../components/Sidebar";
 
 const SendPaymentConfirmationEmail = () => {
   const [csvFile, setCsvFile] = useState(null);
@@ -42,7 +43,14 @@ const SendPaymentConfirmationEmail = () => {
 
           for (let i = 0; i < paymentData.length; i++) {
             const data = paymentData[i];
-            const { studentId, studentName, parentEmail, amount, items, remainingBalance } = data;
+            const {
+              studentId,
+              studentName,
+              parentEmail,
+              amount,
+              items,
+              remainingBalance,
+            } = data;
 
             if (!studentId || !parentEmail || !amount || !items) {
               console.error(`Missing data for student ${studentId}. Skipping.`);
@@ -61,7 +69,7 @@ const SendPaymentConfirmationEmail = () => {
                   items: items,
                   remaining_balance: remainingBalance,
                 },
-                "CNHycKmcSVKvylnMl"
+                "dql0tAyLWuaY0uzbDHYnN"
               );
               console.log(`Email sent to ${parentEmail}`);
             } catch (error) {
@@ -91,51 +99,61 @@ const SendPaymentConfirmationEmail = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-2xl">
-      <h2 className="text-2xl font-semibold mb-6">Send Payment Confirmation Emails</h2>
-      
-      <div className="mb-6">
-        <input
-          type="file"
-          accept=".csv"
-          onChange={handleFileChange}
-          className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-          ref={fileInputRef}
-        />
-        <p className="text-sm text-gray-500 mt-2">
-          Upload a CSV file with columns: studentId, studentName, parentEmail, amount, items, remainingBalance
-        </p>
-      </div>
+    <Sidebar>
+      <div className="container mx-auto p-4 max-w-2xl">
+        <h2 className="text-2xl font-semibold mb-6">
+          Send Payment Confirmation Emails
+        </h2>
 
-      <button
-        onClick={handleSendEmails}
-        disabled={isLoading || !csvFile}
-        className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-      >
-        {isLoading ? "Sending..." : "Send Emails"}
-      </button>
+        <div className="mb-6">
+          <input
+            type="file"
+            accept=".csv"
+            onChange={handleFileChange}
+            className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+            ref={fileInputRef}
+          />
+          <p className="text-sm text-gray-500 mt-2">
+            Upload a CSV file with columns: studentId, studentName, parentEmail,
+            amount, items, remainingBalance
+          </p>
+        </div>
 
-      {isLoading && (
-        <div className="mt-4">
-          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-            <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+        <button
+          onClick={handleSendEmails}
+          disabled={isLoading || !csvFile}
+          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+        >
+          {isLoading ? "Sending..." : "Send Emails"}
+        </button>
+
+        {isLoading && (
+          <div className="mt-4">
+            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-gray-500 mt-2 text-center">
+              {progress}% complete
+            </p>
           </div>
-          <p className="text-sm text-gray-500 mt-2 text-center">{progress}% complete</p>
-        </div>
-      )}
+        )}
 
-      {error && (
-        <div className="mt-4 p-4 text-red-700 bg-red-100 rounded-lg">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="mt-4 p-4 text-red-700 bg-red-100 rounded-lg">
+            {error}
+          </div>
+        )}
 
-      {success && (
-        <div className="mt-4 p-4 text-green-700 bg-green-100 rounded-lg">
-          {success}
-        </div>
-      )}
-    </div>
+        {success && (
+          <div className="mt-4 p-4 text-green-700 bg-green-100 rounded-lg">
+            {success}
+          </div>
+        )}
+      </div>
+    </Sidebar>
   );
 };
 
