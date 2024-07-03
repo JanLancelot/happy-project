@@ -121,7 +121,7 @@ const SendPaymentConfirmationEmail = () => {
 
   return (
     <Sidebar>
-      <div className="container mx-auto p-4 max-w-2xl">
+      <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">
           Send Payment Confirmation Emails
         </h2>
