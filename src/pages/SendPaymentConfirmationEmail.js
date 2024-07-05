@@ -18,8 +18,6 @@ const SendPaymentConfirmationEmail = () => {
     "Student Name",
     "Parent's Email",
     "Amount",
-    "Items",
-    "Remaining Balance",
   ];
 
   const handleFileChange = (e) => {
@@ -74,11 +72,9 @@ const SendPaymentConfirmationEmail = () => {
             studentName,
             parentEmail,
             amount,
-            items,
-            remainingBalance,
           } = data;
 
-          if (!studentId || !parentEmail || !amount || !items) {
+          if (!studentId || !parentEmail || !amount) {
             console.error(`Missing data for student ${studentId}. Skipping.`);
             continue;
           }
@@ -92,8 +88,6 @@ const SendPaymentConfirmationEmail = () => {
                 student_id: studentId,
                 student_name: studentName,
                 amount: amount,
-                items: items,
-                remaining_balance: remainingBalance,
               },
               "CNHycKmcSVKvylnMl"
             );
@@ -144,7 +138,7 @@ const SendPaymentConfirmationEmail = () => {
             ref={fileInputRef}
           />
           <p className="text-sm text-gray-500 mt-2">
-            Upload a CSV file with columns: studentId, studentName, parentEmail, amount, items, remainingBalance; here
+            Upload a CSV file with columns: studentId, studentName, parentEmail, amount
           </p>
         </div>
 
@@ -163,7 +157,7 @@ const SendPaymentConfirmationEmail = () => {
               <tbody>
                 {previewData.map((row, index) => (
                   <tr key={index} className="border-b">
-                    {Object.values(row).map((value, idx) => (
+                    {Object.values(row).slice(0, 4).map((value, idx) => (
                       <td key={idx} className="py-2 px-4">
                         {value}
                       </td>
