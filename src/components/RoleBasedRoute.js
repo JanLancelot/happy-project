@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import { app } from '../firebaseConfig';
 
-const PrivateRoute = ({ children }) => {
+const RoleBasedRoute = ({ children, allowedRoles }) => {
   const { currentUser } = useAuth();
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +36,11 @@ const PrivateRoute = ({ children }) => {
     return <Navigate to="/" replace />;
   }
 
+  if (!allowedRoles.includes(userRole)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return children;
 };
 
-export default PrivateRoute;
+export default RoleBasedRoute;
