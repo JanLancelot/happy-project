@@ -3,6 +3,7 @@ import { AuthProvider } from "./components/AuthContext";
 
 import PrivateRoute from "./components/PrivateRoute";
 import RoleBasedRoute from "./components/RoleBasedRoute";
+import AccessDenied from "./pages/AccessDenied";
 import SignIn from "./pages/SignIn";
 import Dashboard from "./pages/Dashboard";
 import Teachers from "./pages/Teachers";
@@ -38,6 +39,7 @@ import SendPaymentConfirmationEmail from "./pages/SendPaymentConfirmationEmail";
 const router = createBrowserRouter([
   { path: "/", element: <SignIn /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
+  { path: "/access-denied", element: <AccessDenied /> },
   { path: "/dashboard", element: <PrivateRoute><Dashboard /></PrivateRoute> },
   { 
     path: "/disciplinary-records", 

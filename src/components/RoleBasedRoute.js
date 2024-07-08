@@ -37,7 +37,7 @@ const RoleBasedRoute = ({ children, allowedRoles }) => {
   }
 
   if (!allowedRoles.includes(userRole)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/access-denied" replace />;
   }
 
   return children;
