@@ -3,7 +3,7 @@ import { AuthProvider } from "./components/AuthContext";
 
 import PrivateRoute from "./components/PrivateRoute";
 import RoleBasedRoute from "./components/RoleBasedRoute";
-import AccessDenied from "./components/AccessDenied";
+import AccessDenied from "./components/AccessDeniedComponent";
 import SignIn from "./pages/SignIn";
 import Dashboard from "./pages/Dashboard";
 import Teachers from "./pages/Teachers";
