@@ -58,6 +58,18 @@ const router = createBrowserRouter([
     </RoleBasedRoute> 
   },
   { 
+    path: "/students", 
+    element: <RoleBasedRoute allowedRoles={['admin', 'super-admin', 'Finance', 'OSAS', 'Office of the Registrar']}>
+      <Students />
+    </RoleBasedRoute> 
+  },
+  { 
+    path: "/teachers", 
+    element: <RoleBasedRoute allowedRoles={['admin', 'super-admin', 'Office of the Registrar', 'Director/Principal']}>
+      <Teachers />
+    </RoleBasedRoute> 
+  },
+  { 
     path: "/school-events", 
     element: <RoleBasedRoute allowedRoles={['admin', 'super-admin', 'faculty', 'Office of The Dean', 'Student Council', 'OSAS']}>
       <SchoolEvents />
