@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
-export const PrivateRoute = ({ children }) => {
+const PrivateRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
 
   console.log("PR: ", currentUser);
@@ -18,3 +18,5 @@ export const PrivateRoute = ({ children }) => {
 
   return children;
 };
+
+export default PrivateRoute;

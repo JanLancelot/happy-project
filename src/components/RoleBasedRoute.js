@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
-export const RoleBasedRoute = ({ children, allowedRoles }) => {
+const RoleBasedRoute = ({ children, allowedRoles }) => {
   const { currentUser, userRole, loading } = useAuth();
 
   console.log("RBR: ", currentUser);
@@ -21,3 +21,5 @@ export const RoleBasedRoute = ({ children, allowedRoles }) => {
 
   return children;
 };
+
+export default RoleBasedRoute;
