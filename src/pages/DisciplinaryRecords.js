@@ -290,6 +290,22 @@ function DisciplinaryRecords() {
   const [selectedViolations, setSelectedViolations] = useState([]);
   const [selectedSanctions, setSelectedSanctions] = useState([]);
 
+  const [offenseOptions, setOffenseOptions] = useState([]);
+  const [selectedOffense, setSelectedOffense] = useState(null);
+
+  useEffect(() => {
+    const allOffenses = Object.values(VIOLATIONS).flatMap((violationGroup) =>
+      violationGroup.map((violation) => ({
+        value: violation.value,
+        label: violation.value,
+      }))
+    );
+    setOffenseOptions([
+      { value: "all", label: "All Offenses" },
+      ...allOffenses,
+    ]);
+  }, []);
+
   useEffect(() => {
     const fetchStudentsAndTeachers = async () => {
       try {
@@ -508,8 +524,8 @@ function DisciplinaryRecords() {
     }
   };
 
-  const handleOffenseFilterChange = (e) => {
-    setFilterOffense(e.target.value);
+  const handleOffenseFilterChange = (selectedOption) => {
+    setSelectedOffense(selectedOption);
   };
 
   const handleSearchQueryChange = (e) => {
@@ -518,10 +534,17 @@ function DisciplinaryRecords() {
 
   const filteredRecords = originalRecords.filter((record) => {
     const offenseMatch =
-      filterOffense === "all" || record.offense === filterOffense;
+      !selectedOffense ||
+      selectedOffense.value === "all" ||
+      record.violations.some(
+        (violation) => violation === selectedOffense.value
+      );
+
     const searchMatch =
-      record.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.studentId.toLowerCase().includes(searchQuery.toLowerCase());
+      record.studentFullName
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      record.studentNo.toLowerCase().includes(searchQuery.toLowerCase());
 
     return offenseMatch && searchMatch;
   });
@@ -572,22 +595,20 @@ function DisciplinaryRecords() {
 
         <div className="mb-4 flex space-x-4">
           <div>
-            <label htmlFor="filterOffense" className="block text-gray-700 mb-1">
+            <label htmlFor="offenseFilter" className="block text-gray-700 mb-1">
               Filter by Offense:
             </label>
-            <select
-              id="filterOffense"
-              value={filterOffense}
-              onChange={handleOffenseFilterChange}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-            >
-              <option value="all">All Offenses</option>
-              {availableOffenses.map((offense) => (
-                <option key={offense} value={offense}>
-                  {offense}
-                </option>
-              ))}
-            </select>
+            <Select
+              id="offenseFilter"
+              options={offenseOptions}
+              value={selectedOffense}
+              onChange={setSelectedOffense}
+              isClearable
+              isSearchable
+              placeholder="Select or search for an offense"
+              className="basic-single"
+              classNamePrefix="select"
+            />
           </div>
           <div>
             <label htmlFor="searchQuery" className="block text-gray-700 mb-1">
