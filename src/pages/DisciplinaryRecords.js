@@ -608,6 +608,20 @@ function DisciplinaryRecords() {
               placeholder="Select or search for an offense"
               className="basic-single"
               classNamePrefix="select"
+              styles={{
+                control: (provided) => ({
+                  ...provided,
+                  minWidth: "200px",
+                }),
+                menu: (provided) => ({
+                  ...provided,
+                  minWidth: "200px",
+                }),
+                container: (provided) => ({
+                  ...provided,
+                  width: "100%",
+                }),
+              }}
             />
           </div>
           <div>
