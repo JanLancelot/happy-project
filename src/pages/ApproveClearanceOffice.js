@@ -24,7 +24,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 function ApproveClearanceOffice() {
-  const { currentUser } = useAuth();
+  const { currentUser, userRole } = useAuth();
   const [clearanceRequests, setClearanceRequests] = useState([]);
   const [originalRequests, setOriginalRequests] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,7 +35,6 @@ function ApproveClearanceOffice() {
   const [availableSections, setAvailableSections] = useState([]);
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [expandedRequestId, setExpandedRequestId] = useState(null);
-
   const [rejectionReason, setRejectionReason] = useState("");
 
   useEffect(() => {
@@ -64,10 +63,22 @@ function ApproveClearanceOffice() {
               (recordDoc) => recordDoc.data()
             );
 
+            let eventsAttended = 0;
+            if (userRole === "Guidance Office") {
+              const eventsRef = collection(db, "events");
+              const eventsQuery = query(
+                eventsRef,
+                where("attendees", "array-contains", requestData.studentId)
+              );
+              const eventsSnapshot = await getDocs(eventsQuery);
+              eventsAttended = eventsSnapshot.size;
+            }
+
             return {
               id: doc.id,
               ...requestData,
               disciplinaryRecords,
+              eventsAttended,
             };
           })
         );
@@ -89,7 +100,7 @@ function ApproveClearanceOffice() {
     };
 
     fetchClearanceRequests();
-  }, [currentUser]);
+  }, [currentUser, userRole]);
 
   useEffect(() => {
     let filteredRequests = [...originalRequests];
@@ -284,6 +295,11 @@ function ApproveClearanceOffice() {
                 <th className="py-2 border-b border-gray-200">
                   Disciplinary Records
                 </th>
+                {userRole === "Guidance Office" && (
+                  <th className="py-2 border-b border-gray-200">
+                    Events Attended
+                  </th>
+                )}
                 <th className="py-2 border-b border-gray-200">Files</th>
                 <th className="py-2 border-b border-gray-200">Actions</th>
                 <th className="py-2 border-b border-gray-200"></th>
@@ -293,7 +309,6 @@ function ApproveClearanceOffice() {
               {clearanceRequests.map((request) => (
                 <React.Fragment key={request.id}>
                   <tr
-                    key={request.id}
                     onClick={() => handleExpandRow(request.id)}
                     className="cursor-pointer hover:bg-gray-100"
                   >
@@ -305,6 +320,11 @@ function ApproveClearanceOffice() {
                     <td className="border px-4 py-2 text-center">
                       {request.disciplinaryRecords.length}
                     </td>
+                    {userRole === "Guidance Office" && (
+                      <td className="border px-4 py-2 text-center">
+                        {request.eventsAttended}
+                      </td>
+                    )}
                     <td className="border px-4 py-2">
                       {request.fileURLs && request.fileURLs.length > 0 ? (
                         <ul>
