@@ -8,7 +8,6 @@ import {
   updateDoc,
   addDoc,
   serverTimestamp,
-  orderBy,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../components/AuthContext";
@@ -72,7 +71,7 @@ function ApproveClearanceOffice() {
                 const attendeesArray = Object.values(eventData.attendees);
                 if (
                   attendeesArray.some(
-                    (attendee) => attendee.studentId === requestData.studentNo
+                    (attendee) => attendee.studentNo === requestData.studentNo
                   )
                 ) {
                   eventsAttended++;
@@ -80,11 +79,17 @@ function ApproveClearanceOffice() {
               });
             }
 
+            let disciplinaryRecordsCount = 0;
+            if (userRole === "Character Renewal Office") {
+              disciplinaryRecordsCount = disciplinaryRecords.length;
+            }
+
             return {
               id: doc.id,
               ...requestData,
               disciplinaryRecords,
               eventsAttended,
+              disciplinaryRecordsCount,
             };
           })
         );
@@ -288,13 +293,17 @@ function ApproveClearanceOffice() {
           <table className="min-w-full bg-white border border-gray-300">
             <thead>
               <tr>
-                <th className="py-2 px-4 border-b">Student ID</th>
                 <th className="py-2 px-4 border-b">Student Name</th>
                 <th className="py-2 px-4 border-b">Section</th>
                 <th className="py-2 px-4 border-b">Subject</th>
                 <th className="py-2 px-4 border-b">Date Submitted</th>
                 <th className="py-2 px-4 border-b">Status</th>
-                <th className="py-2 px-4 border-b">Events Attended</th>
+                {userRole === "Character Renewal Office" && (
+                  <th className="py-2 px-4 border-b">Disciplinary Records</th>
+                )}
+                {userRole === "Office of The Dean" && (
+                  <th className="py-2 px-4 border-b">Events Attended</th>
+                )}
                 <th className="py-2 px-4 border-b">Actions</th>
               </tr>
             </thead>
@@ -302,7 +311,6 @@ function ApproveClearanceOffice() {
               {clearanceRequests.map((request) => (
                 <React.Fragment key={request.id}>
                   <tr>
-                    <td className="py-2 px-4 border-b">{request.studentNo}</td>
                     <td className="py-2 px-4 border-b">{request.studentName}</td>
                     <td className="py-2 px-4 border-b">{request.section}</td>
                     <td className="py-2 px-4 border-b">{request.subject}</td>
@@ -312,9 +320,16 @@ function ApproveClearanceOffice() {
                       )}
                     </td>
                     <td className="py-2 px-4 border-b">{request.status}</td>
-                    <td className="py-2 px-4 border-b">
-                      {request.eventsAttended}
-                    </td>
+                    {userRole === "Character Renewal Office" && (
+                      <td className="py-2 px-4 border-b">
+                        {request.disciplinaryRecordsCount}
+                      </td>
+                    )}
+                    {userRole === "Office of The Dean" && (
+                      <td className="py-2 px-4 border-b">
+                        {request.eventsAttended}
+                      </td>
+                    )}
                     <td className="py-2 px-4 border-b flex space-x-2">
                       {request.status === "pending" && (
                         <>
