@@ -66,13 +66,18 @@ function ApproveClearanceOffice() {
             let eventsAttended = 0;
             if (userRole === "Office of The Dean") {
               const eventsRef = collection(db, "events");
-              const eventsQuery = query(
-                eventsRef,
-                where("attendees", "array-contains", { studentId: requestData.studentNo })
-              );
-              const eventsSnapshot = await getDocs(eventsQuery);
-              console.log("Test: ", eventsAttended);
-              eventsAttended = eventsSnapshot.size;
+              const eventsSnapshot = await getDocs(eventsRef);
+              eventsSnapshot.forEach((eventDoc) => {
+                const eventData = eventDoc.data();
+                const attendeesArray = Object.values(eventData.attendees);
+                if (
+                  attendeesArray.some(
+                    (attendee) => attendee.studentNo === requestData.studentNo
+                  )
+                ) {
+                  eventsAttended++;
+                }
+              });
             }
 
             return {
@@ -132,10 +137,6 @@ function ApproveClearanceOffice() {
       await updateDoc(doc(db, "clearanceRequests", requestId), {
         status: "approved",
       });
-
-      // await updateDoc(doc(db, "students", studentId), {
-      //   [`clearance.${subject}`]: true,
-      // });
 
       const studentsRef = collection(db, "students");
       const q = query(studentsRef, where("uid", "==", studentId));
@@ -277,79 +278,46 @@ function ApproveClearanceOffice() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Enter student name"
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             />
           </div>
         </div>
 
-        {clearanceRequests.length === 0 ? (
-          <p>No clearance requests found.</p>
-        ) : (
-          <table className="min-w-full bg-white border border-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border border-gray-300">
             <thead>
               <tr>
-                <th className="py-2 border-b border-gray-200">Student ID</th>
-                <th className="py-2 border-b border-gray-200">Student Name</th>
-                <th className="py-2 border-b border-gray-200">Office</th>
-                <th className="py-2 border-b border-gray-200">Section</th>
-                <th className="py-2 border-b border-gray-200">Status</th>
-                <th className="py-2 border-b border-gray-200">
-                  Disciplinary Records
-                </th>
-                {userRole === "Office of The Dean" && (
-                  <th className="py-2 border-b border-gray-200">
-                    Events Attended
-                  </th>
-                )}
-                <th className="py-2 border-b border-gray-200">Files</th>
-                <th className="py-2 border-b border-gray-200">Actions</th>
-                <th className="py-2 border-b border-gray-200"></th>
+                <th className="py-2 px-4 border-b">Student Name</th>
+                <th className="py-2 px-4 border-b">Section</th>
+                <th className="py-2 px-4 border-b">Subject</th>
+                <th className="py-2 px-4 border-b">Date Submitted</th>
+                <th className="py-2 px-4 border-b">Status</th>
+                <th className="py-2 px-4 border-b">Events Attended</th>
+                <th className="py-2 px-4 border-b">Actions</th>
               </tr>
             </thead>
             <tbody>
               {clearanceRequests.map((request) => (
                 <React.Fragment key={request.id}>
-                  <tr
-                    onClick={() => handleExpandRow(request.id)}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    <td className="border px-4 py-2">{request.studentNo}</td>
-                    <td className="border px-4 py-2">{request.studentName}</td>
-                    <td className="border px-4 py-2">{request.subject}</td>
-                    <td className="border px-4 py-2">{request.section}</td>
-                    <td className="border px-4 py-2">{request.status}</td>
-                    <td className="border px-4 py-2 text-center">
-                      {request.disciplinaryRecords.length}
-                    </td>
-                    {userRole === "Office of The Dean" && (
-                      <td className="border px-4 py-2 text-center">
-                        {request.eventsAttended}
-                      </td>
-                    )}
-                    <td className="border px-4 py-2">
-                      {request.fileURLs && request.fileURLs.length > 0 ? (
-                        <ul>
-                          {request.fileURLs.map((url, index) => (
-                            <li key={index}>
-                              <a
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-500 hover:underline"
-                              >
-                                File {index + 1}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        "No files submitted"
+                  <tr>
+                    <td className="py-2 px-4 border-b">{request.studentName}</td>
+                    <td className="py-2 px-4 border-b">{request.section}</td>
+                    <td className="py-2 px-4 border-b">{request.subject}</td>
+                    <td className="py-2 px-4 border-b">
+                      {moment(request.timestamp.toDate()).format(
+                        "MMMM Do YYYY, h:mm:ss a"
                       )}
                     </td>
-                    <td className="border px-4 py-2">
+                    <td className="py-2 px-4 border-b">{request.status}</td>
+                    <td className="py-2 px-4 border-b">
+                      {request.eventsAttended}
+                    </td>
+                    <td className="py-2 px-4 border-b flex space-x-2">
                       {request.status === "pending" && (
                         <>
                           <button
+                            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-2 rounded focus:outline-none focus:ring"
                             onClick={() =>
                               handleApprove(
                                 request.id,
@@ -357,69 +325,55 @@ function ApproveClearanceOffice() {
                                 request.subject
                               )
                             }
-                            className="mr-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                           >
                             Approve
                           </button>
                           <button
+                            className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-2 rounded focus:outline-none focus:ring"
                             onClick={() => openRejectModal(request)}
-                            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                           >
                             Reject
                           </button>
                         </>
                       )}
-                    </td>
-                    <td className="border px-4 py-2 text-center">
-                      <FontAwesomeIcon
-                        icon={
-                          expandedRequestId === request.id
-                            ? faAngleUp
-                            : faAngleDown
-                        }
-                      />
+                      <button
+                        className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-2 rounded focus:outline-none focus:ring"
+                        onClick={() => handleExpandRow(request.id)}
+                      >
+                        {expandedRequestId === request.id ? (
+                          <FontAwesomeIcon icon={faAngleUp} />
+                        ) : (
+                          <FontAwesomeIcon icon={faAngleDown} />
+                        )}
+                      </button>
                     </td>
                   </tr>
-
                   {expandedRequestId === request.id && (
-                    <tr className="bg-gray-100">
-                      <td colSpan={8} className="border px-4 py-2">
-                        {request.disciplinaryRecords.length === 0 ? (
-                          <p>No disciplinary records found.</p>
-                        ) : (
-                          <table className="min-w-full">
-                            <thead>
-                              <tr>
-                                <th className="py-2 border-b border-gray-200">
-                                  Date
-                                </th>
-                                <th className="py-2 border-b border-gray-200">
-                                  Violations
-                                </th>
-                                <th className="py-2 border-b border-gray-200">
-                                  Sanctions
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {request.disciplinaryRecords.map((record) => (
-                                <tr key={record.timestamp}>
-                                  <td className="border px-4 py-2">
-                                    {moment(record.timestamp.toDate()).format(
-                                      "YYYY-MM-DD"
-                                    )}
-                                  </td>
-                                  <td className="border px-4 py-2">
-                                    {record.violations.join(", ")}
-                                  </td>
-                                  <td className="border px-4 py-2">
-                                    {record.sanctions.join(", ")}
-                                  </td>
-                                </tr>
+                    <tr>
+                      <td colSpan="7" className="py-2 px-4 border-b bg-gray-100">
+                        <div className="p-4">
+                          <h3 className="text-lg font-semibold mb-2">
+                            Disciplinary Records
+                          </h3>
+                          {request.disciplinaryRecords.length > 0 ? (
+                            <ul>
+                              {request.disciplinaryRecords.map((record, index) => (
+                                <li key={index} className="mb-2">
+                                  <strong>Violation:</strong> {record.violation}
+                                  <br />
+                                  <strong>Date:</strong>{" "}
+                                  {moment(record.date.toDate()).format(
+                                    "MMMM Do YYYY"
+                                  )}
+                                  <br />
+                                  <strong>Description:</strong> {record.description}
+                                </li>
                               ))}
-                            </tbody>
-                          </table>
-                        )}
+                            </ul>
+                          ) : (
+                            <p>No disciplinary records found.</p>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -427,56 +381,36 @@ function ApproveClearanceOffice() {
               ))}
             </tbody>
           </table>
-        )}
-      </div>
+        </div>
 
-      <Modal isOpen={isModalOpen} onClose={closeRejectModal}>
-        <div className="p-6">
-          <h3 className="text-lg font-semibold mb-4">
-            Reject Clearance Request
-          </h3>
-          <p>
-            Are you sure you want to reject this clearance request from{" "}
-            <strong>{requestToReject?.studentName}</strong> for{" "}
-            <strong>{requestToReject?.subject}</strong>?
-          </p>
-
-          <div className="mt-4">
-            <label
-              htmlFor="rejectionReason"
-              className="block text-gray-700 mb-1"
-            >
-              Reason for Rejection:
-            </label>
+        <Modal isOpen={isModalOpen} onClose={closeRejectModal}>
+          <div className="p-4">
+            <h3 className="text-lg font-semibold mb-4">
+              Reject Clearance Request
+            </h3>
+            <label className="block text-gray-700 mb-2">Reason for rejection:</label>
             <textarea
-              id="rejectionReason"
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-              required
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300 mb-4"
             />
+            <div className="flex justify-end space-x-2">
+              <button
+                className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-4 rounded focus:outline-none focus:ring"
+                onClick={closeRejectModal}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-4 rounded focus:outline-none focus:ring"
+                onClick={handleReject}
+              >
+                Reject
+              </button>
+            </div>
           </div>
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={closeRejectModal}
-              className="mr-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleReject}
-              className={`px-4 py-2 rounded  text-white ${
-                !rejectionReason
-                  ? "bg-gray-400 cursor-not-allowed" 
-                  : "bg-red-500 hover:bg-red-600"
-              }`}
-              disabled={!rejectionReason}
-            >
-              Reject
-            </button>
-          </div>
-        </div>
-      </Modal>
+        </Modal>
+      </div>
     </Sidebar>
   );
 }
