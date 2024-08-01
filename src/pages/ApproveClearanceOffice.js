@@ -295,7 +295,7 @@ function ApproveClearanceOffice() {
                 <th className="py-2 border-b border-gray-200">
                   Disciplinary Records
                 </th>
-                {userRole === "Guidance Office" && (
+                {userRole === "Office of The Dean" && (
                   <th className="py-2 border-b border-gray-200">
                     Events Attended
                   </th>
