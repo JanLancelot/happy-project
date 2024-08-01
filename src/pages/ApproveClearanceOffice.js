@@ -72,7 +72,7 @@ function ApproveClearanceOffice() {
                 const attendeesArray = Object.values(eventData.attendees);
                 if (
                   attendeesArray.some(
-                    (attendee) => attendee.studentNo === requestData.studentNo
+                    (attendee) => attendee.studentId === requestData.studentNo
                   )
                 ) {
                   eventsAttended++;
