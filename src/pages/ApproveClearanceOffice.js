@@ -68,7 +68,7 @@ function ApproveClearanceOffice() {
               const eventsRef = collection(db, "events");
               const eventsQuery = query(
                 eventsRef,
-                where("attendees", "array-contains", { studentId: requestData.studentId })
+                where("attendees", "array-contains", { studentId: requestData.studentNo })
               );
               const eventsSnapshot = await getDocs(eventsQuery);
               eventsAttended = eventsSnapshot.size;
