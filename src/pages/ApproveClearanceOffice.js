@@ -71,6 +71,7 @@ function ApproveClearanceOffice() {
                 where("attendees", "array-contains", { studentId: requestData.studentNo })
               );
               const eventsSnapshot = await getDocs(eventsQuery);
+              console.log(eventsSnapshot);
               eventsAttended = eventsSnapshot.size;
             }
 
