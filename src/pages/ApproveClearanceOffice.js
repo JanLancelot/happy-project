@@ -312,7 +312,7 @@ function ApproveClearanceOffice() {
                     onClick={() => handleExpandRow(request.id)}
                     className="cursor-pointer hover:bg-gray-100"
                   >
-                    <td className="border px-4 py-2">{request.studentNo}</td>
+                    <td className="border px-4 py-2">{request.studentId}</td>
                     <td className="border px-4 py-2">{request.studentName}</td>
                     <td className="border px-4 py-2">{request.subject}</td>
                     <td className="border px-4 py-2">{request.section}</td>
