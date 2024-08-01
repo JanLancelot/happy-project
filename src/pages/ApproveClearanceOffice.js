@@ -288,6 +288,7 @@ function ApproveClearanceOffice() {
           <table className="min-w-full bg-white border border-gray-300">
             <thead>
               <tr>
+                <th className="py-2 px-4 border-b">Student ID</th>
                 <th className="py-2 px-4 border-b">Student Name</th>
                 <th className="py-2 px-4 border-b">Section</th>
                 <th className="py-2 px-4 border-b">Subject</th>
@@ -301,6 +302,7 @@ function ApproveClearanceOffice() {
               {clearanceRequests.map((request) => (
                 <React.Fragment key={request.id}>
                   <tr>
+                    <td className="py-2 px-4 border-b">{request.studentNo}</td>
                     <td className="py-2 px-4 border-b">{request.studentName}</td>
                     <td className="py-2 px-4 border-b">{request.section}</td>
                     <td className="py-2 px-4 border-b">{request.subject}</td>
