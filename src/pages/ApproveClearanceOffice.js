@@ -320,7 +320,7 @@ function ApproveClearanceOffice() {
                     <td className="border px-4 py-2 text-center">
                       {request.disciplinaryRecords.length}
                     </td>
-                    {userRole === "Guidance Office" && (
+                    {userRole === "Office of The Dean" && (
                       <td className="border px-4 py-2 text-center">
                         {request.eventsAttended}
                       </td>
