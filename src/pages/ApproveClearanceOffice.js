@@ -64,11 +64,11 @@ function ApproveClearanceOffice() {
             );
 
             let eventsAttended = 0;
-            if (userRole === "Office of The Dean") {
+            if (userRole === "Guidance Office") {
               const eventsRef = collection(db, "events");
               const eventsQuery = query(
                 eventsRef,
-                where("attendees", "array-contains", requestData.studentId)
+                where("attendees", "array-contains", { studentId: requestData.studentId })
               );
               const eventsSnapshot = await getDocs(eventsQuery);
               eventsAttended = eventsSnapshot.size;
