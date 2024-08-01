@@ -64,7 +64,7 @@ function ApproveClearanceOffice() {
             );
 
             let eventsAttended = 0;
-            if (userRole === "Guidance Office") {
+            if (userRole === "Office of The Dean") {
               const eventsRef = collection(db, "events");
               const eventsQuery = query(
                 eventsRef,
