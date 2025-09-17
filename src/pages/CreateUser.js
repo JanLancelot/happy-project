@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { collection, addDoc } from "firebase/firestore";
-import { db, auth } from "../firebaseConfig";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { db } from "../firebaseConfig"; // Assuming 'auth' is not needed here anymore for user creation
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../components/AuthContext";
@@ -66,44 +66,43 @@ function CreateUser() {
     setIsLoading(true);
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
+      // 1. Get a reference to the Cloud Function
+      const functions = getFunctions();
+      const createUserByAdmin = httpsCallable(functions, 'createUserByAdmin');
 
-      await addDoc(collection(db, "users"), {
-        uid: user.uid,
-        email: email,
-        role: role,
+      // 2. Call the function with the new user's data
+      await createUserByAdmin({
+        email,
+        password,
+        role,
         department:
-          role === "Office of The Dean" || role === "Student Council"
+          educationLevel === "college" && (role === "Office of The Dean" || role === "Student Council")
             ? department
             : null,
-        educationLevel: educationLevel,
-        isLocked: false, 
+        educationLevel,
       });
-
+      
+      // 3. Log the audit trail (this part remains the same)
       const auditLogsRef = collection(db, "auditLogs");
       await addDoc(auditLogsRef, {
-        timestamp: new Date(), 
-        userId: currentUser.uid, 
+        timestamp: new Date(),
+        userId: currentUser.uid,
         actionType: "create_user",
-        email: currentUser.email, 
+        email: currentUser.email,
         details: {
           createdUserEmail: email,
           createdUserRole: role,
           educationLevel: educationLevel,
-          department: department, 
+          department: department,
         },
       });
 
       alert("User created successfully!");
-      navigate("/user-management"); 
+      navigate("/user-management");
     } catch (error) {
       console.error("Error creating user: ", error);
-      alert("Error creating user. Please try again.");
+      // The error message from the Cloud Function will be more informative
+      alert(`Error creating user: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -114,6 +113,7 @@ function CreateUser() {
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">Create User</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email Input */}
           <div>
             <label className="block text-gray-700">Email:</label>
             <input
@@ -124,6 +124,7 @@ function CreateUser() {
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             />
           </div>
+          {/* Password Input */}
           <div>
             <label className="block text-gray-700">Password:</label>
             <input
@@ -134,11 +135,16 @@ function CreateUser() {
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             />
           </div>
+          {/* Education Level Select */}
           <div>
             <label className="block text-gray-700">Education Level:</label>
             <select
               value={educationLevel}
-              onChange={(e) => setEducationLevel(e.target.value)}
+              onChange={(e) => {
+                setEducationLevel(e.target.value);
+                setRole(''); // Reset role when education level changes
+                setDepartment(''); // Reset department
+              }}
               required
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
             >
@@ -149,30 +155,32 @@ function CreateUser() {
               <option value="college">College</option>
             </select>
           </div>
-
-          <div>
-            <label className="block text-gray-700">Role:</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-            >
-              <option value="">Select Role</option>
-              {educationLevel === "college"
-                ? collegeRoles.map((collegeRole) => (
-                    <option key={collegeRole} value={collegeRole}>
-                      {collegeRole}
-                    </option>
-                  ))
-                : otherRoles.map((otherRole) => (
-                    <option key={otherRole} value={otherRole}>
-                      {otherRole}
-                    </option>
-                  ))}
-            </select>
-          </div>
-
+          {/* Role Select */}
+          {educationLevel && (
+            <div>
+              <label className="block text-gray-700">Role:</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                required
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+              >
+                <option value="">Select Role</option>
+                {educationLevel === "college"
+                  ? collegeRoles.map((collegeRole) => (
+                      <option key={collegeRole} value={collegeRole}>
+                        {collegeRole}
+                      </option>
+                    ))
+                  : otherRoles.map((otherRole) => (
+                      <option key={otherRole} value={otherRole}>
+                        {otherRole}
+                      </option>
+                    ))}
+              </select>
+            </div>
+          )}
+          {/* Department Select (Conditional) */}
           {educationLevel === "college" &&
             (role === "Office of The Dean" || role === "Student Council") && (
               <div>
@@ -192,6 +200,7 @@ function CreateUser() {
                 </select>
               </div>
             )}
+          {/* Submit Button */}
           <button
             type="submit"
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"

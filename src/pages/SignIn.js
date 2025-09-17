@@ -60,7 +60,7 @@ const SignIn = () => {
               navigate("/approve-clearance-office");
               break;
             default:
-              navigate("/dashboard");
+              navigate("/audit-log");
           }
         } else {
           console.error("No such document!");
@@ -150,7 +150,7 @@ const SignIn = () => {
       >
         <div className="flex justify-center mb-6">
           <img
-            src="https://dyci.edu.ph/img/DYCI.png"
+            src="https://dyci.edu.ph/assets/logo/dyci-logo.webp"
             alt="DYCI Logo"
             className="h-16"
           />
