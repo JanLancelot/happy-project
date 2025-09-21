@@ -35,19 +35,45 @@ function ApproveClearanceOffice() {
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [expandedRequestId, setExpandedRequestId] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    console.log("Debug - Auth values:", {
+      currentUser: currentUser,
+      userRole: userRole,
+      currentUserId: currentUser?.uid
+    });
+  }, [currentUser, userRole]);
 
   useEffect(() => {
     const fetchClearanceRequests = async () => {
-      if (!currentUser) return;
+      console.log("Debug - Starting fetchClearanceRequests");
+      
+      if (!currentUser) {
+        console.log("Debug - No currentUser, returning early");
+        setIsLoading(false);
+        return;
+      }
 
       try {
+        setIsLoading(true);
+        setError(null);
+        
+        console.log("Debug - Fetching with officerId:", currentUser.uid);
+        
         const requestsRef = collection(db, "clearanceRequests");
         const q = query(requestsRef, where("officerId", "==", currentUser.uid));
 
+        console.log("Debug - Executing query...");
         const requestsSnapshot = await getDocs(q);
+        console.log("Debug - Query returned", requestsSnapshot.size, "documents");
+
         const requestsData = await Promise.all(
           requestsSnapshot.docs.map(async (doc) => {
             const requestData = doc.data();
+            console.log("Debug - Processing request:", doc.id, requestData);
 
             const disciplinaryRecordsRef = collection(
               db,
@@ -64,11 +90,12 @@ function ApproveClearanceOffice() {
 
             let eventsAttended = 0;
             if (userRole === "Office of The Dean") {
+              console.log("Debug - Fetching events for Office of The Dean");
               const eventsRef = collection(db, "events");
               const eventsSnapshot = await getDocs(eventsRef);
               eventsSnapshot.forEach((eventDoc) => {
                 const eventData = eventDoc.data();
-                const attendeesArray = Object.values(eventData.attendees);
+                const attendeesArray = Object.values(eventData.attendees || {});
                 if (
                   attendeesArray.some(
                     (attendee) => attendee.studentNo === requestData.studentNo
@@ -94,6 +121,8 @@ function ApproveClearanceOffice() {
           })
         );
 
+        console.log("Debug - Processed all requests:", requestsData);
+        
         setClearanceRequests(requestsData);
         setOriginalRequests(requestsData);
 
@@ -105,8 +134,12 @@ function ApproveClearanceOffice() {
         ];
         setAvailableSections(uniqueSections);
         setAvailableSubjects(uniqueSubjects);
+        
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching clearance requests:", error);
+        setError(error.message);
+        setIsLoading(false);
       }
     };
 
@@ -231,12 +264,55 @@ function ApproveClearanceOffice() {
     setExpandedRequestId((prevId) => (prevId === requestId ? null : requestId));
   };
 
+  if (isLoading) {
+    return (
+      <Sidebar>
+        <div className="container mx-auto p-4">
+          <h2 className="text-2xl font-semibold mb-4">Loading clearance data...</h2>
+          <p>Current user: {currentUser ? currentUser.uid : "Not logged in"}</p>
+          <p>User role: {userRole || "No role assigned"}</p>
+        </div>
+      </Sidebar>
+    );
+  }
+
+  if (error) {
+    return (
+      <Sidebar>
+        <div className="container mx-auto p-4">
+          <h2 className="text-2xl font-semibold mb-4 text-red-600">Error loading data</h2>
+          <p>{error}</p>
+          <p>Current user: {currentUser ? currentUser.uid : "Not logged in"}</p>
+          <p>User role: {userRole || "No role assigned"}</p>
+        </div>
+      </Sidebar>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <Sidebar>
+        <div className="container mx-auto p-4">
+          <h2 className="text-2xl font-semibold mb-4">Not authenticated</h2>
+          <p>Please log in to view clearance requests.</p>
+        </div>
+      </Sidebar>
+    );
+  }
+
   return (
     <Sidebar>
       <div className="container mx-auto p-4">
         <h2 className="text-2xl font-semibold mb-4">
           Approve Clearance Requests
         </h2>
+
+        {}
+        <div className="mb-4 p-2 bg-gray-100 text-sm">
+          <p>Debug: Found {clearanceRequests.length} clearance requests</p>
+          <p>User Role: {userRole}</p>
+          <p>User ID: {currentUser.uid}</p>
+        </div>
 
         <div className="mb-4 flex space-x-4">
           <div>
@@ -289,116 +365,124 @@ function ApproveClearanceOffice() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-300">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 border-b">Student Name</th>
-                <th className="py-2 px-4 border-b">Section</th>
-                <th className="py-2 px-4 border-b">Subject</th>
-                <th className="py-2 px-4 border-b">Date Submitted</th>
-                <th className="py-2 px-4 border-b">Status</th>
-                {userRole === "Character Renewal Office" && (
-                  <th className="py-2 px-4 border-b">Disciplinary Records</th>
-                )}
-                {userRole === "Office of The Dean" && (
-                  <th className="py-2 px-4 border-b">Events Attended</th>
-                )}
-                <th className="py-2 px-4 border-b">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clearanceRequests.map((request) => (
-                <React.Fragment key={request.id}>
-                  <tr>
-                    <td className="py-2 px-4 border-b">{request.studentName}</td>
-                    <td className="py-2 px-4 border-b">{request.section}</td>
-                    <td className="py-2 px-4 border-b">{request.subject}</td>
-                    <td className="py-2 px-4 border-b">
-                      {moment(request.timestamp.toDate()).format(
-                        "MMMM Do YYYY, h:mm:ss a"
-                      )}
-                    </td>
-                    <td className="py-2 px-4 border-b">{request.status}</td>
-                    {userRole === "Character Renewal Office" && (
-                      <td className="py-2 px-4 border-b">
-                        {request.disciplinaryRecordsCount}
-                      </td>
-                    )}
-                    {userRole === "Office of The Dean" && (
-                      <td className="py-2 px-4 border-b">
-                        {request.eventsAttended}
-                      </td>
-                    )}
-                    <td className="py-2 px-4 border-b flex space-x-2">
-                      {request.status === "pending" && (
-                        <>
-                          <button
-                            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-2 rounded focus:outline-none focus:ring"
-                            onClick={() =>
-                              handleApprove(
-                                request.id,
-                                request.studentId,
-                                request.subject
-                              )
-                            }
-                          >
-                            Approve
-                          </button>
-                          <button
-                            className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-2 rounded focus:outline-none focus:ring"
-                            onClick={() => openRejectModal(request)}
-                          >
-                            Reject
-                          </button>
-                        </>
-                      )}
-                      <button
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-2 rounded focus:outline-none focus:ring"
-                        onClick={() => handleExpandRow(request.id)}
-                      >
-                        {expandedRequestId === request.id ? (
-                          <FontAwesomeIcon icon={faAngleUp} />
-                        ) : (
-                          <FontAwesomeIcon icon={faAngleDown} />
-                        )}
-                      </button>
-                    </td>
-                  </tr>
-                  {expandedRequestId === request.id && (
+        {clearanceRequests.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No clearance requests found.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border border-gray-300">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 border-b">Student Name</th>
+                  <th className="py-2 px-4 border-b">Section</th>
+                  <th className="py-2 px-4 border-b">Subject</th>
+                  <th className="py-2 px-4 border-b">Date Submitted</th>
+                  <th className="py-2 px-4 border-b">Status</th>
+                  {userRole === "Character Renewal Office" && (
+                    <th className="py-2 px-4 border-b">Disciplinary Records</th>
+                  )}
+                  {userRole === "Office of The Dean" && (
+                    <th className="py-2 px-4 border-b">Events Attended</th>
+                  )}
+                  <th className="py-2 px-4 border-b">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clearanceRequests.map((request) => (
+                  <React.Fragment key={request.id}>
                     <tr>
-                      <td colSpan="7" className="py-2 px-4 border-b bg-gray-100">
-                        <div className="p-4">
-                          <h3 className="text-lg font-semibold mb-2">
-                            Disciplinary Records
-                          </h3>
-                          {request.disciplinaryRecords.length > 0 ? (
-                            <ul>
-                              {request.disciplinaryRecords.map((record, index) => (
-                                <li key={index} className="mb-2">
-                                  <strong>Violation:</strong> {record.violation}
-                                  <br />
-                                  <strong>Date:</strong>{" "}
-                                  {moment(record.date.toDate()).format(
-                                    "MMMM Do YYYY"
-                                  )}
-                                  <br />
-                                  <strong>Description:</strong> {record.description}
-                                </li>
-                              ))}
-                            </ul>
+                      <td className="py-2 px-4 border-b">{request.studentName}</td>
+                      <td className="py-2 px-4 border-b">{request.section}</td>
+                      <td className="py-2 px-4 border-b">{request.subject}</td>
+                      <td className="py-2 px-4 border-b">
+                        {request.timestamp && request.timestamp.toDate ? 
+                          moment(request.timestamp.toDate()).format(
+                            "MMMM Do YYYY, h:mm:ss a"
+                          ) : "N/A"}
+                      </td>
+                      <td className="py-2 px-4 border-b">{request.status}</td>
+                      {userRole === "Character Renewal Office" && (
+                        <td className="py-2 px-4 border-b">
+                          {request.disciplinaryRecordsCount}
+                        </td>
+                      )}
+                      {userRole === "Office of The Dean" && (
+                        <td className="py-2 px-4 border-b">
+                          {request.eventsAttended}
+                        </td>
+                      )}
+                      <td className="py-2 px-4 border-b flex space-x-2">
+                        {request.status === "pending" && (
+                          <>
+                            <button
+                              className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-2 rounded focus:outline-none focus:ring"
+                              onClick={() =>
+                                handleApprove(
+                                  request.id,
+                                  request.studentId,
+                                  request.subject
+                                )
+                              }
+                            >
+                              Approve
+                            </button>
+                            <button
+                              className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-2 rounded focus:outline-none focus:ring"
+                              onClick={() => openRejectModal(request)}
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        <button
+                          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-2 rounded focus:outline-none focus:ring"
+                          onClick={() => handleExpandRow(request.id)}
+                        >
+                          {expandedRequestId === request.id ? (
+                            <FontAwesomeIcon icon={faAngleUp} />
                           ) : (
-                            <p>No disciplinary records found.</p>
+                            <FontAwesomeIcon icon={faAngleDown} />
                           )}
-                        </div>
+                        </button>
                       </td>
                     </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    {expandedRequestId === request.id && (
+                      <tr>
+                        <td colSpan="8" className="py-2 px-4 border-b bg-gray-100">
+                          <div className="p-4">
+                            <h3 className="text-lg font-semibold mb-2">
+                              Disciplinary Records
+                            </h3>
+                            {request.disciplinaryRecords.length > 0 ? (
+                              <ul>
+                                {request.disciplinaryRecords.map((record, index) => (
+                                  <li key={index} className="mb-2">
+                                    <strong>Violation:</strong> {record.violation}
+                                    <br />
+                                    <strong>Date:</strong>{" "}
+                                    {record.date && record.date.toDate ? 
+                                      moment(record.date.toDate()).format(
+                                        "MMMM Do YYYY"
+                                      ) : "N/A"}
+                                    <br />
+                                    <strong>Description:</strong> {record.description}
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p>No disciplinary records found.</p>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         <Modal isOpen={isModalOpen} onClose={closeRejectModal}>
           <div className="p-4">
@@ -410,6 +494,7 @@ function ApproveClearanceOffice() {
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300 mb-4"
+              rows="4"
             />
             <div className="flex justify-end space-x-2">
               <button
